@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <VersionPrefix>0.0.2</VersionPrefix>
+        <VersionSuffix>alpha</VersionSuffix>
+        <Title>DecoupleIt - ASP .NET Core integration for tracing</Title>
+        <Description>ASP .NET Core support for tracing.</Description>
+    </PropertyGroup>
+
+    <Import Project="../Libraries.targets" />
+    <Import Project="../netcoreapp.props" />
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
+        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Properties" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Tracing\Tracing.csproj" />
+    </ItemGroup>
+
+</Project>

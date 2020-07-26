@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DocumentationFile>bin\Debug\Samples.Documents.Command.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DocumentationFile>bin\Release\Samples.Documents.Command.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Libraries\AspNetCore.Service\AspNetCore.Service.csproj" />
+      <ProjectReference Include="..\Samples.Clients.Command.Contracts\Samples.Clients.Command.Contracts.csproj" />
+      <ProjectReference Include="..\Samples.Documents.Command.Contracts\Samples.Documents.Command.Contracts.csproj" />
+    </ItemGroup>
+
+</Project>

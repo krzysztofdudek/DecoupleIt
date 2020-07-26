@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <VersionPrefix>0.0.2</VersionPrefix>
+        <VersionSuffix>alpha</VersionSuffix>
+        <Title>DecoupleIt - Shared library</Title>
+        <Description>Library consists of shared elements used within DecoupleIt packages.</Description>
+    </PropertyGroup>
+
+    <Import Project="../Libraries.targets" />
+    <Import Project="../netstandard.props" />
+
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" Version="2020.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.*" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.*" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.*" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.*" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.*" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.*" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.*" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.*" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.*" />
+    </ItemGroup>
+
+    <Target Name="Restore dotnet tools" BeforeTargets="PostBuildEvent">
+        <Message Importance="normal" Text="Restore dotnet tools..." />
+        <Exec Command="dotnet tool restore" />
+    </Target>
+
+</Project>

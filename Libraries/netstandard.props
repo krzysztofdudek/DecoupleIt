@@ -1,0 +1,10 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup>
+        <RootNamespace>GS.DecoupleIt.$(MSBuildProjectName)</RootNamespace>
+        <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    </PropertyGroup>
+
+    <Import Project="../GS.props" />
+
+</Project>

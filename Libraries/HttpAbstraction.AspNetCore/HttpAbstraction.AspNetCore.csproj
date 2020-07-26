@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <VersionPrefix>0.0.1</VersionPrefix>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\HttpAbstraction\HttpAbstraction.csproj" />
+    </ItemGroup>
+
+    <Import Project="../Libraries.targets" />
+    <Import Project="../netcoreapp.props" />
+
+</Project>

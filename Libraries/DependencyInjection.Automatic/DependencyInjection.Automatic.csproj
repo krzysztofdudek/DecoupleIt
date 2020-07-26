@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../Libraries.targets" />
+    <Import Project="../netstandard.props" />
+
+    <PropertyGroup>
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionSuffix>alpha</VersionSuffix>
+        <Title>DecoupleIt - Automatic registration for Microsoft.Extensions.DependencyInjection</Title>
+        <Description>Implementation of automatic registration of services adapted to cooperate with Microsoft.Extensions.DependencyInjection.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Shared\Shared.csproj" />
+    </ItemGroup>
+
+</Project>

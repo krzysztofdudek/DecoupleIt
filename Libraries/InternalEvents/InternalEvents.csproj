@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <VersionPrefix>0.0.2</VersionPrefix>
+        <VersionSuffix>alpha</VersionSuffix>
+        <Title>DecoupleIt - Internal events</Title>
+        <Description>Library implements concept of application internal events allowing to decouple code and make it more "reactive" rather than "imperative".</Description>
+    </PropertyGroup>
+
+    <Import Project="../Libraries.targets" />
+    <Import Project="../netstandard.props" />
+
+    <ItemGroup>
+      <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
+      <ProjectReference Include="..\Tracing\Tracing.csproj" />
+    </ItemGroup>
+
+</Project>

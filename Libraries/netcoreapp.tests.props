@@ -1,0 +1,11 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup>
+        <RootNamespace>GS.DecoupleIt.$(MSBuildProjectName)</RootNamespace>
+        <TargetFrameworks>netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <Import Project="../GS.props" />
+
+</Project>

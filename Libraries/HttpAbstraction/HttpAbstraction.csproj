@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionSuffix>alpha</VersionSuffix>
+    </PropertyGroup>
+
+    <Import Project="../Libraries.targets" />
+    <Import Project="../netstandard.props" />
+
+    <ItemGroup>
+      <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
+      <ProjectReference Include="..\Shared\Shared.csproj" />
+      <ProjectReference Include="..\Tracing\Tracing.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="RestEase" Version="1.4.*" />
+    </ItemGroup>
+
+</Project>
