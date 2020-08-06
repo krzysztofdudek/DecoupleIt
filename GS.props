@@ -14,12 +14,16 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <DefineConstants>TRACE;JETBRAINS_ANNOTATIONS</DefineConstants>
         <DocumentationFile>bin\Debug\$(RootNamespace).xml</DocumentationFile>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DefineConstants>TRACE;JETBRAINS_ANNOTATIONS</DefineConstants>
         <DocumentationFile>bin\Release\$(RootNamespace).xml</DocumentationFile>
     </PropertyGroup>
+
+    <Target Name="InheritDoc" AfterTargets="PostBuildEvent">
+        <Exec Command="dotnet InheritDoc -o" IgnoreExitCode="True" ContinueOnError="true" />
+    </Target>
 
 </Project>

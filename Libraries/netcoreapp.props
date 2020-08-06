@@ -3,6 +3,7 @@
     <PropertyGroup>
         <RootNamespace>GS.DecoupleIt.$(MSBuildProjectName)</RootNamespace>
         <TargetFrameworks>netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <Import Project="../GS.props" />

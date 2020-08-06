@@ -3,7 +3,6 @@
     <Import Project="../GS.targets" />
 
     <PropertyGroup>
-        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
 </Project>

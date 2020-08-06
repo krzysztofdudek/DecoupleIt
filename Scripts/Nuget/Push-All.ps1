@@ -5,3 +5,5 @@
 .\Push-Tracing.AspNetCore.ps1
 .\Push-InternalEvents.ps1
 .\Push-InternalEvents.AspNetCore.ps1
+.\Push-AspNetCore.Service.ps1
+.\Push-HttpAbstraction.ps1
