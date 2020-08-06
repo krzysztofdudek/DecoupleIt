@@ -3,6 +3,7 @@
     <PropertyGroup>
         <VersionPrefix>0.0.2</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
+        <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
         <Title>DecoupleIt - ASP .NET Core integration for internal events</Title>
         <Description>ASP .NET Core support for internal events.</Description>
     </PropertyGroup>

@@ -3,6 +3,9 @@
     <PropertyGroup>
         <VersionPrefix>0.0.1</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
+        <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
+        <Title>DecoupleIt - ASP .NET Core base service library</Title>
+        <Description>Implements base web application host with extensible modules.</Description>
     </PropertyGroup>
 
     <Import Project="../Libraries.targets" />

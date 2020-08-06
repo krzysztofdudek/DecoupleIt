@@ -84,6 +84,7 @@ ProjectSection(SolutionItems) = preProject
 	Scripts\Nuget\Push-Tracing.ps1 = Scripts\Nuget\Push-Tracing.ps1
 	Scripts\Nuget\Push-Generic.ps1 = Scripts\Nuget\Push-Generic.ps1
 	Scripts\Nuget\Push-All.ps1 = Scripts\Nuget\Push-All.ps1
+	Scripts\Nuget\Push-HttpAbstraction.ps1 = Scripts\Nuget\Push-HttpAbstraction.ps1
 EndProjectSection
 EndProject
 Global

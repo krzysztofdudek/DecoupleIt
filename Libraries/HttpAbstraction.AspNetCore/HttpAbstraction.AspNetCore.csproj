@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <VersionPrefix>0.0.1</VersionPrefix>
+        <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
     </PropertyGroup>
 
     <ItemGroup>
