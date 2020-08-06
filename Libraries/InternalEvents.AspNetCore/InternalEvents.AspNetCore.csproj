@@ -19,8 +19,4 @@
         <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.*" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Properties" />
-    </ItemGroup>
-
 </Project>
