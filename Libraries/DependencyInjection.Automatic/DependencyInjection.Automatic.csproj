@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="../Libraries.targets" />
     <Import Project="../netstandard.props" />
 
     <PropertyGroup>

@@ -1,13 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>0.0.2</VersionPrefix>
+        <VersionPrefix>0.0.3</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
         <Title>DecoupleIt - http abstraction</Title>
         <Description>Implements http abstraction for uniformity of interfaces between controllers and services used on client side.</Description>
     </PropertyGroup>
 
-    <Import Project="../Libraries.targets" />
     <Import Project="../netstandard.props" />
 
     <ItemGroup>

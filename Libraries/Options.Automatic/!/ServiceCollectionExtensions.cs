@@ -38,10 +38,17 @@ namespace GS.DecoupleIt.Options.Automatic
 
             foreach (var (type, attribute) in optionsTypes)
             {
-                var configurationSection = (IConfiguration) configuration.GetSection(attribute.AsNotNull()
-                                                                                              .ConfigurationSectionName ?? type.AsNotNull()
-                                                                                                                               .FullName.AsNotNull()
-                                                                                                                               .Replace(".", ":"));
+                var attributeSectionName = attribute.AsNotNull()
+                                                    .ConfigurationSectionName?.Replace(".", ":");
+
+                var typeSectionName = type.AsNotNull()
+                                          .FullName.AsNotNull()
+                                          .Replace(".", ":");
+
+                if (typeSectionName.EndsWith("Options"))
+                    typeSectionName = typeSectionName.Substring(0, typeSectionName.Length - "Options".Length);
+
+                var configurationSection = (IConfiguration) configuration.GetSection(attributeSectionName ?? typeSectionName);
 
                 serviceCollection.Add(ServiceDescriptor.Singleton(typeof(IOptionsChangeTokenSource<>).MakeGenericType(type),
                                                                   Activator.CreateInstance(typeof(ConfigurationChangeTokenSource<>).MakeGenericType(type),

@@ -8,7 +8,6 @@
         <Description>ASP .NET Core support for internal events.</Description>
     </PropertyGroup>
 
-    <Import Project="../Libraries.targets" />
     <Import Project="../netcoreapp.props" />
 
     <ItemGroup>

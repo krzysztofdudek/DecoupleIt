@@ -45,13 +45,11 @@ namespace Microsoft.Extensions.Configuration
         /// <typeparam name="TOptions">Options type.</typeparam>
         public static void ConfigureOptionsAndPostConfigure<TOptions>(
             [NotNull] this IServiceCollection serviceCollection,
-            [NotNull] IConfiguration configuration,
+            [NotNull] IConfigurationSection configuration,
             [CanBeNull] ConfigureDelegate<TOptions> configure = default)
             where TOptions : class, new()
         {
-            var configurationSectionName = typeof(TOptions).GetConstantOfName<string>("ConfigurationSectionName");
-
-            serviceCollection.Configure<TOptions>(configuration.GetSection(configurationSectionName));
+            serviceCollection.Configure<TOptions>(configuration);
 
             serviceCollection.PostConfigure<TOptions>(options => configure?.Invoke(options.AsNotNull()));
         }
@@ -65,14 +63,11 @@ namespace Microsoft.Extensions.Configuration
         /// <typeparam name="TOptions">Options type.</typeparam>
         public static void ConfigureOptionsDictionaryAndPostConfigure<TOptions>(
             [NotNull] this IServiceCollection serviceCollection,
-            [NotNull] IConfiguration configuration,
+            [NotNull] IConfigurationSection configuration,
             [CanBeNull] ConfigureDelegate<TOptions> configure = default)
             where TOptions : class, IDictionary<string, string>
         {
-            var configurationSectionName = typeof(TOptions).GetConstantOfName<string>("ConfigurationSectionName");
-
-            serviceCollection.ConfigureDictionary<TOptions>(configuration.GetSection(configurationSectionName)
-                                                                         .AsNotNull());
+            serviceCollection.ConfigureDictionary<TOptions>(configuration);
 
             serviceCollection.PostConfigure<TOptions>(options => configure?.Invoke(options.AsNotNull()));
         }
@@ -88,14 +83,11 @@ namespace Microsoft.Extensions.Configuration
         [NotNull]
         public static TOptions GetOptions<TOptions>(
             [NotNull] this IServiceCollection serviceCollection,
-            [NotNull] IConfiguration configuration,
+            [NotNull] IConfigurationSection configuration,
             [CanBeNull] ConfigureDelegate<TOptions> configure = default)
             where TOptions : class, new()
         {
-            var configurationSectionName = typeof(TOptions).GetConstantOfName<string>("ConfigurationSectionName");
-
-            var options = configuration.GetSection(configurationSectionName)
-                                       .Get<TOptions>() ?? new TOptions();
+            var options = configuration.Get<TOptions>() ?? new TOptions();
 
             configure?.Invoke(options);
 

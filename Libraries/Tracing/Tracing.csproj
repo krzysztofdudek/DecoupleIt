@@ -1,13 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>0.0.3</VersionPrefix>
+        <VersionPrefix>0.0.4</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
         <Title>DecoupleIt - Tracing</Title>
         <Description>Implementation of tracing pattern allowing to define own scopes per case.</Description>
     </PropertyGroup>
 
-    <Import Project="../Libraries.targets" />
     <Import Project="../netstandard.props" />
 
     <ItemGroup>

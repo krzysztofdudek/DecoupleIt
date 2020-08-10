@@ -9,6 +9,7 @@ namespace GS.DecoupleIt.Tracing
     public enum SpanType
     {
 #pragma warning disable 1591
+        OutgoingRequest,
         ExternalRequest,
         ExternalRequestHandler,
         InternalEvent,

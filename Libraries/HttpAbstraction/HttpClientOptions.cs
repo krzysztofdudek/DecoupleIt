@@ -10,12 +10,6 @@ namespace GS.DecoupleIt.HttpAbstraction
     public sealed class HttpClientOptions
     {
         /// <summary>
-        ///     Configuration section name.
-        /// </summary>
-        [NotNull]
-        public const string ConfigurationSectionName = "HttpClient";
-
-        /// <summary>
         ///     Host's identifier.
         /// </summary>
         public Guid HostIdentifier { get; set; }

@@ -22,4 +22,8 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.4" />
     </ItemGroup>
 
+    <Target Name="Test run" AfterTargets="Build">
+        <Exec EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development;ASPNETCORE_TESTRUN=true" Command="dotnet $(MSBuildProjectDirectory)/$(OutputPath)$(MSBuildProjectName).dll" CustomErrorRegularExpression="ERROR" />
+    </Target>
+
 </Project>

@@ -1,10 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="../Libraries.targets" />
     <Import Project="../netstandard.props" />
 
     <PropertyGroup>
-        <VersionPrefix>0.0.3</VersionPrefix>
+        <VersionPrefix>0.0.4</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
         <Title>DecoupleIt - Automatic Options</Title>
         <Description>Implementation of automatic registration of options configuration.</Description>

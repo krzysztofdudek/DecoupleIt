@@ -108,8 +108,20 @@ namespace GS.DecoupleIt.HttpAbstraction
             [CanBeNull] ConfigureDelegate<HttpClientOptions> configureHttpClientOptions = default,
             [CanBeNull] ConfigureDelegate<ServicesUrisOptions> configureServicesUrisOptions = default)
         {
-            serviceCollection.ConfigureOptionsAndPostConfigure(configuration, configureHttpClientOptions);
-            serviceCollection.ConfigureOptionsDictionaryAndPostConfigure(configuration, configureServicesUrisOptions);
+            var @namespace = typeof(ServiceCollectionExtensions).Namespace;
+
+            var httpClientSectionKey = $"{@namespace}.HttpClient".Replace('.', ':');
+
+            var httpClientSection = configuration.GetSection(httpClientSectionKey)
+                                                 .AsNotNull();
+
+            var servicesUrisSectionKey = $"{@namespace}.ServicesUris".Replace('.', ':');
+
+            var servicesUrisSection = configuration.GetSection(servicesUrisSectionKey)
+                                                   .AsNotNull();
+
+            serviceCollection.ConfigureOptionsAndPostConfigure(httpClientSection, configureHttpClientOptions);
+            serviceCollection.ConfigureOptionsDictionaryAndPostConfigure(servicesUrisSection, configureServicesUrisOptions);
 
             return serviceCollection;
         }

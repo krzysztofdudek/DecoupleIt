@@ -9,7 +9,6 @@
       <ProjectReference Include="..\HttpAbstraction\HttpAbstraction.csproj" />
     </ItemGroup>
 
-    <Import Project="../Libraries.targets" />
     <Import Project="../netcoreapp.props" />
 
 </Project>

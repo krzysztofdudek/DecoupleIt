@@ -7,3 +7,4 @@
 .\Push-InternalEvents.AspNetCore.ps1
 .\Push-AspNetCore.Service.ps1
 .\Push-HttpAbstraction.ps1
+.\Push-Optionals.ps1

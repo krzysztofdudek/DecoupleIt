@@ -7,7 +7,6 @@
         <Description>Library implements concept of application internal events allowing to decouple code and make it more "reactive" rather than "imperative".</Description>
     </PropertyGroup>
 
-    <Import Project="../Libraries.targets" />
     <Import Project="../netstandard.props" />
 
     <ItemGroup>

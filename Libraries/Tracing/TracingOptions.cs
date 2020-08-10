@@ -7,7 +7,7 @@ namespace GS.DecoupleIt.Tracing
     ///     Tracing options.
     /// </summary>
     [PublicAPI]
-    [Configure]
+    [Configure("GS.DecoupleIt.Tracing")]
     public sealed class TracingOptions
     {
         /// <summary>

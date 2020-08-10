@@ -18,4 +18,8 @@
       <ProjectReference Include="..\Samples.Documents.Command.Contracts\Samples.Documents.Command.Contracts.csproj" />
     </ItemGroup>
 
+    <Target Name="Test run" AfterTargets="Build">
+        <Exec EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development;ASPNETCORE_TESTRUN=true" Command="dotnet $(MSBuildProjectDirectory)/$(OutputPath)$(MSBuildProjectName).dll" CustomErrorRegularExpression="ERROR" />
+    </Target>
+
 </Project>

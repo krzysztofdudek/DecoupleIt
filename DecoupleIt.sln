@@ -82,8 +82,11 @@ ProjectSection(SolutionItems) = preProject
 	Scripts\Nuget\Push-Tracing.ps1 = Scripts\Nuget\Push-Tracing.ps1
 	Scripts\Nuget\Push-Generic.ps1 = Scripts\Nuget\Push-Generic.ps1
 	Scripts\Nuget\Push-All.ps1 = Scripts\Nuget\Push-All.ps1
+	Scripts\Nuget\Push-Optionals.ps1 = Scripts\Nuget\Push-Optionals.ps1
 	Scripts\Nuget\Push-HttpAbstraction.ps1 = Scripts\Nuget\Push-HttpAbstraction.ps1
 EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Optionals", "Libraries\Optionals\Optionals.csproj", "{E6B67307-FCC1-4119-95EA-D1AA51831785}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -163,6 +166,10 @@ Global
 		{F324310B-5D53-49FE-B9A1-D4CE67F1400C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F324310B-5D53-49FE-B9A1-D4CE67F1400C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F324310B-5D53-49FE-B9A1-D4CE67F1400C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6B67307-FCC1-4119-95EA-D1AA51831785}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6B67307-FCC1-4119-95EA-D1AA51831785}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6B67307-FCC1-4119-95EA-D1AA51831785}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6B67307-FCC1-4119-95EA-D1AA51831785}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -189,6 +196,7 @@ Global
 		{B1D1CD86-E2DC-4D12-B8DD-C8D426C11436} = {C8F94C4B-30CB-43AE-86FC-209AE45294F8}
 		{F324310B-5D53-49FE-B9A1-D4CE67F1400C} = {C8F94C4B-30CB-43AE-86FC-209AE45294F8}
 		{C920F36D-621D-46ED-BFE6-11353491AEAD} = {0548EF84-F239-4676-9681-EE8F614F8E44}
+		{E6B67307-FCC1-4119-95EA-D1AA51831785} = {C8F94C4B-30CB-43AE-86FC-209AE45294F8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21CF0CC5-F136-4044-B9B4-E52E6C37D68A}

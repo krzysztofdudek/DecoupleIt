@@ -8,7 +8,6 @@
         <Description>ASP .NET Core support for tracing.</Description>
     </PropertyGroup>
 
-    <Import Project="../Libraries.targets" />
     <Import Project="../netcoreapp.props" />
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">

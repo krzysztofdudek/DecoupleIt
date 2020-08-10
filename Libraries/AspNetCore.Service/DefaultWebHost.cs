@@ -6,6 +6,7 @@ using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.HttpAbstraction;
 using GS.DecoupleIt.InternalEvents.AspNetCore;
 using GS.DecoupleIt.Shared;
+using GS.DecoupleIt.Tracing;
 using GS.DecoupleIt.Tracing.AspNetCore;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
@@ -22,6 +23,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Rewrite;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 #elif NETCOREAPP3_1
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
@@ -64,7 +66,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.IgnoreReadOnlyProperties = false;
-            options.JsonSerializerOptions.IgnoreNullValues         = true;
+            options.JsonSerializerOptions.IgnoreNullValues = true;
         }
 #elif NETCOREAPP2_2
         /// <inheritdoc />
@@ -291,14 +293,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
 #if NETCOREAPP3_1
                           .Configure((context, applicationBuilder) =>
                           {
-                              context            = context.AsNotNull();
+                              context = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
 #elif NETCOREAPP2_2
                           .Configure(applicationBuilder =>
                           {
                               var context = new WebHostBuilderContext
                               {
-                                  Configuration = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
+                                  Configuration      = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
                                   HostingEnvironment = applicationBuilder.ApplicationServices.GetRequiredService<IHostingEnvironment>()
                               };
 
@@ -366,9 +368,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
                               applicationBuilder.UseTracing();
 
-                              applicationBuilder.UseInternalEvents();
-
                               applicationBuilder.UseMiddleware<LoggingMiddleware>();
+
+                              applicationBuilder.UseInternalEvents();
 
 #if NETCOREAPP3_1
                               applicationBuilder.UseEndpoints(builder =>
@@ -415,22 +417,29 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             var anyCorrupted = false;
 
-            using (var serviceProvider = collection.BuildServiceProvider())
-            {
-                foreach (var serviceType in collection.Where(x => x.ServiceType != null)
-                                                      .Select(x => x.ServiceType)
-                                                      .Where(x => !x.IsGenericType))
-                    try
-                    {
-                        serviceProvider.GetRequiredService(serviceType);
-                    }
-                    catch
-                    {
-                        anyCorrupted = true;
+            Tracer.Initialize();
 
-                        Console.Error.WriteLine($"ERROR: Service '{serviceType}' is not possible to instantiate.");
-                    }
+            using (Tracer.OpenRootSpan(GetType(), SpanType.InternalProcess))
+            {
+                using (var serviceProvider = collection.BuildServiceProvider())
+                {
+                    foreach (var serviceType in collection.Where(x => x.ServiceType != null)
+                                                          .Select(x => x.ServiceType)
+                                                          .Where(x => !x.IsGenericType))
+                        try
+                        {
+                            serviceProvider.GetRequiredService(serviceType);
+                        }
+                        catch
+                        {
+                            anyCorrupted = true;
+
+                            Console.Error.WriteLine($"ERROR: Service '{serviceType}' is not possible to instantiate.");
+                        }
+                }
             }
+
+            Tracer.Clear();
 
             var isTestRun = Environment.GetEnvironmentVariable("ASPNETCORE_TESTRUN")
                                        ?.ToLower() == "true";
