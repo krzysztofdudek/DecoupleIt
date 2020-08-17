@@ -12,9 +12,7 @@ namespace GS.DecoupleIt.Tracing.Exceptions
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         [NotNull]
-#if NETCOREAPP3_1
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
-#endif
         public override string Message => "Root span is not opened.";
 
         /// <summary>

@@ -184,7 +184,10 @@ namespace GS.DecoupleIt.InternalEvents
                     }
                     catch (Exception caughtException)
                     {
-                        _logger.LogInformation(caughtException, "Event handler invocation failed after {@Duration}ms.", getDuration());
+                        _logger.LogInformation(new EventId(),
+                                               caughtException,
+                                               "Event handler invocation failed after {@Duration}ms.",
+                                               getDuration());
 
                         if (eventHandler is IOnEmissionEventHandler)
                             throw;

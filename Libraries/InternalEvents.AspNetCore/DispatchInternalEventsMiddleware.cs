@@ -14,6 +14,7 @@ namespace GS.DecoupleIt.InternalEvents.AspNetCore
             _internalEventDispatcher = internalEventDispatcher;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
         public async Task InvokeAsync([NotNull] HttpContext context, [NotNull] RequestDelegate next)
         {
             using (var scope = Scope.InternalEventsScope.OpenScope())

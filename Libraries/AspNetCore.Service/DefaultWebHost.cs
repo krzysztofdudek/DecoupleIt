@@ -23,7 +23,6 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Rewrite;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-
 #elif NETCOREAPP3_1
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
@@ -66,7 +65,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.IgnoreReadOnlyProperties = false;
-            options.JsonSerializerOptions.IgnoreNullValues = true;
+            options.JsonSerializerOptions.IgnoreNullValues         = true;
         }
 #elif NETCOREAPP2_2
         /// <inheritdoc />
@@ -260,7 +259,8 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   options.DocumentFilter<DocumentFilter>(Identifier, Version);
 
                                   foreach (var file in Directory.EnumerateFiles(Path.GetDirectoryName(GetType()
-                                                                                                      .Assembly.Location))
+                                                                                                      .Assembly.Location)
+                                                                                    .AsNotNull())
                                                                 .AsNotNull()
                                                                 .Where(x => x.ToLower()
                                                                              .TrimEnd()
@@ -293,14 +293,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
 #if NETCOREAPP3_1
                           .Configure((context, applicationBuilder) =>
                           {
-                              context = context.AsNotNull();
+                              context            = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
 #elif NETCOREAPP2_2
                           .Configure(applicationBuilder =>
                           {
                               var context = new WebHostBuilderContext
                               {
-                                  Configuration      = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
+                                  Configuration = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
                                   HostingEnvironment = applicationBuilder.ApplicationServices.GetRequiredService<IHostingEnvironment>()
                               };
 
@@ -421,14 +421,16 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
             using (Tracer.OpenRootSpan(GetType(), SpanType.InternalProcess))
             {
-                using (var serviceProvider = collection.BuildServiceProvider())
+                using (var serviceProvider = collection.BuildServiceProvider()
+                                                       .AsNotNull())
                 {
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                     foreach (var serviceType in collection.Where(x => x.ServiceType != null)
                                                           .Select(x => x.ServiceType)
                                                           .Where(x => !x.IsGenericType))
                         try
                         {
-                            serviceProvider.GetRequiredService(serviceType);
+                            serviceProvider.GetRequiredService(serviceType.AsNotNull());
                         }
                         catch
                         {

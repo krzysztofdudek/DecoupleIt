@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>0.0.4</VersionPrefix>
+        <VersionPrefix>0.0.5</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
         <Title>DecoupleIt - http abstraction</Title>
         <Description>Implements http abstraction for uniformity of interfaces between controllers and services used on client side.</Description>

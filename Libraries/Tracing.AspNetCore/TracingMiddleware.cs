@@ -19,6 +19,7 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
             _options = options.Value.AsNotNull();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
         public async Task InvokeAsync([NotNull] HttpContext context, [NotNull] RequestDelegate next)
         {
             Tracer.Initialize();

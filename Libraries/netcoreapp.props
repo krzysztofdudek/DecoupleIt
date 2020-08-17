@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <RootNamespace>GS.DecoupleIt.$(MSBuildProjectName)</RootNamespace>
-        <TargetFrameworks>netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
+        <TargetFrameworks>netcoreapp2.2;netcoreapp3.1;net5.0</TargetFrameworks>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 
