@@ -12,6 +12,9 @@ namespace GS.DecoupleIt.Tracing.Exceptions
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         [NotNull]
+#if NETCOREAPP3_1
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
+#endif
         public override string Message => "Current thread is not in the context of any span.";
 
         /// <summary>

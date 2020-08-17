@@ -12,6 +12,9 @@ namespace GS.DecoupleIt.Tracing.Exceptions
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         [NotNull]
+#if NETCOREAPP3_1
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
+#endif
         public override string Message => "Trace was not initialized. The best option is to initialize it at the beginning of the thread.";
 
         /// <summary>
