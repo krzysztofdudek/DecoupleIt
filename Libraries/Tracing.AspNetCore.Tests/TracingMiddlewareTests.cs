@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
-
 #if NETCOREAPP3_1
 using Microsoft.Extensions.Hosting;
 
@@ -36,7 +35,7 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
             Guid?  parentSpanId = default;
             string spanName     = default;
 
-#if NETCOREAPP3_1
+#if NETCOREAPP3_1 || NET5_0
             var hostBuilder = new HostBuilder();
 
             hostBuilder.ConfigureWebHost(webHostBuilder =>
@@ -51,9 +50,9 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
 
                                              applicationBuilder.Use((context, func) =>
                                              {
-                                                 traceId = Tracer.CurrentSpan.TraceId;
-                                                 spanId = Tracer.CurrentSpan.Id;
-                                                 spanName = Tracer.CurrentSpan.Name;
+                                                 traceId      = Tracer.CurrentSpan.TraceId;
+                                                 spanId       = Tracer.CurrentSpan.Id;
+                                                 spanName     = Tracer.CurrentSpan.Name;
                                                  parentSpanId = Tracer.CurrentSpan.ParentId;
 
                                                  return Task.CompletedTask;
@@ -90,9 +89,9 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
 
                            applicationBuilder.Use((context, func) =>
                            {
-                               traceId      = Tracer.CurrentSpan.TraceId;
-                               spanId       = Tracer.CurrentSpan.Id;
-                               spanName     = Tracer.CurrentSpan.Name;
+                               traceId = Tracer.CurrentSpan.TraceId;
+                               spanId = Tracer.CurrentSpan.Id;
+                               spanName = Tracer.CurrentSpan.Name;
                                parentSpanId = Tracer.CurrentSpan.ParentId;
 
                                return Task.CompletedTask;
@@ -123,7 +122,8 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
             await host.StartAsync()
                       .AsNotNull();
 
-            var tracingOptions = host.Services.GetRequiredService<IOptions<TracingOptions>>()
+            var tracingOptions = host.Services.AsNotNull()
+                                     .GetRequiredService<IOptions<TracingOptions>>()
                                      .AsNotNull()
                                      .Value.AsNotNull()
                                      .Headers;
@@ -171,6 +171,8 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
             Assert.AreEqual(_spanId, spanId);
             Assert.AreEqual(_spanName, spanName);
             Assert.AreEqual(_parentSpanId, parentSpanId);
+
+            await host.StopAsync();
         }
     }
 }

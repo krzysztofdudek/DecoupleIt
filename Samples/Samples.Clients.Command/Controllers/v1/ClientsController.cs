@@ -2,13 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GS.DecoupleIt.Contextual.UnitOfWork;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.EntityFrameworkCore;
 using Samples.Clients.Command.Contracts.Services;
 using Samples.Clients.Command.Contracts.Services.Dtos;
 using Samples.Clients.Command.Model;
 using Samples.Clients.Command.Model.Entities;
+using Samples.Clients.Command.Model.Repositories;
 
 #pragma warning disable 1591
 
@@ -22,20 +24,23 @@ namespace Samples.Clients.Command.Controllers.v1
     [ApiExplorerSettings(GroupName = "v1")]
     public sealed class ClientsController : ControllerBase, IClients
     {
-        public ClientsController([JetBrains.Annotations.NotNull] ClientsDbContext context)
+        public ClientsController([NotNull] IUnitOfWorkAccessor unitOfWorkAccessor, [NotNull] IClientRepository clientRepository)
         {
-            _context = context;
+            _unitOfWorkAccessor = unitOfWorkAccessor;
+            _clientRepository   = clientRepository;
         }
 
         /// <inheritdoc />
         [HttpPost]
         public async Task<CreatedClientDto> CreateClient([BindRequired] [FromBody] CreateClientDto dto)
         {
+            await using var unitOfWork = _unitOfWorkAccessor.Get<ClientsDbContext>();
+
             var client = new Client(dto.Name);
 
-            await _context.Clients.AddAsync(client);
+            await _clientRepository.AddAsync(client);
 
-            await _context.SaveChangesAsync();
+            await unitOfWork.SaveChangesAsync();
 
             return new CreatedClientDto
             {
@@ -48,29 +53,37 @@ namespace Samples.Clients.Command.Controllers.v1
         [HttpGet("{id}")]
         public async Task<ClientDto> Get(Guid id)
         {
-            var client = await _context.Clients.AsNoTracking()
-                                       .SingleAsync(x => x.Id == id);
+            await using var _ = _unitOfWorkAccessor.Get<ClientsDbContext>();
 
-            return new ClientDto
-            {
-                Id   = client.Id,
-                Name = client.Name
-            };
+            var client = await _clientRepository.GetAsync(id);
+
+            return client.Map(x => new ClientDto
+                         {
+                             Id   = x.Id,
+                             Name = x.Name
+                         })
+                         .Reduce(new ClientDto());
         }
 
         /// <inheritdoc />
         [HttpGet]
         public async Task<IEnumerable<ClientDto>> GetAll()
         {
-            return (await _context.Clients.AsNoTracking()
-                                  .ToListAsync()).Select(x => new ClientDto
+            await using var _ = _unitOfWorkAccessor.Get<ClientsDbContext>();
+
+            var clients = await _clientRepository.GetAllAsync();
+
+            return clients.Select(x => new ClientDto
             {
                 Id   = x.Id,
                 Name = x.Name
             });
         }
 
-        [JetBrains.Annotations.NotNull]
-        private readonly ClientsDbContext _context;
+        [NotNull]
+        private readonly IClientRepository _clientRepository;
+
+        [NotNull]
+        private readonly IUnitOfWorkAccessor _unitOfWorkAccessor;
     }
 }

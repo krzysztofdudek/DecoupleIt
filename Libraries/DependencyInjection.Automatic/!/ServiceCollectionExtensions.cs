@@ -54,9 +54,6 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         ///                 <term>are not excluded with ignored types</term>
         ///             </item>
         ///             <item>
-        ///                 <term>are not open generic</term>
-        ///             </item>
-        ///             <item>
         ///                 <term>are not annotated with DoNotRegisterAttribute</term>
         ///             </item>
         ///             <item>
@@ -121,7 +118,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
                                                                                         .ServiceType.AsNotNull()
                                                                                         .GetAllInterfaces()
                                                                                         .Any(x => x.GetCustomAttributes(typeof(RegisterManyTimesAttribute),
-                                                                                                                        true)
+                                                                                                       true)
                                                                                                    .Any());
 
                     if (registerManyTimes || notOverridableTypes.Contains(serviceDescriptor.AsNotNull()

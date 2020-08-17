@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.InternalEvents;
 using JetBrains.Annotations;
 using Samples.Clients.Command.Contracts.Events;
@@ -9,19 +10,21 @@ namespace Samples.Clients.Command.Model.InternalEventHandlers
 {
     internal sealed class ClientCreatedOnEmissionHandler : OnEmissionEventHandlerBase<ClientCreated>
     {
-        public ClientCreatedOnEmissionHandler([NotNull] ClientsDbContext context)
+        public ClientCreatedOnEmissionHandler([NotNull] IUnitOfWorkAccessor accessor)
         {
-            _context = context;
+            _accessor = accessor;
         }
 
         public override async Task HandleAsync(ClientCreated @event, CancellationToken cancellationToken = default)
         {
+            await using var context = _accessor.Get<ClientsDbContext>();
+
             var clientsBasket = new ClientsBasket(@event.ClientId);
 
-            await _context.AddAsync(clientsBasket, cancellationToken);
+            await context.AddAsync(clientsBasket, cancellationToken);
         }
 
         [NotNull]
-        private readonly ClientsDbContext _context;
+        private readonly IUnitOfWorkAccessor _accessor;
     }
 }

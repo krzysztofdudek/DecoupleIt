@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.HttpAbstraction;
 using GS.DecoupleIt.InternalEvents.AspNetCore;
@@ -192,6 +193,8 @@ namespace GS.DecoupleIt.AspNetCore.Service
                           {
                               context    = context.AsNotNull();
                               collection = collection.AsNotNull();
+
+                              collection.AddContextualUnitOfWork(context.Configuration.AsNotNull());
 
                               collection.AddTracingForAspNetCore(context.Configuration.AsNotNull());
                               collection.AddInternalEventsForAspNetCore();
@@ -432,11 +435,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
                         {
                             serviceProvider.GetRequiredService(serviceType.AsNotNull());
                         }
-                        catch
+                        catch (Exception exception)
                         {
                             anyCorrupted = true;
 
-                            Console.Error.WriteLine($"ERROR: Service '{serviceType}' is not possible to instantiate.");
+                            Console.Error.WriteLine($"ERROR: {exception.Message}");
                         }
                 }
             }

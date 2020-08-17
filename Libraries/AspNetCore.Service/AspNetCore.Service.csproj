@@ -11,6 +11,7 @@
     <Import Project="../netcoreapp.props" />
 
     <ItemGroup>
+      <ProjectReference Include="..\Contextual.UnitOfWork\Contextual.UnitOfWork.csproj" />
       <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
       <ProjectReference Include="..\HttpAbstraction\HttpAbstraction.csproj" />
       <ProjectReference Include="..\InternalEvents.AspNetCore\InternalEvents.AspNetCore.csproj" />

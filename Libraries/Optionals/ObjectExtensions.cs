@@ -65,6 +65,27 @@ namespace GS.DecoupleIt.Optionals
         }
 
         /// <summary>
+        ///     Transforms <paramref name="obj" /> to optional if condition is equal true.
+        /// </summary>
+        /// <param name="obj">Object.</param>
+        /// <param name="condition">Condition.</param>
+        /// <typeparam name="T">Type of the object.</typeparam>
+        /// <returns>Conditional.</returns>
+        [NotNull]
+        [ItemNotNull]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
+        public static async Task<Optional<T>> WhenAsync<T>([CanBeNull] this Task<T> obj, bool condition)
+        {
+            if (obj is null)
+                return None<T>.Value;
+
+            if (!condition)
+                return None<T>.Value;
+
+            return (await obj).AsOptional();
+        }
+
+        /// <summary>
         ///     Transforms <paramref name="obj" /> to optional if predicate is equal true.
         /// </summary>
         /// <param name="obj">Object.</param>

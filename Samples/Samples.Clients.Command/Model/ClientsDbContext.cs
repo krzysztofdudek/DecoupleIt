@@ -1,16 +1,16 @@
+using GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Samples.Clients.Command.Model.Entities;
 
-#pragma warning disable 1591
-
 namespace Samples.Clients.Command.Model
 {
-    [Scoped]
+    [Transient]
     [RegisterAsSelf]
+    [ProvidesContext]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "NotNullMemberIsNotInitialized")]
-    public sealed class ClientsDbContext : DbContext
+    public sealed class ClientsDbContext : UnitOfWorkDbContext
     {
         [NotNull]
         [ItemNotNull]

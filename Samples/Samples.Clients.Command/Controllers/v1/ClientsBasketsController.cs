@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GS.DecoupleIt.Contextual.UnitOfWork;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,17 +21,19 @@ namespace Samples.Clients.Command.Controllers.v1
     [ApiExplorerSettings(GroupName = "v1")]
     public sealed class ClientsBasketsController : ControllerBase, IClientsBaskets
     {
-        public ClientsBasketsController([NotNull] ClientsDbContext context)
+        public ClientsBasketsController([NotNull] IUnitOfWorkAccessor accessor)
         {
-            _context = context;
+            _accessor = accessor;
         }
 
         /// <inheritdoc />
         [HttpGet]
         public async Task<IEnumerable<ClientsBasketDto>> GetAll()
         {
-            return (await _context.ClientsBaskets.AsNoTracking()
-                                  .ToListAsync()).Select(x => new ClientsBasketDto
+            await using var context = _accessor.Get<ClientsDbContext>();
+
+            return (await context.ClientsBaskets.AsNoTracking()
+                                 .ToListAsync()).Select(x => new ClientsBasketDto
             {
                 Id       = x.Id,
                 ClientId = x.ClientId
@@ -38,6 +41,6 @@ namespace Samples.Clients.Command.Controllers.v1
         }
 
         [NotNull]
-        private readonly ClientsDbContext _context;
+        private readonly IUnitOfWorkAccessor _accessor;
     }
 }

@@ -53,5 +53,19 @@ namespace GS.DecoupleIt.Shared
         {
             return @object == null ? default : actionIfNotNull(@object);
         }
+
+        /// <summary>
+        ///     Marks items of collection as not null.
+        /// </summary>
+        /// <param name="collection">Collection.</param>
+        /// <typeparam name="T">Collection type.</typeparam>
+        /// <returns>Collection.</returns>
+        [NotNull]
+        [ItemNotNull]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ContainerAnnotationRedundancy")]
+        public static T WithNotNullItems<T>([NotNull] this T collection)
+        {
+            return collection;
+        }
     }
 }

@@ -9,6 +9,19 @@ namespace GS.DecoupleIt.Optionals
     public static class TaskExtensions
     {
         /// <summary>
+        ///     Treats input object as optional.
+        /// </summary>
+        /// <param name="obj">Input object.</param>
+        /// <typeparam name="T">Type of the object.</typeparam>
+        /// <returns>Optional.</returns>
+        [NotNull]
+        [ItemNotNull]
+        public static async Task<Optional<T>> AsOptional<T>([CanBeNull] this Task<T> obj)
+        {
+            return obj is null ? None<T>.Value : (await obj).AsOptional();
+        }
+
+        /// <summary>
         ///     Maps value to another type.
         /// </summary>
         /// <param name="task">Task.</param>

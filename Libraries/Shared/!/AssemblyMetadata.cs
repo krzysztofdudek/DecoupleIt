@@ -7,3 +7,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("GS.DecoupleIt.InternalEvents.AspNetCore")]
 [assembly: InternalsVisibleTo("GS.DecoupleIt.Tracing")]
 [assembly: InternalsVisibleTo("GS.DecoupleIt.Tracing.AspNetCore")]
+[assembly: InternalsVisibleTo("GS.DecoupleIt.Contextual.UnitOfWork")]

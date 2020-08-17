@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionSuffix>alpha</VersionSuffix>
+        <Title>DecoupleIt - Contextual Unit of Work</Title>
+        <Description>Library supports contextual unit of work pattern for ex. DbContext stored in AsyncLocal storage.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
+        <ProjectReference Include="..\Shared\Shared.csproj" />
+        <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
+    </ItemGroup>
+
+    <Import Project="../netstandard.props" />
+
+</Project>

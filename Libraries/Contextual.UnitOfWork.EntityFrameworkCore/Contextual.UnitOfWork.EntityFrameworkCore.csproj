@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionSuffix>alpha</VersionSuffix>
+        <Title>DecoupleIt - Contextual Unit of Work for Entity Framework core</Title>
+        <Description>Library providing support for contextual unit of work based on Entity Framework Core DbContext.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Contextual.UnitOfWork\Contextual.UnitOfWork.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.0-*" />
+    </ItemGroup>
+
+    <Import Project="../netstandard.props" />
+
+</Project>
