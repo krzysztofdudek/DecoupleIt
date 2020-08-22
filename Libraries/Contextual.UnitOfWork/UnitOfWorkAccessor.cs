@@ -21,10 +21,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         {
             ContractGuard.IfArgumentIsNull(nameof(unitOfWork), unitOfWork);
 
-            var entry = StorageEntries.Single(x => x.Type == unitOfWork.GetType())
-                                      .AsNotNull();
+            var entry = StorageEntries.SingleOrDefault(x => x.Type == unitOfWork.GetType());
 
-            var item = entry.Storage.Value;
+            var item = entry?.Storage.Value;
 
             return item != null && item.Level == 1;
         }
