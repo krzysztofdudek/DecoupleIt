@@ -21,7 +21,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         {
             ContractGuard.IfArgumentIsNull(nameof(unitOfWork), unitOfWork);
 
-            var entry = StorageEntries.SingleOrDefault(x => x.Type == unitOfWork.GetType());
+            var entry = GetEntry(unitOfWork.GetType());
 
             var item = entry?.Storage.Value;
 
@@ -37,7 +37,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         public TUnitOfWork Get<TUnitOfWork>()
             where TUnitOfWork : class, IUnitOfWork
         {
-            var storageEntry = StorageEntries.SingleOrDefault(x => x.Type == typeof(TUnitOfWork));
+            var storageEntry = GetEntry(typeof(TUnitOfWork));
 
             if (storageEntry?.Storage.Value != null)
             {
@@ -72,14 +72,22 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         [ItemNotNull]
         private static readonly List<StorageEntry> StorageEntries = new List<StorageEntry>();
 
+        [CanBeNull]
+        private static StorageEntry GetEntry([NotNull] Type type)
+        {
+            lock (StorageEntries)
+            {
+                return StorageEntries.SingleOrDefault(x => x.Type == type || type.IsAssignableFrom(x.Type));
+            }
+        }
+
         private static void OnInstanceOnDisposed([NotNull] IUnitOfWork source)
         {
             ContractGuard.IfArgumentIsNull(nameof(source), source);
 
-            var entry = StorageEntries.Single(x => x.Type == source.GetType())
-                                      .AsNotNull();
+            var entry = GetEntry(source.GetType());
 
-            var item = entry.Storage.Value;
+            var item = entry?.Storage.Value;
 
             if (item == null)
                 return;
