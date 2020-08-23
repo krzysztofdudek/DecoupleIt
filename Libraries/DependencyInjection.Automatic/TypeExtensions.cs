@@ -80,30 +80,32 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         [CanBeNull]
         private static LifeTimeAttribute GetLifeTimeAttributeForInterfaces([NotNull] Type type)
         {
-            var interfaceAttributes = new List<LifeTimeAttribute>();
+            var interfaceAttributes = type.GetInterfaces()
+                                          .SelectMany(@interface => @interface.GetCustomAttributes(true)
+                                                                              .OfType<LifeTimeAttribute>())
+                                          .ToList();
 
-            foreach (var @interface in type.GetInterfaces())
-                interfaceAttributes.AddRange(@interface.GetCustomAttributes(true)
-                                                       .OfType<LifeTimeAttribute>()
-                                                       .ToList());
-
-            if (interfaceAttributes.Count > 1)
+            if (interfaceAttributes.Select(x => x.GetType())
+                                   .Distinct()
+                                   .Count() > 1)
                 throw new LifeTimeAttributeAmbiguity($"Type '{type.FullName}' interfaces has multiple lifetime attributes.");
 
-            return interfaceAttributes.Count == 1 ? interfaceAttributes.First() : null;
+            return interfaceAttributes.Count > 0 ? interfaceAttributes.First() : null;
         }
 
         [CanBeNull]
         private static LifeTimeAttribute GetLifeTimeAttributeForType([NotNull] Type type)
         {
-            var currentTypeAttributes = type.GetCustomAttributes(true)
-                                            .OfType<LifeTimeAttribute>()
-                                            .ToList();
+            var typeAttributes = type.GetCustomAttributes(true)
+                                     .OfType<LifeTimeAttribute>()
+                                     .ToList();
 
-            if (currentTypeAttributes.Count > 1)
+            if (typeAttributes.Select(x => x.GetType())
+                              .Distinct()
+                              .Count() > 1)
                 throw new LifeTimeAttributeAmbiguity($"Type '{type.FullName}' has multiple lifetime attributes.");
 
-            return currentTypeAttributes.Count == 1 ? currentTypeAttributes.First() : null;
+            return typeAttributes.Count > 0 ? typeAttributes.First() : null;
         }
 
         private static bool HasAnyInterfaces(Type parent, [NotNull] Type child)
