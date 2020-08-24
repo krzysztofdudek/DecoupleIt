@@ -33,54 +33,52 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
 
         /// <summary>
         ///     <para>
+        ///         Method scans the given assembly for classes marked to be registered automatically.
+        ///         Attributes searched for:
+        ///         <list type="bullet">
+        ///             <item>
+        ///                 <term>SingletonAttribute</term>
+        ///             </item>
+        ///             <item>
+        ///                 <term>TransientAttribute</term>
+        ///             </item>
+        ///             <item>
+        ///                 <term>ScopedAttribute</term>
+        ///             </item>
+        ///             <item>
+        ///                 <term>RegisterAsAttribute</term>
+        ///             </item>
+        ///             <item>
+        ///                 <term>RegisterAsSelfAttribute</term>
+        ///             </item>
+        ///             <item>
+        ///                 <term>RegisterManyTimesAttribute</term>
+        ///             </item>
+        ///         </list>
+        ///         The method of registration of first three attributes is taken by looking at the nearest annotation of base class or implemented interface.
+        ///     </para>
+        ///     <para>
         ///         Method scans given assembly for classes that can be registered and registers them according to default setting
         ///         or attribute marker.
         ///         By default all registrations made by this method are singletons unless class is marked with
         ///         <see cref="SingletonAttribute" />, <see cref="ScopedAttribute" /> or <see cref="TransientAttribute" />.
         ///     </para>
-        ///     <para>
-        ///         Adds or replaces services located in given assembly that:
-        ///         <list type="bullet">
-        ///             <item>
-        ///                 <term>are classes</term>
-        ///             </item>
-        ///             <item>
-        ///                 <term>have at least one public constructor</term>
-        ///             </item>
-        ///             <item>
-        ///                 <term>are not abstract nor static</term>
-        ///             </item>
-        ///             <item>
-        ///                 <term>are not excluded with ignored types</term>
-        ///             </item>
-        ///             <item>
-        ///                 <term>are not annotated with DoNotRegisterAttribute</term>
-        ///             </item>
-        ///             <item>
-        ///                 <term>
-        ///                     implements at least one interface or is annotated with RegisterAsSelfAttribute or
-        ///                     RegisterAsAttribute
-        ///                 </term>
-        ///             </item>
-        ///         </list>
-        ///     </para>
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
         /// <param name="assembly">Assembly containing types to register.</param>
         /// <param name="ignoredTypes">
-        ///     Ignored types that would be not taken for registration process. Type or interface can be
-        ///     passed.
+        ///     Types that will be ignored within scanning process. Class or interface type can be passed.
         /// </param>
-        /// <param name="notOverridableTypes">Types that should not be overriden.</param>
+        /// <param name="registerAsManyTypes">Service types that can be registered many times instead of being overridden.</param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CognitiveComplexity")]
         public static void ScanAssemblyForImplementations(
             [NotNull] this IServiceCollection serviceCollection,
             [NotNull] Assembly assembly,
             [CanBeNull] [ItemNotNull] Type[] ignoredTypes = default,
-            [CanBeNull] [ItemNotNull] Type[] notOverridableTypes = default)
+            [CanBeNull] [ItemNotNull] Type[] registerAsManyTypes = default)
         {
             ignoredTypes        = ignoredTypes ?? new Type[0];
-            notOverridableTypes = notOverridableTypes ?? new Type[0];
+            registerAsManyTypes = registerAsManyTypes ?? new Type[0];
 
             var types = GetTypesToRegister(assembly, ignoredTypes);
 
@@ -121,7 +119,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
                                                                                                        true)
                                                                                                    .Any());
 
-                    if (registerManyTimes || notOverridableTypes.Contains(serviceDescriptor.AsNotNull()
+                    if (registerManyTimes || registerAsManyTypes.Contains(serviceDescriptor.AsNotNull()
                                                                                            .ServiceType))
                         serviceCollection.Add(serviceDescriptor);
                     else
@@ -136,6 +134,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         {
             typeof(RegisterAsAttribute),
             typeof(RegisterAsSelfAttribute),
+            typeof(RegisterManyTimesAttribute),
             typeof(TransientAttribute),
             typeof(SingletonAttribute),
             typeof(ScopedAttribute)
