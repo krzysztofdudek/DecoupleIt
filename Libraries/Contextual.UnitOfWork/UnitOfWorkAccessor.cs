@@ -23,9 +23,15 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
             var entry = GetEntry(unitOfWork.GetType());
 
-            var item = entry?.Storage.Value;
+            if (entry != null)
+            {
+                if (entry.Level == 1)
+                    return true;
 
-            return item != null && item.Level == 1;
+                entry.Level--;
+            }
+
+            return false;
         }
 
         public UnitOfWorkAccessor([NotNull] IServiceProvider serviceProvider)
@@ -39,11 +45,11 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         {
             var storageEntry = GetEntry(typeof(TUnitOfWork));
 
-            if (storageEntry?.Storage.Value != null)
+            if (storageEntry != null)
             {
-                storageEntry.Storage.Value.Level++;
+                storageEntry.Level++;
 
-                return (TUnitOfWork) storageEntry.Storage.Value.UnitOfWork;
+                return (TUnitOfWork) storageEntry.UnitOfWork;
             }
 
             var instance = _serviceProvider.GetRequiredService<TUnitOfWork>()
@@ -51,16 +57,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
             lock (StorageEntries)
             {
-                if (storageEntry != null)
-                {
-                    storageEntry.Storage.Value?.UnitOfWork.Dispose();
-
-                    storageEntry.Storage.Value = new StorageEntry.StorageValue(instance);
-                }
-                else
-                {
-                    StorageEntries.Add(new StorageEntry(typeof(TUnitOfWork), instance));
-                }
+                (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(instance));
             }
 
             instance.Disposed += OnInstanceOnDisposed;
@@ -69,15 +66,20 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         }
 
         [NotNull]
-        [ItemNotNull]
-        private static readonly List<StorageEntry> StorageEntries = new List<StorageEntry>();
+        private static readonly AsyncLocal<List<StorageEntry>> StorageEntries = new AsyncLocal<List<StorageEntry>>();
 
         [CanBeNull]
         private static StorageEntry GetEntry([NotNull] Type type)
         {
             lock (StorageEntries)
             {
-                return StorageEntries.SingleOrDefault(x => x.Type == type || type.IsAssignableFrom(x.Type));
+                return StorageEntries.Value?.SingleOrDefault(x =>
+                {
+                    var unitOfWorkType = x.AsNotNull()
+                                          .UnitOfWork.GetType();
+
+                    return unitOfWorkType == type || type.IsAssignableFrom(unitOfWorkType);
+                });
             }
         }
 
@@ -85,15 +87,31 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         {
             ContractGuard.IfArgumentIsNull(nameof(source), source);
 
-            var entry = GetEntry(source.GetType());
+            StorageEntry entry;
 
-            var item = entry?.Storage.Value;
+            lock (StorageEntries)
+            {
+                entry = StorageEntries.Value?.SingleOrDefault(x => ReferenceEquals(x.AsNotNull()
+                                                                                    .UnitOfWork,
+                                                                                   source));
+            }
 
-            if (item == null)
+            if (entry == null)
                 return;
 
-            if (--item.Level == 0)
-                entry.Storage.Value = null;
+            if (entry.Level > 1)
+                throw new Exception("Unit of work can be disposed only on the lowest level of usage within async flow.");
+
+            lock (StorageEntries)
+            {
+                if (StorageEntries.Value == null)
+                    throw new Exception("Storage has been cleaned up before disposal.");
+
+                StorageEntries.Value.Remove(entry);
+
+                if (StorageEntries.Value.Count == 0)
+                    StorageEntries.Value = null;
+            }
         }
 
         [NotNull]
@@ -101,29 +119,14 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
         private sealed class StorageEntry
         {
-            [NotNull]
-            public readonly AsyncLocal<StorageValue> Storage = new AsyncLocal<StorageValue>();
+            public long Level = 1;
 
             [NotNull]
-            public readonly Type Type;
+            public readonly IUnitOfWork UnitOfWork;
 
-            public StorageEntry([NotNull] Type type, [NotNull] IUnitOfWork unitOfWork)
+            public StorageEntry([NotNull] IUnitOfWork unitOfWork)
             {
-                Type          = type;
-                Storage.Value = new StorageValue(unitOfWork);
-            }
-
-            public sealed class StorageValue
-            {
-                public long Level = 1;
-
-                [NotNull]
-                public readonly IUnitOfWork UnitOfWork;
-
-                public StorageValue([NotNull] IUnitOfWork unitOfWork)
-                {
-                    UnitOfWork = unitOfWork;
-                }
+                UnitOfWork = unitOfWork;
             }
         }
     }
