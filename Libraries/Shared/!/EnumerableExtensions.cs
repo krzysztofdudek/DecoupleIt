@@ -12,6 +12,21 @@ namespace GS.DecoupleIt.Shared
     public static class EnumerableExtensions
     {
         /// <summary>
+        ///     Marks input as not null.
+        /// </summary>
+        /// <param name="object">Input object.</param>
+        /// <typeparam name="T">Type.</typeparam>
+        /// <returns>Not null value of type <typeparamref name="T" />.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [NotNull]
+        [ItemNotNull]
+        [LinqTunnel]
+        public static IEnumerable<T> AsCollectionWithNotNullItems<T>([NotNull] this IEnumerable<T> @object)
+        {
+            return @object;
+        }
+
+        /// <summary>
         ///     Validates if list is not null and has not null items.
         /// </summary>
         /// <param name="enumerable">Enumerable.</param>

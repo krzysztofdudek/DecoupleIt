@@ -1,4 +1,5 @@
 using System;
+using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.DependencyInjection.Automatic
@@ -24,6 +25,8 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         /// <param name="serviceType">Type of the service.</param>
         public RegisterAsAttribute([NotNull] Type serviceType)
         {
+            ContractGuard.IfArgumentIsNull(nameof(serviceType), serviceType);
+
             ServiceType = serviceType;
         }
     }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using GS.DecoupleIt.Shared;
@@ -77,8 +76,8 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
             [CanBeNull] [ItemNotNull] Type[] ignoredTypes = default,
             [CanBeNull] [ItemNotNull] Type[] registerAsManyTypes = default)
         {
-            ignoredTypes        = ignoredTypes ?? new Type[0];
-            registerAsManyTypes = registerAsManyTypes ?? new Type[0];
+            ignoredTypes        ??= new Type[0];
+            registerAsManyTypes ??= new Type[0];
 
             var types = GetTypesToRegister(assembly, ignoredTypes);
 
@@ -86,44 +85,38 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
             {
                 RegisterImplementation(serviceCollection, implementationType);
 
-                IEnumerable<Type> serviceTypes = new Type[0];
+                var serviceDescriptors = implementationType.GetAllInterfaces()
+                                                           .Concat(implementationType.GetAllBaseTypes())
+                                                           .Concat(implementationType.GetAllInterfaces()
+                                                                                     .Concat(implementationType.GetAllBaseTypes())
+                                                                                     .Concat(new[]
+                                                                                     {
+                                                                                         implementationType
+                                                                                     })
+                                                                                     .AsCollectionWithNotNullItems()
+                                                                                     .SelectMany(x => x.GetCustomAttributes<RegisterAsAttribute>())
+                                                                                     .AsCollectionWithNotNullItems()
+                                                                                     .Select(x => x.ServiceType))
+                                                           .Distinct()
+                                                           .Except(AlwaysIgnoredTypes)
+                                                           .Except(ignoredTypes)
+                                                           .Select(serviceType => ServiceDescriptor
+                                                                                  .Transient(serviceType, x => x.GetRequiredService(implementationType))
+                                                                                  .AsNotNull())
+                                                           .Select(x => (ServiceDescriptor: x, RegisterManyTimes: x.ServiceType.AsNotNull()
+                                                                             .GetCustomAttributes<RegisterManyTimesAttribute>(false)
+                                                                             .Any()))
+                                                           .ToList()
+                                                           .AsCollectionWithNotNullItems();
 
-                var registerAsSelf = implementationType.GetCustomAttribute<RegisterAsSelfAttribute>() != null;
-
-                var registerAs = implementationType.GetCustomAttributes<RegisterAsAttribute>()
-                                                   .ToList();
-
-                if (!registerAsSelf && !registerAs.Any())
-                    serviceTypes = implementationType.GetAllInterfaces()
-                                                     .Concat(implementationType.GetAllBaseTypes())
-                                                     .Except(AlwaysIgnoredTypes)
-                                                     .Where(serviceType => !ignoredTypes.Any(serviceType.AsNotNull()
-                                                                                                        .InheritsOrImplements));
-                else if (registerAs.Any())
-                    serviceTypes = serviceTypes.Concat(registerAs.Select(x => x.AsNotNull()
-                                                                               .ServiceType));
-
-                var serviceDescriptors = serviceTypes
-                                         .Select(serviceType => ServiceDescriptor.Transient(serviceType, x => x.GetRequiredService(implementationType)))
-                                         .ToList();
-
-                foreach (var serviceDescriptor in serviceDescriptors)
+                foreach (var (serviceDescriptor, registerManyTimes) in serviceDescriptors)
                 {
-                    var registerManyTimes = serviceDescriptor.AsNotNull()
-                                                             .ServiceType.AsNotNull()
-                                                             .GetCustomAttributes(typeof(RegisterManyTimesAttribute), true)
-                                                             .Any() || serviceDescriptor.AsNotNull()
-                                                                                        .ServiceType.AsNotNull()
-                                                                                        .GetAllInterfaces()
-                                                                                        .Any(x => x.GetCustomAttributes(typeof(RegisterManyTimesAttribute),
-                                                                                                       true)
-                                                                                                   .Any());
+                    var descriptor = serviceDescriptor.AsNotNull();
 
-                    if (registerManyTimes || registerAsManyTypes.Contains(serviceDescriptor.AsNotNull()
-                                                                                           .ServiceType))
-                        serviceCollection.Add(serviceDescriptor);
+                    if (registerManyTimes || registerAsManyTypes.Contains(descriptor.ServiceType))
+                        serviceCollection.Add(descriptor);
                     else
-                        serviceCollection.AddOrReplace(serviceDescriptor.AsNotNull());
+                        serviceCollection.AddOrReplace(descriptor);
                 }
             }
         }
@@ -158,25 +151,12 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
 
         private static void RegisterImplementation([NotNull] IServiceCollection serviceCollection, [NotNull] Type type)
         {
-            var attribute = type.GetTheMostImportantLifetimeAttribute();
-
-            ServiceDescriptor serviceDescriptor;
-
-            switch (attribute)
+            var serviceDescriptor = type.GetTheMostImportantLifetimeAttribute() switch
             {
-                case TransientAttribute _:
-                    serviceDescriptor = ServiceDescriptor.Transient(type, type);
-
-                    break;
-                case ScopedAttribute _:
-                    serviceDescriptor = ServiceDescriptor.Scoped(type, type);
-
-                    break;
-                default:
-                    serviceDescriptor = ServiceDescriptor.Singleton(type, type);
-
-                    break;
-            }
+                TransientAttribute _ => ServiceDescriptor.Transient(type, type),
+                ScopedAttribute _    => ServiceDescriptor.Scoped(type, type),
+                _                    => ServiceDescriptor.Singleton(type, type)
+            };
 
             serviceCollection.AddOrReplace(serviceDescriptor.AsNotNull());
         }
@@ -200,11 +180,8 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
                                       .Select(x => x.AsNotNull()
                                                     .GetType());
 
-            if (!_attributesMeaningAuto.Intersect(attributesTypes)
-                                       .Any())
-                return false;
-
-            return true;
+            return _attributesMeaningAuto.Intersect(attributesTypes)
+                                         .Any();
         }
     }
 }
