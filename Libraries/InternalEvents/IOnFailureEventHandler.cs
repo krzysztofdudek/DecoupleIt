@@ -10,6 +10,7 @@ namespace GS.DecoupleIt.InternalEvents
     ///     Components responsible for handling an event on failure.
     /// </summary>
     [Transient]
+    [RegisterManyTimes]
     public interface IOnFailureEventHandler
     {
         /// <summary>
@@ -27,6 +28,7 @@ namespace GS.DecoupleIt.InternalEvents
     ///     Components responsible for handling an event on failure.
     /// </summary>
     /// <typeparam name="TEvent">Event type.</typeparam>
+    [RegisterManyTimes]
     public interface IOnFailureEventHandler<in TEvent> : IOnFailureEventHandler
         where TEvent : Event
     {

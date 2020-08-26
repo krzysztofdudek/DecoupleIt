@@ -9,6 +9,7 @@ namespace GS.DecoupleIt.InternalEvents
     ///     Components responsible for handling an event on emission.
     /// </summary>
     [Transient]
+    [RegisterManyTimes]
     public interface IOnEmissionEventHandler
     {
         /// <summary>
@@ -25,6 +26,7 @@ namespace GS.DecoupleIt.InternalEvents
     ///     Components responsible for handling an event on emission.
     /// </summary>
     /// <typeparam name="TEvent">Event type.</typeparam>
+    [RegisterManyTimes]
     public interface IOnEmissionEventHandler<in TEvent> : IOnEmissionEventHandler
         where TEvent : Event
     {
