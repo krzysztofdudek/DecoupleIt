@@ -6,11 +6,10 @@ using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
+using Xunit;
 
 namespace GS.DecoupleIt.InternalEvents.Tests
 {
-    [TestFixture]
     public sealed class EventDispatcherTests
     {
         private static async Task TestEventDispatching([NotNull] Func<IInternalEventsScope, IInternalEventDispatcher, Task> action)
@@ -31,7 +30,8 @@ namespace GS.DecoupleIt.InternalEvents.Tests
             serviceCollection.AddLogging();
             serviceCollection.ScanAssemblyForImplementations(typeof(EventDispatcherTests).Assembly);
 
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var serviceProvider = serviceCollection.BuildServiceProvider()
+                                                   .AsNotNull();
 
             var internalEventDispatcher = serviceProvider.GetRequiredService<IInternalEventDispatcher>()
                                                          .AsNotNull();
@@ -50,7 +50,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
             Tracer.Clear();
         }
 
-        [Test]
+        [Fact]
         public async Task DispatchOnEmission()
         {
             await TestEventDispatching(async (scope, dispatcher) =>
@@ -63,12 +63,12 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                                                 {
                                                     await scope.EmitEventAsync(new ExampleEvent());
 
-                                                    Assert.AreEqual(1, ExampleEventOnEmissionHandler.HandlesCount);
+                                                    Assert.Equal(1, ExampleEventOnEmissionHandler.HandlesCount);
                                                 });
             });
         }
 
-        [Test]
+        [Fact]
         public void DispatchOnEmissionWithException()
         {
             Assert.ThrowsAsync<Exception>(async () =>
@@ -85,13 +85,13 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                                                     {
                                                         await scope.EmitEventAsync(new ExceptionCausingEvent());
 
-                                                        Assert.AreEqual(1, ExceptionCausingEventOnEmissionHandler.HandlesCount);
+                                                        Assert.Equal(1, ExceptionCausingEventOnEmissionHandler.HandlesCount);
                                                     });
                 });
             });
         }
 
-        [Test]
+        [Fact]
         public async Task DispatchOnFailure()
         {
             await TestEventDispatching(async (scope, dispatcher) =>
@@ -113,10 +113,10 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                 catch { }
             });
 
-            Assert.AreEqual(1, ExampleEventOnFailureHandler.HandlesCount);
+            Assert.Equal(1, ExampleEventOnFailureHandler.HandlesCount);
         }
 
-        [Test]
+        [Fact]
         public async Task DispatchOnFailureWithException()
         {
             await TestEventDispatching(async (scope, dispatcher) =>
@@ -138,10 +138,10 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                 catch { }
             });
 
-            Assert.AreEqual(1, ExceptionCausingEventOnFailureHandler.HandlesCount);
+            Assert.Equal(1, ExceptionCausingEventOnFailureHandler.HandlesCount);
         }
 
-        [Test]
+        [Fact]
         public async Task DispatchOnSuccess()
         {
             await TestEventDispatching(async (scope, dispatcher) =>
@@ -152,10 +152,10 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                 await scope.DispatchEventsAsync(dispatcher, async () => { await scope.EmitEventAsync(new ExampleEvent()); });
             });
 
-            Assert.AreEqual(1, ExampleEventOnSuccessHandler.HandlesCount);
+            Assert.Equal(1, ExampleEventOnSuccessHandler.HandlesCount);
         }
 
-        [Test]
+        [Fact]
         public async Task DispatchOnSuccessWithException()
         {
             await TestEventDispatching(async (scope, dispatcher) =>
@@ -166,7 +166,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                 await scope.DispatchEventsAsync(dispatcher, async () => { await scope.EmitEventAsync(new ExceptionCausingEvent()); });
             });
 
-            Assert.AreEqual(1, ExceptionCausingEventOnSuccessHandler.HandlesCount);
+            Assert.Equal(1, ExceptionCausingEventOnSuccessHandler.HandlesCount);
         }
     }
 }

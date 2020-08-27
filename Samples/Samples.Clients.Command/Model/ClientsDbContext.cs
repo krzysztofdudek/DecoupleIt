@@ -7,7 +7,6 @@ using Samples.Clients.Command.Model.Entities;
 namespace Samples.Clients.Command.Model
 {
     [Transient]
-    [RegisterAsSelf]
     [ProvidesContext]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "NotNullMemberIsNotInitialized")]
     public sealed class ClientsDbContext : UnitOfWorkDbContext

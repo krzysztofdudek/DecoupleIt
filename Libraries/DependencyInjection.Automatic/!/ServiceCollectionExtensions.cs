@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using GS.DecoupleIt.Shared;
@@ -65,49 +66,36 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
         /// <param name="assembly">Assembly containing types to register.</param>
+        /// <param name="namespace">Namespace that will be scanned within the assembly.</param>
         /// <param name="ignoredTypes">
         ///     Types that will be ignored within scanning process. Class or interface type can be passed.
         /// </param>
+        /// <param name="ignoredBaseTypes">
+        ///     Types that will exclude any type from registration if inherits or implements it.
+        /// </param>
         /// <param name="registerAsManyTypes">Service types that can be registered many times instead of being overridden.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CognitiveComplexity")]
         public static void ScanAssemblyForImplementations(
             [NotNull] this IServiceCollection serviceCollection,
             [NotNull] Assembly assembly,
+            [CanBeNull] string @namespace = default,
             [CanBeNull] [ItemNotNull] Type[] ignoredTypes = default,
+            [CanBeNull] [ItemNotNull] Type[] ignoredBaseTypes = default,
             [CanBeNull] [ItemNotNull] Type[] registerAsManyTypes = default)
         {
             ignoredTypes        ??= new Type[0];
+            ignoredBaseTypes    ??= new Type[0];
             registerAsManyTypes ??= new Type[0];
 
-            var types = GetTypesToRegister(assembly, ignoredTypes);
+            var types = GetTypesToRegister(assembly,
+                                           @namespace,
+                                           ignoredTypes,
+                                           ignoredBaseTypes);
 
             foreach (var implementationType in types)
             {
                 RegisterImplementation(serviceCollection, implementationType);
 
-                var serviceDescriptors = implementationType.GetAllInterfaces()
-                                                           .Concat(implementationType.GetAllBaseTypes())
-                                                           .Concat(implementationType.GetAllInterfaces()
-                                                                                     .Concat(implementationType.GetAllBaseTypes())
-                                                                                     .Concat(new[]
-                                                                                     {
-                                                                                         implementationType
-                                                                                     })
-                                                                                     .AsCollectionWithNotNullItems()
-                                                                                     .SelectMany(x => x.GetCustomAttributes<RegisterAsAttribute>())
-                                                                                     .AsCollectionWithNotNullItems()
-                                                                                     .Select(x => x.ServiceType))
-                                                           .Distinct()
-                                                           .Except(AlwaysIgnoredTypes)
-                                                           .Except(ignoredTypes)
-                                                           .Select(serviceType => ServiceDescriptor
-                                                                                  .Transient(serviceType, x => x.GetRequiredService(implementationType))
-                                                                                  .AsNotNull())
-                                                           .Select(x => (ServiceDescriptor: x, RegisterManyTimes: x.ServiceType.AsNotNull()
-                                                                             .GetCustomAttributes<RegisterManyTimesAttribute>(false)
-                                                                             .Any()))
-                                                           .ToList()
-                                                           .AsCollectionWithNotNullItems();
+                var serviceDescriptors = GetImplementationServices(implementationType, ignoredTypes);
 
                 foreach (var (serviceDescriptor, registerManyTimes) in serviceDescriptors)
                 {
@@ -125,9 +113,6 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         [ItemNotNull]
         private static Type[] _attributesMeaningAuto =
         {
-            typeof(RegisterAsAttribute),
-            typeof(RegisterAsSelfAttribute),
-            typeof(RegisterManyTimesAttribute),
             typeof(TransientAttribute),
             typeof(SingletonAttribute),
             typeof(ScopedAttribute)
@@ -141,12 +126,39 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         };
 
         [NotNull]
-        [ItemNotNull]
-        private static Type[] GetTypesToRegister([NotNull] Assembly assembly, [NotNull] [ItemNotNull] Type[] ignoredTypes)
+        private static IEnumerable<(ServiceDescriptor ServiceDescriptor, bool RegisterManyTimes)> GetImplementationServices(
+            [NotNull] Type implementationType,
+            [NotNull] [ItemNotNull] Type[] ignoredTypes)
         {
-            return assembly.GetTypes()
-                           .Where(x => ValidateType(x, ignoredTypes))
-                           .ToArray();
+            return implementationType.GetAllInterfaces()
+                                     .Concat(implementationType.GetAllBaseTypes())
+                                     .Distinct()
+                                     .Except(AlwaysIgnoredTypes)
+                                     .Except(ignoredTypes)
+                                     .Select(serviceType => ServiceDescriptor.Transient(serviceType, x => x.GetRequiredService(implementationType))
+                                                                             .AsNotNull())
+                                     .Select(x => (ServiceDescriptor: x, RegisterManyTimes: x.ServiceType.AsNotNull()
+                                                                                             .GetCustomAttributes<RegisterManyTimesAttribute>(false)
+                                                                                             .Any()))
+                                     .ToList()
+                                     .AsCollectionWithNotNullItems();
+        }
+
+        [NotNull]
+        [ItemNotNull]
+        private static Type[] GetTypesToRegister(
+            [NotNull] Assembly assembly,
+            [CanBeNull] string @namespace,
+            [NotNull] [ItemNotNull] Type[] ignoredTypes,
+            [NotNull] [ItemNotNull] Type[] ignoredBaseTypes)
+        {
+            IEnumerable<Type> types = assembly.GetTypes();
+
+            if (!string.IsNullOrWhiteSpace(@namespace))
+                types = types.Where(x => x.Namespace?.StartsWith(@namespace) == true);
+
+            return types.Where(x => ValidateType(x, ignoredTypes, ignoredBaseTypes))
+                        .ToArray();
         }
 
         private static void RegisterImplementation([NotNull] IServiceCollection serviceCollection, [NotNull] Type type)
@@ -161,10 +173,10 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
             serviceCollection.AddOrReplace(serviceDescriptor.AsNotNull());
         }
 
-        private static bool ValidateType([NotNull] Type type, [NotNull] Type[] ignoredTypes)
+        private static bool ValidateType([NotNull] Type type, [NotNull] Type[] ignoredTypes, [NotNull] [ItemNotNull] Type[] ignoredBaseTypes)
         {
             if (!(type.IsClass && type.GetConstructors()
-                                      .Any() && !type.IsAbstract && !ignoredTypes.Any(type.InheritsOrImplements)))
+                                      .Any() && !type.IsAbstract && ignoredTypes.All(x => x != type) && !ignoredBaseTypes.Any(type.InheritsOrImplements)))
                 return false;
 
             var attributesTypes = type.GetAllBaseTypes()

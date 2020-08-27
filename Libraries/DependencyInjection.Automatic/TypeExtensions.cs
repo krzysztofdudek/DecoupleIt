@@ -119,6 +119,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
                         });
         }
 
+        [NotNull]
         private static Type ResolveGenericTypeDefinition(Type parent)
         {
             var shouldUseGenericType = !(parent.IsGenericType && parent.GetGenericTypeDefinition() != parent);

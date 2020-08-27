@@ -1,24 +1,22 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.InternalEvents.Scope;
 using GS.DecoupleIt.Tracing;
-using NUnit.Framework;
+using Xunit;
 
 #pragma warning disable 1998
 
 namespace GS.DecoupleIt.InternalEvents.Tests
 {
-    [TestFixture]
     public class EventsTests
     {
         private sealed class ExampleEvent : Event { }
 
         private sealed class AnotherEvent : Event { }
 
-        [Test]
+        [Fact]
         public void AggregateEvents()
         {
             var                        event1 = new ExampleEvent();
@@ -39,11 +37,11 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
             Tracer.Clear();
 
-            Assert.False(events.Contains(event1));
+            Assert.DoesNotContain(event1, events);
             Assert.Contains(event2, events.ToList());
         }
 
-        [Test]
+        [Fact]
         public async Task AggregateEventsAsync()
         {
             var                        event1 = new ExampleEvent();
@@ -64,11 +62,11 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
             Tracer.Clear();
 
-            Assert.False(events.Contains(event1));
+            Assert.DoesNotContain(event1, events);
             Assert.Contains(event2, events.ToList());
         }
 
-        [Test]
+        [Fact]
         public void AggregateEventsFromInnerScopes()
         {
             var event1 = new ExampleEvent();
@@ -96,7 +94,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
             Assert.Contains(event1, events.ToList());
         }
 
-        [Test]
+        [Fact]
         public void AggregateSelectedEvents()
         {
             var event1 = new ExampleEvent();
@@ -118,11 +116,11 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
             Tracer.Clear();
 
-            Assert.False(events.Contains(event1));
+            Assert.DoesNotContain(event1, events);
             Assert.Contains(event2, events.ToList());
         }
 
-        [Test]
+        [Fact]
         public void DontAggregateEventsFromAnotherThread()
         {
             var event1 = new ExampleEvent();
@@ -176,11 +174,11 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
             Task.WaitAll(emitTask, aggregateTask);
 
-            Assert.False(events.Contains(event1));
-            Assert.AreEqual(event1, emittedEvent);
+            Assert.DoesNotContain(event1, events);
+            Assert.Equal(event1, emittedEvent);
         }
 
-        [Test]
+        [Fact]
         public void HandleEventOnScopeLevel()
         {
             var wasEventEmitted = false;
@@ -215,7 +213,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
             Assert.Contains(@event, scope.Events.ToList());
         }
 
-        [Test]
+        [Fact]
         public void HandleEventOnStaticLevel()
         {
             var wasEventEmitted = false;
@@ -250,7 +248,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
             Assert.Contains(@event, scope.Events.ToList());
         }
 
-        [Test]
+        [Fact]
         public async Task HandleEventOnStaticLevelEmittedAsynchonously()
         {
             var wasEventEmitted = false;
@@ -285,13 +283,13 @@ namespace GS.DecoupleIt.InternalEvents.Tests
             Assert.Contains(@event, scope.Events.ToList());
         }
 
-        [Test]
+        [Fact]
         public void InitializationOfEvent()
         {
             var @event = new ExampleEvent();
 
-            Assert.AreNotEqual(default(Guid), @event.Identifier);
-            Assert.AreNotEqual(default(DateTime), @event.TimeStamp);
+            Assert.NotEqual(default, @event.Identifier);
+            Assert.NotEqual(default, @event.TimeStamp);
         }
     }
 }

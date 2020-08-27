@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using NUnit.Framework;
+using Xunit;
 #if NETCOREAPP3_1
 using Microsoft.Extensions.Hosting;
 
@@ -17,7 +17,6 @@ using Microsoft.Extensions.Hosting;
 
 namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
 {
-    [TestFixture]
     [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
     public class TracingMiddlewareTests
     {
@@ -28,7 +27,7 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
         private static Guid _parentSpanId = Guid.NewGuid();
         private static readonly string _spanName = nameof(TracingMiddlewareTests);
 
-        [Test]
+        [Fact]
         public async Task TestHeaders()
         {
             Guid   traceId      = default, spanId = default;
@@ -142,37 +141,38 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
             var response = await httpClient.GetAsync(TestEndpoint)
                                            .AsNotNull();
 
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var responseHeaders = response.AsNotNull()
                                           .Headers.AsNotNull();
 
-            Assert.AreEqual(responseHeaders.GetValues(tracingOptions.TraceIdHeaderName)
-                                           .AsNotNull()
-                                           .Single(),
-                            traceId.ToString());
+            Assert.Equal(responseHeaders.GetValues(tracingOptions.TraceIdHeaderName)
+                                        .AsNotNull()
+                                        .Single(),
+                         traceId.ToString());
 
-            Assert.AreEqual(responseHeaders.GetValues(tracingOptions.SpanIdHeaderName)
-                                           .AsNotNull()
-                                           .Single(),
-                            spanId.ToString());
+            Assert.Equal(responseHeaders.GetValues(tracingOptions.SpanIdHeaderName)
+                                        .AsNotNull()
+                                        .Single(),
+                         spanId.ToString());
 
-            Assert.AreEqual(responseHeaders.GetValues(tracingOptions.SpanNameHeaderName)
-                                           .AsNotNull()
-                                           .Single(),
-                            spanName);
+            Assert.Equal(responseHeaders.GetValues(tracingOptions.SpanNameHeaderName)
+                                        .AsNotNull()
+                                        .Single(),
+                         spanName);
 
-            Assert.AreEqual(responseHeaders.GetValues(tracingOptions.ParentSpanIdHeaderName)
-                                           .AsNotNull()
-                                           .Single(),
-                            parentSpanId?.ToString());
+            Assert.Equal(responseHeaders.GetValues(tracingOptions.ParentSpanIdHeaderName)
+                                        .AsNotNull()
+                                        .Single(),
+                         parentSpanId?.ToString());
 
-            Assert.AreEqual(_traceId, traceId);
-            Assert.AreEqual(_spanId, spanId);
-            Assert.AreEqual(_spanName, spanName);
-            Assert.AreEqual(_parentSpanId, parentSpanId);
+            Assert.Equal(_traceId, traceId);
+            Assert.Equal(_spanId, spanId);
+            Assert.Equal(_spanName, spanName);
+            Assert.Equal(_parentSpanId, parentSpanId);
 
             await host.StopAsync();
+            host.Dispose();
         }
     }
 }

@@ -1,12 +1,11 @@
 using System;
-using NUnit.Framework;
+using Xunit;
 
 namespace GS.DecoupleIt.InternalEvents.Tests
 {
-    [TestFixture]
     public sealed class EventHandlerTests
     {
-        [Test]
+        [Fact]
         public void ArgumentExceptionOnEventOnInvalidType_OnEmissionEventHandler()
         {
             var eventHandler = new ExampleEventOnEmissionHandler();
@@ -14,7 +13,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
             Assert.ThrowsAsync<ArgumentException>(async () => await eventHandler.HandleAsync(new ExceptionCausingEvent()));
         }
 
-        [Test]
+        [Fact]
         public void ArgumentExceptionOnEventOnInvalidType_OnFailureEventHandler()
         {
             var eventHandler = new ExampleEventOnFailureHandler();
@@ -22,7 +21,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
             Assert.ThrowsAsync<ArgumentException>(async () => await eventHandler.HandleAsync(new ExceptionCausingEvent(), new Exception()));
         }
 
-        [Test]
+        [Fact]
         public void ArgumentExceptionOnEventOnInvalidType_OnSuccessEventHandler()
         {
             var eventHandler = new ExampleEventOnSuccessHandler();

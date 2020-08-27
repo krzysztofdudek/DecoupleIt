@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../netcoreapp.tests.props" />
+    
+    <PropertyGroup>
+        <TargetFrameworks>netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
+    </ItemGroup>
+
+</Project>

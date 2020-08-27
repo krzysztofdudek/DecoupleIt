@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GS.DecoupleIt.Contextual.UnitOfWork;
+using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Optionals;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
@@ -10,6 +11,7 @@ using Samples.Clients.Command.Model.Entities;
 
 namespace Samples.Clients.Command.Model.Repositories
 {
+    [Singleton]
     internal sealed class ClientRepository : IClientRepository
     {
         public ClientRepository([NotNull] IUnitOfWorkAccessor accessor)
