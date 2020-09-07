@@ -17,7 +17,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
         /// <inheritdoc />
         public override void Dispose()
         {
-            if (!UnitOfWorkAccessor.CanBeDisposed(this))
+            if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))
                 return;
 
             base.Dispose();
@@ -29,7 +29,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
         /// <inheritdoc />
         public override ValueTask DisposeAsync()
         {
-            if (!UnitOfWorkAccessor.CanBeDisposed(this))
+            if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))
                 return new ValueTask();
 
             return new ValueTask(base.DisposeAsync()
@@ -47,12 +47,18 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
         /// <inheritdoc />
         void IUnitOfWork.SaveChanges()
         {
+            if (!UnitOfWorkAccessor.IsLastLevelOfInvocation(this))
+                return;
+
             base.SaveChanges();
         }
 
         /// <inheritdoc />
         Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
         {
+            if (!UnitOfWorkAccessor.IsLastLevelOfInvocation(this))
+                return Task.CompletedTask;
+
             return base.SaveChangesAsync(cancellationToken)
                        .AsNotNull();
         }

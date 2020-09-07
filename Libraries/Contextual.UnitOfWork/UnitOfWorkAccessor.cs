@@ -13,23 +13,40 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
     public sealed class UnitOfWorkAccessor : IUnitOfWorkAccessor
     {
         /// <summary>
-        ///     Informs about ability to dispose specific unit of work.
+        ///     Checks if unit of work is on last level.
         /// </summary>
         /// <param name="unitOfWork">Unit of work.</param>
-        /// <returns>Can instance be disposed.</returns>
-        public static bool CanBeDisposed([NotNull] IUnitOfWork unitOfWork)
+        /// <returns>Is last level.</returns>
+        public static bool IsLastLevelOfInvocation([NotNull] IUnitOfWork unitOfWork)
         {
             ContractGuard.IfArgumentIsNull(nameof(unitOfWork), unitOfWork);
 
             var entry = GetEntry(unitOfWork.GetType());
 
-            if (entry != null)
-            {
-                if (entry.Level == 1)
-                    return true;
+            if (entry == null)
+                throw new InvalidOperationException("Given unit of work does not exists in current async flow context.");
 
-                entry.Level--;
-            }
+            return entry.Level == 1;
+        }
+
+        /// <summary>
+        ///     Checks if unit of work is on last level of invocation and decreases level.
+        /// </summary>
+        /// <param name="unitOfWork">Unit of work.</param>
+        /// <returns>Is last level.</returns>
+        public static bool IsLastLevelOfInvocationWithDecrease([NotNull] IUnitOfWork unitOfWork)
+        {
+            ContractGuard.IfArgumentIsNull(nameof(unitOfWork), unitOfWork);
+
+            var entry = GetEntry(unitOfWork.GetType());
+
+            if (entry == null)
+                throw new InvalidOperationException("Given unit of work does not exists in current async flow context.");
+
+            if (entry.Level == 1)
+                return true;
+
+            entry.Level--;
 
             return false;
         }
@@ -60,7 +77,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(instance));
             }
 
-            instance.Disposed += OnInstanceOnDisposed;
+            instance.Disposed += OnInstanceDisposed;
 
             return instance;
         }
@@ -83,7 +100,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             }
         }
 
-        private static void OnInstanceOnDisposed([NotNull] IUnitOfWork source)
+        private static void OnInstanceDisposed([NotNull] IUnitOfWork source)
         {
             ContractGuard.IfArgumentIsNull(nameof(source), source);
 
