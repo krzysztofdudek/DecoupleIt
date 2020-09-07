@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionPrefix>0.0.2</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
         <Title>DecoupleIt - Contextual Unit of Work for Entity Framework core</Title>
         <Description>Library providing support for contextual unit of work based on Entity Framework Core DbContext.</Description>
@@ -10,7 +10,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Contextual.UnitOfWork\Contextual.UnitOfWork.csproj" />
     </ItemGroup>
-    
+
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.*" />
     </ItemGroup>

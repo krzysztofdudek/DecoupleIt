@@ -17,6 +17,7 @@ namespace GS.DecoupleIt.HttpAbstraction
         /// <summary>
         ///     Host's identifier header name. Default: "X-HostIdentifier".
         /// </summary>
+        [NotNull]
         public string HostIdentifierHeaderName { get; set; } = "X-HostIdentifier";
 
         /// <summary>
@@ -27,6 +28,7 @@ namespace GS.DecoupleIt.HttpAbstraction
         /// <summary>
         ///     Host's name header name. Default: "X-HostName".
         /// </summary>
+        [NotNull]
         public string HostNameHeaderName { get; set; } = "X-HostName";
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace GS.DecoupleIt.HttpAbstraction
         /// <summary>
         ///     Host's version header name. Default: "X-HostVersion".
         /// </summary>
+        [NotNull]
         public string HostVersionHeaderName { get; set; } = "X-HostVersion";
 
         /// <summary>

@@ -31,6 +31,8 @@ namespace GS.DecoupleIt.HttpAbstraction
 
             serviceCollection.AddTransient(serviceProvider =>
             {
+                serviceProvider = serviceProvider.AsNotNull();
+
                 var options = serviceProvider.GetRequiredService<IOptions<HttpClientOptions>>()
                                              .AsNotNull()
                                              .Value.AsNotNull();
