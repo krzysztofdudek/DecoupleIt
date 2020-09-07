@@ -175,8 +175,23 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
 
         private static bool ValidateType([NotNull] Type type, [NotNull] Type[] ignoredTypes, [NotNull] [ItemNotNull] Type[] ignoredBaseTypes)
         {
-            if (!(type.IsClass && type.GetConstructors()
-                                      .Any() && !type.IsAbstract && ignoredTypes.All(x => x != type) && !ignoredBaseTypes.Any(type.InheritsOrImplements)))
+            if (!type.IsClass)
+                return false;
+
+            if (type.IsAbstract)
+                return false;
+
+            if (type.IsGenericTypeDefinition)
+                return false;
+
+            if (!type.GetConstructors()
+                     .Any())
+                return false;
+
+            if (ignoredTypes.Any(x => x == type))
+                return false;
+
+            if (ignoredBaseTypes.Any(type.InheritsOrImplements))
                 return false;
 
             var attributesTypes = type.GetAllBaseTypes()
