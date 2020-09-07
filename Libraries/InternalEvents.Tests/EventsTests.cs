@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.InternalEvents.Scope;
+using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
 using Xunit;
 
@@ -130,27 +131,29 @@ namespace GS.DecoupleIt.InternalEvents.Tests
             var                        emit         = false;
 
             var emitTask = Task.Run(async () =>
-            {
-                Tracer.Initialize();
+                               {
+                                   Tracer.Initialize();
 
-                using (Tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
-                using (var scope = InternalEventsScope.OpenScope())
-                {
-                    scope.EventEmitted += (eventsScope, @event, token) =>
-                    {
-                        emittedEvent = (ExampleEvent) @event;
+                                   using (Tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
+                                   using (var scope = InternalEventsScope.OpenScope())
+                                   {
+                                       scope.EventEmitted += (eventsScope, @event, token) =>
+                                       {
+                                           emittedEvent = (ExampleEvent) @event;
 
-                        return Task.CompletedTask;
-                    };
+                                           return Task.CompletedTask.AsNotNull();
+                                       };
 
-                    while (!emit)
-                        await Task.Delay(20);
+                                       while (!emit)
+                                           await Task.Delay(20)
+                                                     .AsNotNull();
 
-                    await InternalEventsScope.EmitEventAsync(event1);
-                }
+                                       await InternalEventsScope.EmitEventAsync(event1);
+                                   }
 
-                Tracer.Clear();
-            });
+                                   Tracer.Clear();
+                               })
+                               .AsNotNull();
 
             var aggregateTask = Task.Run(() =>
             {
