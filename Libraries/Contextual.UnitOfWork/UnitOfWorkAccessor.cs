@@ -24,7 +24,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             var entry = GetEntry(unitOfWork.GetType());
 
             if (entry == null)
-                throw new InvalidOperationException("Given unit of work does not exists in current async flow context.");
+                return true;
 
             return entry.Level == 1;
         }
@@ -41,7 +41,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             var entry = GetEntry(unitOfWork.GetType());
 
             if (entry == null)
-                throw new InvalidOperationException("Given unit of work does not exists in current async flow context.");
+                return true;
 
             if (entry.Level == 1)
                 return true;
