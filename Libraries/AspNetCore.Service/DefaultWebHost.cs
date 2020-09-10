@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Rewrite;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 #elif NETCOREAPP3_1
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
@@ -66,7 +67,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.IgnoreReadOnlyProperties = false;
-            options.JsonSerializerOptions.IgnoreNullValues         = true;
+            options.JsonSerializerOptions.IgnoreNullValues = true;
         }
 #elif NETCOREAPP2_2
         /// <inheritdoc />
@@ -296,14 +297,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
 #if NETCOREAPP3_1
                           .Configure((context, applicationBuilder) =>
                           {
-                              context            = context.AsNotNull();
+                              context = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
 #elif NETCOREAPP2_2
                           .Configure(applicationBuilder =>
                           {
                               var context = new WebHostBuilderContext
                               {
-                                  Configuration = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
+                                  Configuration      = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
                                   HostingEnvironment = applicationBuilder.ApplicationServices.GetRequiredService<IHostingEnvironment>()
                               };
 

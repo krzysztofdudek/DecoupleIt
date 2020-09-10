@@ -135,7 +135,10 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
                                      .Distinct()
                                      .Except(AlwaysIgnoredTypes)
                                      .Except(ignoredTypes)
-                                     .Select(serviceType => ServiceDescriptor.Transient(serviceType, x => x.GetRequiredService(implementationType))
+                                     .Where(x => x != null)
+                                     .Select(serviceType => ServiceDescriptor.Transient(serviceType,
+                                                                                        serviceProvider => serviceProvider.AsNotNull()
+                                                                                            .GetRequiredService(implementationType))
                                                                              .AsNotNull())
                                      .Select(x => (ServiceDescriptor: x, RegisterManyTimes: x.ServiceType.AsNotNull()
                                                                                              .GetCustomAttributes<RegisterManyTimesAttribute>(false)

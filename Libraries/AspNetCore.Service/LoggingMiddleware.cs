@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 #if NETCOREAPP2_2
 using Microsoft.AspNetCore.Routing;
+
 #elif NETCOREAPP3_1
 using Microsoft.AspNetCore.Mvc.Controllers;
 
@@ -48,7 +49,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                                      .Single();
 
             var controllerName = controllerActionDescriptor.ControllerTypeInfo.FullName;
-            var actionName     = controllerActionDescriptor.ActionName;
+            var actionName = controllerActionDescriptor.ActionName;
 #elif NETCOREAPP2_2
             var routeData = context.GetRouteData();
 
