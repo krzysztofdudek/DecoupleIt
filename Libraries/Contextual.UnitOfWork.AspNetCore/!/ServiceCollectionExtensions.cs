@@ -25,6 +25,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore
             where TUnitOfWork : class, IUnitOfWork
         {
             ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
+            ContractGuard.IfArgumentIsNull(nameof(configuration), configuration);
 
             serviceCollection.AddContextualUnitOfWork(configuration);
 

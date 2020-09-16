@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>0.0.6</VersionPrefix>
+        <VersionPrefix>0.0.7</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
         <Title>DecoupleIt - Shared library</Title>
         <Description>Library consists of shared elements used within DecoupleIt packages.</Description>
