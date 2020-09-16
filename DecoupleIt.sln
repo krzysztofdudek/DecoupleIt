@@ -80,6 +80,8 @@ ProjectSection(SolutionItems) = preProject
 	Scripts\Nuget\Push-All.ps1 = Scripts\Nuget\Push-All.ps1
 	Scripts\Nuget\Push-Optionals.ps1 = Scripts\Nuget\Push-Optionals.ps1
 	Scripts\Nuget\Push-HttpAbstraction.ps1 = Scripts\Nuget\Push-HttpAbstraction.ps1
+	Scripts\Nuget\Push-Contextual.UnitOfWork.AspNetCore.ps1 = Scripts\Nuget\Push-Contextual.UnitOfWork.AspNetCore.ps1
+	Scripts\Nuget\Push-Contextual.UnitOfWork.EntityFrameworkCore.ps1 = Scripts\Nuget\Push-Contextual.UnitOfWork.EntityFrameworkCore.ps1
 	Scripts\Nuget\Push-Contextual.UnitOfWork.ps1 = Scripts\Nuget\Push-Contextual.UnitOfWork.ps1
 EndProjectSection
 EndProject
@@ -105,6 +107,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contextual.UnitOfWork.EntityFrameworkCore", "Libraries\Contextual.UnitOfWork.EntityFrameworkCore\Contextual.UnitOfWork.EntityFrameworkCore.csproj", "{A69D2E1D-C5B7-44A1-902B-001B970CE375}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependencyInjection.Automatic.Tests", "Libraries\DependencyInjection.Automatic.Tests\DependencyInjection.Automatic.Tests.csproj", "{E0AA72FD-C44D-4EBF-A7C7-C49943CE7FAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contextual.UnitOfWork.AspNetCore", "Libraries\Contextual.UnitOfWork.AspNetCore\Contextual.UnitOfWork.AspNetCore.csproj", "{DEC0D88B-003D-4454-9725-344DF5CED954}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -200,6 +204,10 @@ Global
 		{E0AA72FD-C44D-4EBF-A7C7-C49943CE7FAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E0AA72FD-C44D-4EBF-A7C7-C49943CE7FAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E0AA72FD-C44D-4EBF-A7C7-C49943CE7FAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEC0D88B-003D-4454-9725-344DF5CED954}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEC0D88B-003D-4454-9725-344DF5CED954}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEC0D88B-003D-4454-9725-344DF5CED954}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEC0D88B-003D-4454-9725-344DF5CED954}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -233,6 +241,7 @@ Global
 		{6978EB9E-9775-44AA-9005-218AC27922A8} = {1CAFD848-C533-45FD-A3CD-1204F9181908}
 		{A69D2E1D-C5B7-44A1-902B-001B970CE375} = {1CAFD848-C533-45FD-A3CD-1204F9181908}
 		{E0AA72FD-C44D-4EBF-A7C7-C49943CE7FAA} = {713D630C-0C01-4A0B-B49D-752E17053559}
+		{DEC0D88B-003D-4454-9725-344DF5CED954} = {EF0CBA58-A0E1-412F-859A-E1B5083ADC12}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21CF0CC5-F136-4044-B9B4-E52E6C37D68A}

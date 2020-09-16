@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <VersionPrefix>0.0.1</VersionPrefix>
+        <VersionSuffix>alpha</VersionSuffix>
+        <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
+        <Title>DecoupleIt - ASP .NET Core integration for contextual unit of work</Title>
+        <Description>ASP .NET Core support for contextual unit of work.</Description>
+    </PropertyGroup>
+
+    <Import Project="../netcoreapp.props" />
+
+    <ItemGroup>
+        <ProjectReference Include="..\Contextual.UnitOfWork\Contextual.UnitOfWork.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
+        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.*" />
+    </ItemGroup>
+
+</Project>

@@ -375,6 +375,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
                               applicationBuilder.UseInternalEvents();
 
+                              ConfigureApplication(context, applicationBuilder);
+
+                              foreach (var module in modules)
+                                  module.ConfigureApplication(context, applicationBuilder);
+
 #if NETCOREAPP3_1
                               applicationBuilder.UseEndpoints(builder =>
                               {
@@ -398,11 +403,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                       module.ConfigureEndpoints(context, builder);
                               });
 #endif
-
-                              ConfigureApplication(context, applicationBuilder);
-
-                              foreach (var module in modules)
-                                  module.ConfigureApplication(context, applicationBuilder);
                           });
 
             ConfigureWebHostBuilder(webHostBuilder);

@@ -10,3 +10,4 @@
 .\Push-Optionals.ps1
 .\Push-Contextual.UnitOfWork.ps1
 .\Push-Contextual.UnitOfWork.EntityFrameworkCore.ps1
+.\Push-Contextual.UnitOfWork.AspNetCore.ps1

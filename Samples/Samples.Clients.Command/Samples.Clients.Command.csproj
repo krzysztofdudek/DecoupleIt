@@ -16,8 +16,6 @@
     <ItemGroup>
       <ProjectReference Include="..\..\Libraries\AspNetCore.Service\AspNetCore.Service.csproj" />
       <ProjectReference Include="..\..\Libraries\Contextual.UnitOfWork.EntityFrameworkCore\Contextual.UnitOfWork.EntityFrameworkCore.csproj" />
-      <ProjectReference Include="..\..\Libraries\Contextual.UnitOfWork\Contextual.UnitOfWork.csproj" />
-      <ProjectReference Include="..\..\Libraries\Optionals\Optionals.csproj" />
       <ProjectReference Include="..\Samples.Clients.Command.Contracts\Samples.Clients.Command.Contracts.csproj" />
     </ItemGroup>
 

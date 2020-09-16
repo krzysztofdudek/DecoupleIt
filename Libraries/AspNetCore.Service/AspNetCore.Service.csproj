@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <VersionPrefix>0.0.6</VersionPrefix>
+        <VersionPrefix>0.0.7</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
         <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
         <Title>DecoupleIt - ASP .NET Core base service library</Title>
@@ -11,12 +11,13 @@
     <Import Project="../netcoreapp.props" />
 
     <ItemGroup>
-      <ProjectReference Include="..\Contextual.UnitOfWork\Contextual.UnitOfWork.csproj" />
-      <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
-      <ProjectReference Include="..\HttpAbstraction\HttpAbstraction.csproj" />
-      <ProjectReference Include="..\InternalEvents.AspNetCore\InternalEvents.AspNetCore.csproj" />
-      <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
-      <ProjectReference Include="..\Tracing.AspNetCore\Tracing.AspNetCore.csproj" />
+        <ProjectReference Include="..\Contextual.UnitOfWork.AspNetCore\Contextual.UnitOfWork.AspNetCore.csproj" />
+        <ProjectReference Include="..\InternalEvents.AspNetCore\InternalEvents.AspNetCore.csproj" />
+        <ProjectReference Include="..\Tracing.AspNetCore\Tracing.AspNetCore.csproj" />
+        <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
+        <ProjectReference Include="..\HttpAbstraction\HttpAbstraction.csproj" />
+        <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
+        <ProjectReference Include="..\Optionals\Optionals.csproj" />
     </ItemGroup>
 
     <ItemGroup>
