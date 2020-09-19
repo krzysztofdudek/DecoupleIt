@@ -10,6 +10,7 @@ namespace GS.DecoupleIt.Tracing
     {
 #pragma warning disable 1591
         OutgoingRequest,
+        OutgoingEvent,
         ExternalRequest,
         ExternalRequestHandler,
         InternalEvent,

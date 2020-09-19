@@ -77,17 +77,16 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
                                    },
                                    context);
 
-                using (var scope = Tracer.OpenRootSpan(traceId,
-                                                       spanId,
-                                                       spanName,
-                                                       parentSpanId,
-                                                       SpanType.ExternalRequest))
-                {
-                    scope.AttachResource(_logger.BeginTracerSpan());
+                using var scope = Tracer.OpenRootSpan(traceId,
+                                                      spanId,
+                                                      spanName,
+                                                      parentSpanId,
+                                                      SpanType.ExternalRequest);
 
-                    await next(context)
-                        .AsNotNull();
-                }
+                scope.AttachResource(_logger.BeginTracerSpan());
+
+                await next(context)
+                    .AsNotNull();
             }
             finally
             {

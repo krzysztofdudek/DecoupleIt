@@ -104,33 +104,32 @@ namespace GS.DecoupleIt.InternalEvents
 
             try
             {
-                using (var internalEventsScope = Scope.InternalEventsScope.OpenScope())
+                using var internalEventsScope = Scope.InternalEventsScope.OpenScope();
+
+                var eventType = @event.GetType();
+
+                var eventHandlers = onEmission ? _eventHandlerFactory.ResolveOnEmissionEventHandlers(eventType) :
+                    exception is null          ? _eventHandlerFactory.ResolveOnSuccessEventHandlers(eventType) :
+                                                 (IReadOnlyCollection<object>) _eventHandlerFactory.ResolveOnFailureEventHandlers(eventType);
+
+                _logger.LogInformation("Event dispatching started, {@EventHandlersCount} will handle it.", eventHandlers.Count);
+
+                try
                 {
-                    var eventType = @event.GetType();
+                    await internalEventsScope.DispatchEventsAsync(this,
+                                                                  () => ProcessEventHandlers(@event,
+                                                                                             eventHandlers,
+                                                                                             exception,
+                                                                                             cancellationToken),
+                                                                  cancellationToken);
 
-                    var eventHandlers = onEmission ? _eventHandlerFactory.ResolveOnEmissionEventHandlers(eventType) :
-                        exception is null          ? _eventHandlerFactory.ResolveOnSuccessEventHandlers(eventType) :
-                                                     (IReadOnlyCollection<object>) _eventHandlerFactory.ResolveOnFailureEventHandlers(eventType);
+                    _logger.LogInformation("Event dispatching finished after {@Duration}ms.", getDuration());
+                }
+                catch
+                {
+                    _logger.LogInformation("Event dispatching failed after {@Duration}ms.", getDuration());
 
-                    _logger.LogInformation("Event dispatching started, {@EventHandlersCount} will handle it.", eventHandlers.Count);
-
-                    try
-                    {
-                        await internalEventsScope.DispatchEventsAsync(this,
-                                                                      () => ProcessEventHandlers(@event,
-                                                                                                 eventHandlers,
-                                                                                                 exception,
-                                                                                                 cancellationToken),
-                                                                      cancellationToken);
-
-                        _logger.LogInformation("Event dispatching finished after {@Duration}ms.", getDuration());
-                    }
-                    catch
-                    {
-                        _logger.LogInformation("Event dispatching failed after {@Duration}ms.", getDuration());
-
-                        throw;
-                    }
+                    throw;
                 }
             }
             finally
@@ -167,31 +166,30 @@ namespace GS.DecoupleIt.InternalEvents
 
             try
             {
-                using (var internalEventsScope = Scope.InternalEventsScope.OpenScope())
+                using var internalEventsScope = Scope.InternalEventsScope.OpenScope();
+
+                _logger.LogInformation("Event handler invocation started.");
+
+                try
                 {
-                    _logger.LogInformation("Event handler invocation started.");
+                    await internalEventsScope.DispatchEventsAsync(this,
+                                                                  () => InvokeEventHandler(@event,
+                                                                                           eventHandler,
+                                                                                           exception,
+                                                                                           cancellationToken),
+                                                                  cancellationToken);
 
-                    try
-                    {
-                        await internalEventsScope.DispatchEventsAsync(this,
-                                                                      () => InvokeEventHandler(@event,
-                                                                                               eventHandler,
-                                                                                               exception,
-                                                                                               cancellationToken),
-                                                                      cancellationToken);
+                    _logger.LogInformation("Event handler invocation finished after {@Duration}ms.", getDuration());
+                }
+                catch (Exception caughtException)
+                {
+                    _logger.LogInformation(new EventId(),
+                                           caughtException,
+                                           "Event handler invocation failed after {@Duration}ms.",
+                                           getDuration());
 
-                        _logger.LogInformation("Event handler invocation finished after {@Duration}ms.", getDuration());
-                    }
-                    catch (Exception caughtException)
-                    {
-                        _logger.LogInformation(new EventId(),
-                                               caughtException,
-                                               "Event handler invocation failed after {@Duration}ms.",
-                                               getDuration());
-
-                        if (eventHandler is IOnEmissionEventHandler)
-                            throw;
-                    }
+                    if (eventHandler is IOnEmissionEventHandler)
+                        throw;
                 }
             }
             finally
