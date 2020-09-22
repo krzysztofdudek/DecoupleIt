@@ -32,23 +32,39 @@ namespace GS.DecoupleIt.Options.Automatic
             serviceCollection.AddOptions();
 
             var optionsTypes = assembly.GetTypes()
-                                       .Select(x => (x, x.GetCustomAttribute<ConfigureAttribute>()))
-                                       .Where(x => x.Item2 != null)
-                                       .ToArray();
+                                       .Select(x => new
+                                       {
+                                           type                          = x,
+                                           configureAttribute            = x.GetCustomAttribute<ConfigureAttribute>(),
+                                           configureAsNamespaceAttribute = x.GetCustomAttribute<ConfigureAsNamespaceAttribute>()
+                                       })
+                                       .Where(x => x.configureAttribute != null || x.configureAsNamespaceAttribute != null)
+                                       .AsCollectionWithNotNullItems();
 
-            foreach (var (type, attribute) in optionsTypes)
+            foreach (var optionsType in optionsTypes)
             {
-                var attributeSectionName = attribute.AsNotNull()
-                                                    .ConfigurationSectionName?.Replace(".", ":");
+                var type                          = optionsType.type.AsNotNull();
+                var configureAttribute            = optionsType.configureAttribute;
+                var configureAsNamespaceAttribute = optionsType.configureAsNamespaceAttribute;
 
-                var typeSectionName = type.AsNotNull()
-                                          .FullName.AsNotNull()
-                                          .Replace(".", ":");
+                var sectionNames = Enumerable.Empty<string>()
+                                             .Concat(new[]
+                                             {
+                                                 (configureAttribute?.ConfigurationSectionName ?? (type.FullName.AsNotNull()
+                                                                                                       .EndsWith("Options")
+                                                     ? type.FullName.AsNotNull()
+                                                           .Substring(type.FullName.AsNotNull()
+                                                                          .Length - 7)
+                                                     : type.FullName))?.Replace('.', ':')
+                                             })
+                                             .Concat(new[]
+                                             {
+                                                 configureAsNamespaceAttribute != null ? type.Namespace : null
+                                             })
+                                             .Where(x => x != null)
+                                             .ToList();
 
-                if (typeSectionName.EndsWith("Options"))
-                    typeSectionName = typeSectionName.Substring(0, typeSectionName.Length - "Options".Length);
-
-                var configurationSection = (IConfiguration) configuration.GetSection(attributeSectionName ?? typeSectionName);
+                var configurationSection = (IConfiguration) configuration.GetSection(sectionNames.First());
 
                 serviceCollection.Add(ServiceDescriptor.Singleton(typeof(IOptionsChangeTokenSource<>).MakeGenericType(type),
                                                                   Activator.CreateInstance(typeof(ConfigurationChangeTokenSource<>).MakeGenericType(type),

@@ -10,8 +10,10 @@ using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 #if NETCOREAPP2_2
 using Microsoft.AspNetCore.Routing;
+
 #elif NETCOREAPP3_1
 using Microsoft.AspNetCore.Mvc.Controllers;
 
@@ -24,9 +26,10 @@ namespace GS.DecoupleIt.AspNetCore.Service
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
     internal sealed class LoggingMiddleware : IMiddleware
     {
-        public LoggingMiddleware([NotNull] ILogger<LoggingMiddleware> logger)
+        public LoggingMiddleware([NotNull] ILogger<LoggingMiddleware> logger, [NotNull] IOptions<ServiceOptions> serviceOptions)
         {
-            _logger = logger;
+            _logger         = logger;
+            _serviceOptions = serviceOptions.Value;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
@@ -48,7 +51,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                                      .Single();
 
             var controllerName = controllerActionDescriptor.ControllerTypeInfo.FullName;
-            var actionName     = controllerActionDescriptor.ActionName;
+            var actionName = controllerActionDescriptor.ActionName;
 #elif NETCOREAPP2_2
             var routeData = context.GetRouteData();
 
@@ -62,37 +65,40 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
             var requestBody = await ReadStream(context.Request.Body);
 
-            using (var scope = Tracer.OpenChildSpan($"{controllerName}.{actionName}", SpanType.ExternalRequestHandler))
-            {
+            using var scope = Tracer.OpenChildSpan($"{controllerName}.{actionName}", SpanType.ExternalRequestHandler);
+
+            if (_serviceOptions.LogRequests)
                 LogStart(context, requestBody);
 
-                try
+            try
+            {
+                string responseBody;
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+                await
+#endif
+                using (var memoryStream = new MemoryStream())
                 {
-                    string responseBody;
+                    var responseBodyStream = context.Response.Body;
+                    context.Response.Body = memoryStream;
 
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        var responseBodyStream = context.Response.Body;
-                        context.Response.Body = memoryStream;
+                    await next(context)
+                        .AsNotNull();
 
-                        await next(context)
-                            .AsNotNull();
+                    responseBody          = await ReadStream(memoryStream);
+                    context.Response.Body = responseBodyStream;
 
-                        responseBody          = await ReadStream(memoryStream);
-                        context.Response.Body = responseBodyStream;
+                    var bytes = Encoding.UTF8.GetBytes(responseBody);
 
-                        var bytes = Encoding.UTF8.GetBytes(responseBody);
+                    context.Response.ContentLength = bytes.Length;
+                    await context.Response.Body.WriteAsync(bytes);
+                }
 
-                        context.Response.ContentLength = bytes.Length;
-                        await context.Response.Body.WriteAsync(bytes);
-                    }
-
+                if (_serviceOptions.LogResponses)
                     LogFinish(context, responseBody, scope.Duration);
-                }
-                catch (Exception exception)
-                {
-                    _logger.LogInformation(exception, "External request handling failure after {@Duration}ms.", scope.Duration.TotalMilliseconds);
-                }
+            }
+            catch (Exception exception)
+            {
+                _logger.LogInformation(exception, "External request handling failure after {@Duration}ms.", scope.Duration.TotalMilliseconds);
             }
         }
 
@@ -102,22 +108,24 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             stream.Position = 0;
 
-            using (var reader = new StreamReader(stream,
-                                                 Encoding.UTF8,
-                                                 true,
-                                                 -1,
-                                                 true))
-            {
-                var result = await reader.ReadToEndAsync();
+            using var reader = new StreamReader(stream,
+                                                Encoding.UTF8,
+                                                true,
+                                                -1,
+                                                true);
 
-                stream.Position = 0;
+            var result = await reader.ReadToEndAsync();
 
-                return result;
-            }
+            stream.Position = 0;
+
+            return result;
         }
 
         [NotNull]
         private readonly ILogger<LoggingMiddleware> _logger;
+
+        [NotNull]
+        private readonly ServiceOptions _serviceOptions;
 
         private void LogFinish([NotNull] HttpContext context, [CanBeNull] string responseBody, TimeSpan duration)
         {

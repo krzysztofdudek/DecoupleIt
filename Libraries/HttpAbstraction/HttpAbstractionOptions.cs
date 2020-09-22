@@ -1,4 +1,5 @@
 using System;
+using GS.DecoupleIt.Options.Automatic;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.HttpAbstraction
@@ -6,8 +7,9 @@ namespace GS.DecoupleIt.HttpAbstraction
     /// <summary>
     ///     Options of http clients.
     /// </summary>
+    [ConfigureAsNamespace]
     [PublicAPI]
-    public sealed class HttpClientOptions
+    public sealed class HttpAbstractionOptions
     {
         /// <summary>
         ///     Host's identifier.
@@ -43,13 +45,37 @@ namespace GS.DecoupleIt.HttpAbstraction
         public string HostVersionHeaderName { get; set; } = "X-HostVersion";
 
         /// <summary>
+        ///     Parent span id header name. Default: "X-B3-ParentSpanId".
+        /// </summary>
+        [NotNull]
+        public string ParentSpanIdHeaderName { get; set; } = "X-B3-ParentSpanId";
+
+        /// <summary>
         ///     Skip SSL certificate validation.
         /// </summary>
         public bool SkipSSLCertificateValidation { get; set; }
 
         /// <summary>
+        ///     Span id header name. Default: "X-B3-SpanId".
+        /// </summary>
+        [NotNull]
+        public string SpanIdHeaderName { get; set; } = "X-B3-SpanId";
+
+        /// <summary>
+        ///     Span name header name. Default: "X-SpanName".
+        /// </summary>
+        [NotNull]
+        public string SpanNameHeaderName { get; set; } = "X-SpanName";
+
+        /// <summary>
         ///     Timeout in milliseconds. Default: 10000ms.
         /// </summary>
         public int TimeoutMs { get; set; } = 10000;
+
+        /// <summary>
+        ///     Trace id header name. Default: "X-B3-TraceId".
+        /// </summary>
+        [NotNull]
+        public string TraceIdHeaderName { get; set; } = "X-B3-TraceId";
     }
 }

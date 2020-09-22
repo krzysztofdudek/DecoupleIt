@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using GS.DecoupleIt.HttpAbstraction.Exceptions;
+using GS.DecoupleIt.Options.Automatic;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
@@ -33,13 +34,9 @@ namespace GS.DecoupleIt.HttpAbstraction
             {
                 serviceProvider = serviceProvider.AsNotNull();
 
-                var options = serviceProvider.GetRequiredService<IOptions<HttpClientOptions>>()
+                var options = serviceProvider.GetRequiredService<IOptions<HttpAbstractionOptions>>()
                                              .AsNotNull()
                                              .Value.AsNotNull();
-
-                var tracingOptions = serviceProvider.GetRequiredService<IOptions<TracingOptions>>()
-                                                    .AsNotNull()
-                                                    .Value.AsNotNull();
 
                 var servicesUrisOptions = serviceProvider.GetRequiredService<IOptions<ServicesUrisOptions>>()
                                                          .AsNotNull()
@@ -52,28 +49,28 @@ namespace GS.DecoupleIt.HttpAbstraction
                     ? serviceAssemblyName.Substring(0, serviceAssemblyName.LastIndexOf(".", StringComparison.Ordinal))
                     : serviceAssemblyName;
 
-                if (!servicesUrisOptions.TryGetValue(serviceName, out var boundedContextUriString))
+                if (!servicesUrisOptions.TryGetValue(serviceName, out var uri))
                     throw new MissingServiceUriMapping(serviceName);
 
                 var currentTracerScope = Tracer.CurrentSpan;
 
                 var httpClient = new HttpClient(new WebRequestHandler(options))
                 {
-                    BaseAddress = new Uri(boundedContextUriString.AsNotNull()),
+                    BaseAddress = new Uri(uri.AsNotNull()),
                     Timeout     = TimeSpan.FromMilliseconds(options.TimeoutMs),
                     DefaultRequestHeaders =
                     {
                         {
-                            tracingOptions.Headers.TraceIdHeaderName, currentTracerScope.TraceId.ToString()
+                            options.TraceIdHeaderName, currentTracerScope.TraceId.ToString()
                         },
                         {
-                            tracingOptions.Headers.SpanIdHeaderName, currentTracerScope.Id.ToString()
+                            options.SpanIdHeaderName, currentTracerScope.Id.ToString()
                         },
                         {
-                            tracingOptions.Headers.ParentSpanIdHeaderName, currentTracerScope.ParentId?.ToString()
+                            options.ParentSpanIdHeaderName, currentTracerScope.ParentId?.ToString()
                         },
                         {
-                            tracingOptions.Headers.SpanNameHeaderName, currentTracerScope.Name
+                            options.SpanNameHeaderName, currentTracerScope.Name
                         },
                         {
                             options.HostIdentifierHeaderName, options.HostIdentifier.ToString()
@@ -100,37 +97,26 @@ namespace GS.DecoupleIt.HttpAbstraction
         /// </summary>
         /// <param name="serviceCollection">Services collection.</param>
         /// <param name="configuration">Configuration.</param>
-        /// <param name="configureHttpClientOptions">Configure <see cref="HttpClientOptions" /> method.</param>
-        /// <param name="configureServicesUrisOptions">Configure <see cref="ServicesUrisOptions" /> method.</param>
         /// <returns>Service collection.</returns>
         [NotNull]
-        public static IServiceCollection ConfigureHttpClients(
-            [NotNull] this IServiceCollection serviceCollection,
-            [NotNull] IConfiguration configuration,
-            [CanBeNull] ConfigureDelegate<HttpClientOptions> configureHttpClientOptions = default,
-            [CanBeNull] ConfigureDelegate<ServicesUrisOptions> configureServicesUrisOptions = default)
+        public static IServiceCollection ConfigureHttpClients([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
         {
             var @namespace = typeof(ServiceCollectionExtensions).Namespace;
-
-            var httpClientSectionKey = $"{@namespace}.HttpClient".Replace('.', ':');
-
-            var httpClientSection = configuration.GetSection(httpClientSectionKey)
-                                                 .AsNotNull();
 
             var servicesUrisSectionKey = $"{@namespace}.ServicesUris".Replace('.', ':');
 
             var servicesUrisSection = configuration.GetSection(servicesUrisSectionKey)
                                                    .AsNotNull();
 
-            serviceCollection.ConfigureOptionsAndPostConfigure(httpClientSection, configureHttpClientOptions);
-            serviceCollection.ConfigureOptionsDictionaryAndPostConfigure(servicesUrisSection, configureServicesUrisOptions);
+            serviceCollection.ScanAssemblyForOptions(typeof(ServiceCollectionExtensions).Assembly, configuration);
+            serviceCollection.ConfigureDictionary<ServicesUrisOptions>(servicesUrisSection);
 
             return serviceCollection;
         }
 
         private sealed class WebRequestHandler : HttpClientHandler
         {
-            public WebRequestHandler([NotNull] HttpClientOptions settings)
+            public WebRequestHandler([NotNull] HttpAbstractionOptions settings)
             {
                 if (settings.SkipSSLCertificateValidation)
                     ServerCertificateCustomValidationCallback = (

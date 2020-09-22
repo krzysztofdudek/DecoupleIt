@@ -6,7 +6,8 @@ namespace GS.DecoupleIt.Options.Automatic
     /// <summary>
     ///     Marks options class to be configured automatically.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+    [MeansImplicitUse(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
     [PublicAPI]
     public sealed class ConfigureAttribute : Attribute
     {

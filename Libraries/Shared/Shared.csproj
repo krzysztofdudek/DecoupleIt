@@ -53,9 +53,4 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0-*" />
     </ItemGroup>
 
-    <Target Name="Restore dotnet tools" BeforeTargets="PostBuildEvent">
-        <Message Importance="normal" Text="Restore dotnet tools..." />
-        <Exec Command="dotnet tool restore" />
-    </Target>
-
 </Project>

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>0.0.7</VersionPrefix>
+        <VersionPrefix>0.0.8</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
         <Title>DecoupleIt - Contextual Unit of Work</Title>
         <Description>Library supports contextual unit of work pattern for ex. DbContext stored in AsyncLocal storage.</Description>

@@ -1,13 +1,12 @@
 using GS.DecoupleIt.Options.Automatic;
 using JetBrains.Annotations;
 
-namespace GS.DecoupleIt.Tracing
+namespace GS.DecoupleIt.Tracing.AspNetCore
 {
     /// <summary>
     ///     Tracing options.
     /// </summary>
-    [PublicAPI]
-    [Configure("GS.DecoupleIt.Tracing")]
+    [ConfigureAsNamespace]
     public sealed class TracingOptions
     {
         /// <summary>

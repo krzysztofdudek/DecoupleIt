@@ -1,4 +1,5 @@
 using GS.DecoupleIt.DependencyInjection.Automatic;
+using GS.DecoupleIt.Options.Automatic;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
@@ -17,18 +18,18 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
         /// <param name="configuration">Configuration.</param>
-        /// <param name="configure">Delegate configuring options.</param>
         [NotNull]
-        public static IServiceCollection AddTracingForAspNetCore(
-            [NotNull] this IServiceCollection serviceCollection,
-            [NotNull] IConfiguration configuration,
-            [CanBeNull] ConfigureDelegate<TracingOptions> configure = default)
+        public static IServiceCollection AddTracingForAspNetCore([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
         {
             ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
+            ContractGuard.IfArgumentIsNull(nameof(configuration), configuration);
 
-            serviceCollection.AddTracing(configuration, configure);
+            var assembly = typeof(ServiceCollectionExtensions).Assembly;
+
+            serviceCollection.AddTracing();
 
             serviceCollection.ScanAssemblyForImplementations(typeof(ServiceCollectionExtensions).Assembly);
+            serviceCollection.ScanAssemblyForOptions(assembly, configuration);
 
             return serviceCollection;
         }
