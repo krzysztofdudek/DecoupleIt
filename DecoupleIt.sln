@@ -115,6 +115,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contextual.UnitOfWork.AspNe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contextual.UnitOfWork.NHibernate5", "Libraries\Contextual.UnitOfWork.NHibernate5\Contextual.UnitOfWork.NHibernate5.csproj", "{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Persistence.Automatic", "Libraries\Persistence.Automatic\Persistence.Automatic.csproj", "{718ED056-8C3E-4A72-9144-1AC3185CC1CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Persistence.Automatic.EntityFrameworkCore", "Libraries\Persistence.Automatic.EntityFrameworkCore\Persistence.Automatic.EntityFrameworkCore.csproj", "{FE0D4C43-F854-47A6-A3C4-AFC8B05007AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -209,6 +213,14 @@ Global
 		{DEC0D88B-003D-4454-9725-344DF5CED954}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEC0D88B-003D-4454-9725-344DF5CED954}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DEC0D88B-003D-4454-9725-344DF5CED954}.Release|Any CPU.Build.0 = Release|Any CPU
+		{718ED056-8C3E-4A72-9144-1AC3185CC1CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{718ED056-8C3E-4A72-9144-1AC3185CC1CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{718ED056-8C3E-4A72-9144-1AC3185CC1CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{718ED056-8C3E-4A72-9144-1AC3185CC1CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE0D4C43-F854-47A6-A3C4-AFC8B05007AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE0D4C43-F854-47A6-A3C4-AFC8B05007AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE0D4C43-F854-47A6-A3C4-AFC8B05007AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE0D4C43-F854-47A6-A3C4-AFC8B05007AA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -246,6 +258,8 @@ Global
 		{A69D2E1D-C5B7-44A1-902B-001B970CE375} = {1CAFD848-C533-45FD-A3CD-1204F9181908}
 		{E0AA72FD-C44D-4EBF-A7C7-C49943CE7FAA} = {713D630C-0C01-4A0B-B49D-752E17053559}
 		{DEC0D88B-003D-4454-9725-344DF5CED954} = {EF0CBA58-A0E1-412F-859A-E1B5083ADC12}
+		{718ED056-8C3E-4A72-9144-1AC3185CC1CF} = {1CAFD848-C533-45FD-A3CD-1204F9181908}
+		{FE0D4C43-F854-47A6-A3C4-AFC8B05007AA} = {1CAFD848-C533-45FD-A3CD-1204F9181908}
 		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD} = {1CAFD848-C533-45FD-A3CD-1204F9181908}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

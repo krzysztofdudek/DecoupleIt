@@ -1,4 +1,5 @@
 using System;
+using GS.DecoupleIt.Persistence.Automatic;
 using JetBrains.Annotations;
 using Samples.Clients.Command.Contracts.Events;
 using Samples.Clients.Command.Contracts.Exceptions;
@@ -7,6 +8,7 @@ using Samples.Clients.Command.Contracts.Exceptions;
 
 namespace Samples.Clients.Command.Model.Entities
 {
+    [Persist]
     public sealed class Client
     {
         public Guid Id { get; [UsedImplicitly] private set; }

@@ -12,6 +12,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Contextual.UnitOfWork.AspNetCore\Contextual.UnitOfWork.AspNetCore.csproj" />
         <ProjectReference Include="..\InternalEvents.AspNetCore\InternalEvents.AspNetCore.csproj" />
+        <ProjectReference Include="..\Persistence.Automatic\Persistence.Automatic.csproj" />
         <ProjectReference Include="..\Tracing.AspNetCore\Tracing.AspNetCore.csproj" />
         <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
         <ProjectReference Include="..\HttpAbstraction\HttpAbstraction.csproj" />

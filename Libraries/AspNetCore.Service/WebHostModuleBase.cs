@@ -1,6 +1,7 @@
 using System.Reflection;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Options.Automatic;
+using GS.DecoupleIt.Persistence.Automatic;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
@@ -53,6 +54,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             serviceCollection.ScanAssemblyForImplementations(ThisAssembly);
             serviceCollection.ScanAssemblyForOptions(ThisAssembly, context.Configuration.AsNotNull());
+            serviceCollection.ScanAssemblyForEntities(ThisAssembly);
         }
 
         /// <inheritdoc />

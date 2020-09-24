@@ -1,5 +1,7 @@
 using GS.DecoupleIt.AspNetCore.Service;
 using GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore;
+using GS.DecoupleIt.Persistence.Automatic;
+using GS.DecoupleIt.Persistence.Automatic.EntityFrameworkCore;
 using GS.DecoupleIt.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -31,6 +33,9 @@ namespace Samples.Clients.Command
             base.ConfigureServices(context, serviceCollection);
 
             serviceCollection.AddContextualUnitOfWorkForAspNetCore<ClientsDbContext>(context.Configuration.AsNotNull());
+
+            serviceCollection.PersistContext("Samples.Clients.Command")
+                             .WithEntityFrameworkCore();
         }
     }
 }

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <VersionPrefix>1.0.0</VersionPrefix>
+        <Title>DecoupleIt - Automatic Persistence</Title>
+        <Description>TBD</Description>
+    </PropertyGroup>
+
+    <Import Project="../netstandard.props" />
+    
+    <ItemGroup>
+        <ProjectReference Include="../Shared/Shared.csproj" />
+        <ProjectReference Include="..\Contextual.UnitOfWork\Contextual.UnitOfWork.csproj" />
+    </ItemGroup>
+
+</Project>
