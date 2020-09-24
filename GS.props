@@ -6,12 +6,18 @@
         <NoWarn>1591</NoWarn>
         <RepositoryUrl>https://github.com/krzysztofdudek/DecoupleIt</RepositoryUrl>
         <PackageProjectUrl>https://github.com/krzysztofdudek/DecoupleIt</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/krzysztofdudek/DecoupleIt/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <RepositoryType>git</RepositoryType>
         <Authors>Krzysztof Dudek</Authors>
         <LangVersion>8</LangVersion>
         <OutputType>Library</OutputType>
+        <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\LICENSE" CopyToPublishDirectory="Always" Pack="true" PackagePath="" />
+        <None Include="..\..\icon.png" CopyToPublishDirectory="Always" Pack="true" PackagePath="" />
+    </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <DocumentationFile>bin\Debug\$(RootNamespace).xml</DocumentationFile>
