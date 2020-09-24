@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>1.0.0</VersionPrefix>
+        <VersionPrefix>1.1.0</VersionPrefix>
         <Title>DecoupleIt - Contextual Unit of Work for Entity Framework core</Title>
         <Description>Library providing support for contextual unit of work based on Entity Framework Core DbContext.</Description>
     </PropertyGroup>

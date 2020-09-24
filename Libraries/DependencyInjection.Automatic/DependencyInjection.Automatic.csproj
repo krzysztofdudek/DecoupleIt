@@ -3,7 +3,7 @@
     <Import Project="../netstandard.props" />
 
     <PropertyGroup>
-        <VersionPrefix>1.0.0</VersionPrefix>
+        <VersionPrefix>1.0.1</VersionPrefix>
         <Title>DecoupleIt - Automatic registration for Microsoft.Extensions.DependencyInjection</Title>
         <Description>Implementation of automatic registration of services adapted to cooperate with Microsoft.Extensions.DependencyInjection.</Description>
     </PropertyGroup>
