@@ -12,6 +12,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tracing.AspNetCore", "Libraries\Tracing.AspNetCore\Tracing.AspNetCore.csproj", "{C74CE18A-33F6-4B53-8C4F-ECA7DCD56A1A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{17AA7AA3-0A70-4C0E-9C47-4DCC0A0465ED}"
+ProjectSection(SolutionItems) = preProject
+	Samples\Samples.props = Samples\Samples.props
+	Samples\Samples.targets = Samples\Samples.targets
+EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{C8F94C4B-30CB-43AE-86FC-209AE45294F8}"
 EndProject
@@ -79,8 +83,9 @@ ProjectSection(SolutionItems) = preProject
 	Scripts\Nuget\Push-Optionals.ps1 = Scripts\Nuget\Push-Optionals.ps1
 	Scripts\Nuget\Push-HttpAbstraction.ps1 = Scripts\Nuget\Push-HttpAbstraction.ps1
 	Scripts\Nuget\Push-Contextual.UnitOfWork.AspNetCore.ps1 = Scripts\Nuget\Push-Contextual.UnitOfWork.AspNetCore.ps1
-	Scripts\Nuget\Push-Contextual.UnitOfWork.EntityFrameworkCore.ps1 = Scripts\Nuget\Push-Contextual.UnitOfWork.EntityFrameworkCore.ps1
 	Scripts\Nuget\Push-Contextual.UnitOfWork.ps1 = Scripts\Nuget\Push-Contextual.UnitOfWork.ps1
+	Scripts\Nuget\Push-Contextual.UnitOfWork.NHibernate5.ps1 = Scripts\Nuget\Push-Contextual.UnitOfWork.NHibernate5.ps1
+	Scripts\Nuget\Push-Contextual.UnitOfWork.EntityFrameworkCore.ps1 = Scripts\Nuget\Push-Contextual.UnitOfWork.EntityFrameworkCore.ps1
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Optionals", "Libraries\Optionals\Optionals.csproj", "{E6B67307-FCC1-4119-95EA-D1AA51831785}"
@@ -107,6 +112,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DependencyInjection.Automatic.Tests", "Libraries\DependencyInjection.Automatic.Tests\DependencyInjection.Automatic.Tests.csproj", "{E0AA72FD-C44D-4EBF-A7C7-C49943CE7FAA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contextual.UnitOfWork.AspNetCore", "Libraries\Contextual.UnitOfWork.AspNetCore\Contextual.UnitOfWork.AspNetCore.csproj", "{DEC0D88B-003D-4454-9725-344DF5CED954}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contextual.UnitOfWork.NHibernate5", "Libraries\Contextual.UnitOfWork.NHibernate5\Contextual.UnitOfWork.NHibernate5.csproj", "{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -202,6 +209,10 @@ Global
 		{DEC0D88B-003D-4454-9725-344DF5CED954}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEC0D88B-003D-4454-9725-344DF5CED954}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DEC0D88B-003D-4454-9725-344DF5CED954}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -235,6 +246,7 @@ Global
 		{A69D2E1D-C5B7-44A1-902B-001B970CE375} = {1CAFD848-C533-45FD-A3CD-1204F9181908}
 		{E0AA72FD-C44D-4EBF-A7C7-C49943CE7FAA} = {713D630C-0C01-4A0B-B49D-752E17053559}
 		{DEC0D88B-003D-4454-9725-344DF5CED954} = {EF0CBA58-A0E1-412F-859A-E1B5083ADC12}
+		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD} = {1CAFD848-C533-45FD-A3CD-1204F9181908}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21CF0CC5-F136-4044-B9B4-E52E6C37D68A}

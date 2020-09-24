@@ -1,31 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-    <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
-        <NoWarn>1591</NoWarn>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <DocumentationFile>bin\Debug\Samples.Clients.Command.xml</DocumentationFile>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <DocumentationFile>bin\Release\Samples.Clients.Command.xml</DocumentationFile>
-    </PropertyGroup>
+    <Import Project="../Samples.props" />
+    <Import Project="../Samples.targets" />
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Libraries\AspNetCore.Service\AspNetCore.Service.csproj" />
       <ProjectReference Include="..\..\Libraries\Contextual.UnitOfWork.EntityFrameworkCore\Contextual.UnitOfWork.EntityFrameworkCore.csproj" />
       <ProjectReference Include="..\Samples.Clients.Command.Contracts\Samples.Clients.Command.Contracts.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.*" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.*" />
     </ItemGroup>
-
-    <Target Name="Test run" AfterTargets="Build">
-        <Exec EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development;ASPNETCORE_TESTRUN=true" Command="dotnet $(MSBuildProjectDirectory)/$(OutputPath)$(MSBuildProjectName).dll" CustomErrorRegularExpression="ERROR" />
-    </Target>
 
 </Project>
