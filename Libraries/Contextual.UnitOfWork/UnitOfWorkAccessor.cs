@@ -9,9 +9,22 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GS.DecoupleIt.Contextual.UnitOfWork
 {
+    /// <inheritdoc />
     [Singleton]
     public sealed class UnitOfWorkAccessor : IUnitOfWorkAccessor
     {
+        /// <summary>
+        ///     Checks whether <typeparamref name="TUnitOfWork" /> is currently available in async local storage. Method can be used to validate if unit of work was
+        ///     properly disposed.
+        /// </summary>
+        /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
+        /// <returns>Is available in storage.</returns>
+        public static bool IsAvailable<TUnitOfWork>()
+            where TUnitOfWork : class, IUnitOfWork
+        {
+            return GetEntry(typeof(TUnitOfWork)) != null;
+        }
+
         /// <summary>
         ///     Checks if unit of work is on last level.
         /// </summary>
@@ -51,11 +64,16 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             return false;
         }
 
+        /// <summary>
+        ///     Creates an instance of <see cref="UnitOfWorkAccessor" />.
+        /// </summary>
+        /// <param name="serviceProvider">Service provider.</param>
         public UnitOfWorkAccessor([NotNull] IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
+        /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ConstantConditionalAccessQualifier")]
         public TUnitOfWork Get<TUnitOfWork>()
             where TUnitOfWork : class, IUnitOfWork
