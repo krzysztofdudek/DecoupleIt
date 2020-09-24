@@ -13,7 +13,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 #if NETCOREAPP2_2
 using Newtonsoft.Json;
-
 #elif NETCOREAPP3_1
 using Microsoft.AspNetCore.Mvc;
 
