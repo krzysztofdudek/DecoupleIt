@@ -45,15 +45,6 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         ///             <item>
         ///                 <term>ScopedAttribute</term>
         ///             </item>
-        ///             <item>
-        ///                 <term>RegisterAsAttribute</term>
-        ///             </item>
-        ///             <item>
-        ///                 <term>RegisterAsSelfAttribute</term>
-        ///             </item>
-        ///             <item>
-        ///                 <term>RegisterManyTimesAttribute</term>
-        ///             </item>
         ///         </list>
         ///         The method of registration of first three attributes is taken by looking at the nearest annotation of base class or implemented interface.
         ///     </para>
