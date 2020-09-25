@@ -11,7 +11,7 @@ If you want to use one of this libraries they're available on public Nuget repos
 ## 1. Oversized not-intuitive bootstrap classes like Startup
 ### Problem
 I faced the problem with let's call it "imperative" way of managing dependencies. There were always one big bootstrapping file setuping whole application. Sometimes there were projects doing the same thing but for the smaller scale. What if we could register everything in more "distributed" way?
-### Solution - GS.DecoupleIt.DependencyInjection.Automatic
+### Solution - [GS.DecoupleIt.DependencyInjection.Automatic](https://www.nuget.org/packages/GS.DecoupleIt.DependencyInjection.Automatic/)
 ```c#
 public void ConfigureServices(IServiceCollection serviceCollection)
 {
@@ -30,7 +30,7 @@ public class ISomeServiceInterface { ... }
 ## 2. Mess in configuration
 ### Problem
 Another thing that got my attention was gathering configuration. That was the next time when programmer has to remember to register something, in this case an Options somewhere with appropriate configuration path. When we look at code we can see that it's already segregated within logical catalogs called namespaces. Why not to use that feature to make configuration more attached to code from it's coming from?
-### Solution - GS.DecoupleIt.Options.Automatic
+### Solution - [GS.DecoupleIt.Options.Automatic](https://www.nuget.org/packages/GS.DecoupleIt.Options.Automatic/)
 ```c#
 namespace MyApp.Domain.Repositories
 {
@@ -60,7 +60,7 @@ If we separate whole configuration that way it become really clear which propert
 ## 3. Cross-domain calls and dependencies
 ### Problem
 Sometimes it's not clear where to put some code. It happens mostly when multiple domains resides on the same service, which causes coupling tightly code to propagate "reactions" from one domains to another. For example creating a client have to cause automatical creation of his/her archive. There are two separate domain that has to communicate in "imperative" way, so clients domain instructs archive domain to create new archive for client. What if we can do it another way?
-### Solution - GS.DecoupleIt.InternalEvents
+### Solution - [GS.DecoupleIt.InternalEvents](https://www.nuget.org/packages/GS.DecoupleIt.InternalEvents/)
 Let me introduce first some concepts that help you to go with what I've prepared:
 - **event** - single event emitted from our code
 - **scope** - a part of code that is surrounded by event dispatcher which listens to emitted events and runs appropriate event handlers
@@ -151,7 +151,7 @@ namespace App.Deployment.OurClient.InternalEventHandlers
 ## Complex transaction management
 ### Problem
 I've struggled with it, when controller action called some services, those services called another services and so on. I had to pass unit of work object to ensure transaction within all levels of execution of code underneath. Possible simple fix was to use container with registered unit of work with scoped lifetime, but the code that I had to work with, does not allowed it, because transaction management was implemented case by case in services, command handlers etc. Then I came to another idea...
-### Solution - GS.DecoupleIt.Contextual.UnitOfWork
+### Solution - [GS.DecoupleIt.Contextual.UnitOfWork](https://www.nuget.org/packages/GS.DecoupleIt.InternalEvents/)
 This library has an implementation of generic unit of work accessor that bases on async flow context. It creates a scope that defines boundaries of transaction in code. When any code asks for the same type of unit of work object, it gets the same instance every time when code is run within single async flow. It works perfectly with **On emission event handler** to make some additional work on the same transaction in different domain but on the same database schema for example.
 #### Simple usage:
 This example shows operations done on the unit of work itself.
