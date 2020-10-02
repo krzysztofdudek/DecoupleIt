@@ -26,5 +26,33 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore
 
             return builder;
         }
+
+        /// <summary>
+        ///     Uses middleware that initializes async local storage at the
+        ///     beginning of a request and clears it after the execution for <see cref="UnitOfWorkAccessor" />.
+        /// </summary>
+        /// <param name="builder">Application builder.</param>
+        /// <returns>Application builder.</returns>
+        [NotNull]
+        public static IApplicationBuilder UseContextualUnitOfWork([NotNull] this IApplicationBuilder builder)
+        {
+            ContractGuard.IfArgumentIsNull(nameof(builder), builder);
+
+            builder.Use(async (context, next) =>
+            {
+                UnitOfWorkAccessor.Initialize();
+
+                try
+                {
+                    await next.AsNotNull()();
+                }
+                finally
+                {
+                    UnitOfWorkAccessor.Clear();
+                }
+            });
+
+            return builder;
+        }
     }
 }

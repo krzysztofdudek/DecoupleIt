@@ -108,6 +108,17 @@ namespace GS.DecoupleIt.InternalEvents.Scope
                 .AsNotNull();
         }
 
+        /// <summary>
+        ///     Clears async local storage.
+        /// </summary>
+        public static void Clear()
+        {
+            if (AsyncLocalStack.Value == null)
+                return;
+
+            AsyncLocalStack.Value = null;
+        }
+
         /// <inheritdoc cref="IInternalEventsScope.EmitEvent" />
         internal static void EmitEvent([NotNull] Event @event)
         {
@@ -119,6 +130,15 @@ namespace GS.DecoupleIt.InternalEvents.Scope
         internal static Task EmitEventAsync([NotNull] Event @event, CancellationToken cancellationToken = default)
         {
             return CurrentScope.EmitEventAsync(@event, cancellationToken);
+        }
+
+        /// <summary>
+        ///     Initializes async local storage. The best way is to do this on the beginning of thread that will be using internal events.
+        ///     At the end of usage of internal events is recommended to call <see cref="Clear" /> to clear storage.
+        /// </summary>
+        public static void Initialize()
+        {
+            AsyncLocalStack.Value = new Stack<InternalEventsScope>();
         }
 
         /// <summary>
@@ -176,10 +196,15 @@ namespace GS.DecoupleIt.InternalEvents.Scope
         /// <inheritdoc />
         public void Dispose()
         {
+            if (_isDisposed)
+                return;
+
             Stack.Pop();
 
             if (Stack.Count == 0)
                 AsyncLocalStack.Value = null;
+
+            _isDisposed = true;
         }
 
         [NotNull]
@@ -193,6 +218,8 @@ namespace GS.DecoupleIt.InternalEvents.Scope
         [NotNull]
         [ItemNotNull]
         private readonly List<Event> _events = new List<Event>();
+
+        private bool _isDisposed;
 
         [NotNull]
         private readonly Stack<InternalEventsScope> _stack;

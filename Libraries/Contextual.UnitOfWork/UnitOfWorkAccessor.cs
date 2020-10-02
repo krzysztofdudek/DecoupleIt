@@ -14,6 +14,32 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
     public sealed class UnitOfWorkAccessor : IUnitOfWorkAccessor
     {
         /// <summary>
+        ///     Clears async local storage.
+        /// </summary>
+        public static void Clear()
+        {
+            lock (StorageEntries)
+            {
+                if (StorageEntries.Value == null)
+                    return;
+
+                StorageEntries.Value = null;
+            }
+        }
+
+        /// <summary>
+        ///     Initializes async local storage. The best way is to do this on the beginning of thread that will be using accessor.
+        ///     At the end of usage of accessor is recommended to call <see cref="Clear" /> to clear storage.
+        /// </summary>
+        public static void Initialize()
+        {
+            lock (StorageEntries)
+            {
+                StorageEntries.Value = new List<StorageEntry>();
+            }
+        }
+
+        /// <summary>
         ///     Checks whether <typeparamref name="TUnitOfWork" /> is currently available in async local storage. Method can be used to validate if unit of work was
         ///     properly disposed.
         /// </summary>

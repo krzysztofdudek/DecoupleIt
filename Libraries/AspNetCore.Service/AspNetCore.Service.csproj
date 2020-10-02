@@ -1,10 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <VersionPrefix>1.2.0</VersionPrefix>
+        <VersionPrefix>1.2.1</VersionPrefix>
         <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
         <Title>DecoupleIt - ASP .NET Core base service library</Title>
         <Description>Implements base web application host with extensible modules.</Description>
+        <PackageReleaseNotes>
+            - added middleware to pipeline maintaining async local unit of work storage
+        </PackageReleaseNotes>
     </PropertyGroup>
 
     <Import Project="../netcoreapp.props" />

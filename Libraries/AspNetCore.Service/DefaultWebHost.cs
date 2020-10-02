@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using GS.DecoupleIt.Contextual.UnitOfWork;
+using GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.HttpAbstraction;
 using GS.DecoupleIt.InternalEvents.AspNetCore;
@@ -373,6 +374,8 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               applicationBuilder.UseTracing();
 
                               applicationBuilder.UseMiddleware<LoggingMiddleware>();
+
+                              applicationBuilder.UseContextualUnitOfWork();
 
                               applicationBuilder.UseInternalEvents();
 
