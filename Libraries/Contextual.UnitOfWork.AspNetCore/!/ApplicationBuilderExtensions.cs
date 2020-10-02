@@ -44,7 +44,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore
 
                 try
                 {
-                    await next.AsNotNull()();
+                    await next.AsNotNull()
+                              .Invoke()
+                              .AsNotNull();
                 }
                 finally
                 {

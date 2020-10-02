@@ -17,6 +17,12 @@ namespace GS.DecoupleIt.Tracing
     public sealed class Tracer : ISpan
     {
         /// <summary>
+        ///     Generator of new <see cref="TracingId" />.
+        /// </summary>
+        [NotNull]
+        public static Func<TracingId> NewTracingIdGenerator = () => (TracingId) Guid.NewGuid();
+
+        /// <summary>
         ///     Gets span for current async flow.
         /// </summary>
         /// <exception cref="NotInTheContextOfSpan">Current thread is not in the context of any span.</exception>
@@ -134,7 +140,7 @@ namespace GS.DecoupleIt.Tracing
                 throw new RootSpanIsNotOpened();
 
             var span = new Span(CurrentSpan.TraceId,
-                                Guid.NewGuid(),
+                                NewTracingIdGenerator(),
                                 name,
                                 CurrentSpan.Id,
                                 type);
@@ -185,10 +191,10 @@ namespace GS.DecoupleIt.Tracing
         [NotNull]
         [MustUseReturnValue]
         public static ISpan OpenRootSpan(
-            Guid traceId,
-            Guid id,
+            TracingId traceId,
+            TracingId id,
             [NotNull] string name,
-            [CanBeNull] Guid? parentId,
+            [CanBeNull] TracingId? parentId,
             SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(name), name);
@@ -229,10 +235,10 @@ namespace GS.DecoupleIt.Tracing
         [NotNull]
         [MustUseReturnValue]
         public static ISpan OpenRootSpan(
-            Guid traceId,
-            Guid id,
+            TracingId traceId,
+            TracingId id,
             [NotNull] Type creatorType,
-            Guid parentId,
+            TracingId parentId,
             SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(creatorType), creatorType);
@@ -259,7 +265,7 @@ namespace GS.DecoupleIt.Tracing
         [MustUseReturnValue]
         public static ISpan OpenRootSpan([NotNull] string name, SpanType type)
         {
-            var newSpanIdentifier = Guid.NewGuid();
+            var newSpanIdentifier = NewTracingIdGenerator();
 
             return OpenRootSpan(newSpanIdentifier,
                                 newSpanIdentifier,

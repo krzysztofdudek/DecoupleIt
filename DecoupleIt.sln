@@ -80,12 +80,15 @@ ProjectSection(SolutionItems) = preProject
 	Scripts\Nuget\Push-Tracing.ps1 = Scripts\Nuget\Push-Tracing.ps1
 	Scripts\Nuget\Push-Generic.ps1 = Scripts\Nuget\Push-Generic.ps1
 	Scripts\Nuget\Push-All.ps1 = Scripts\Nuget\Push-All.ps1
-	Scripts\Nuget\Push-Optionals.ps1 = Scripts\Nuget\Push-Optionals.ps1
 	Scripts\Nuget\Push-HttpAbstraction.ps1 = Scripts\Nuget\Push-HttpAbstraction.ps1
 	Scripts\Nuget\Push-Contextual.UnitOfWork.AspNetCore.ps1 = Scripts\Nuget\Push-Contextual.UnitOfWork.AspNetCore.ps1
 	Scripts\Nuget\Push-Contextual.UnitOfWork.ps1 = Scripts\Nuget\Push-Contextual.UnitOfWork.ps1
 	Scripts\Nuget\Push-Contextual.UnitOfWork.NHibernate5.ps1 = Scripts\Nuget\Push-Contextual.UnitOfWork.NHibernate5.ps1
 	Scripts\Nuget\Push-Contextual.UnitOfWork.EntityFrameworkCore.ps1 = Scripts\Nuget\Push-Contextual.UnitOfWork.EntityFrameworkCore.ps1
+	Scripts\Nuget\Push-Scheduling.ps1 = Scripts\Nuget\Push-Scheduling.ps1
+	Scripts\Nuget\Push-Scheduling.Quartz.AspNetCore.ps1 = Scripts\Nuget\Push-Scheduling.Quartz.AspNetCore.ps1
+	Scripts\Nuget\Push-Scheduling.Quartz.ps1 = Scripts\Nuget\Push-Scheduling.Quartz.ps1
+	Scripts\Nuget\Push-Optionals.ps1 = Scripts\Nuget\Push-Optionals.ps1
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Optionals", "Libraries\Optionals\Optionals.csproj", "{E6B67307-FCC1-4119-95EA-D1AA51831785}"
@@ -114,6 +117,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contextual.UnitOfWork.AspNetCore", "Libraries\Contextual.UnitOfWork.AspNetCore\Contextual.UnitOfWork.AspNetCore.csproj", "{DEC0D88B-003D-4454-9725-344DF5CED954}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contextual.UnitOfWork.NHibernate5", "Libraries\Contextual.UnitOfWork.NHibernate5\Contextual.UnitOfWork.NHibernate5.csproj", "{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scheduling", "Libraries\Scheduling\Scheduling.csproj", "{2AB592EB-BF65-40FA-A99E-CBB72C65615F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scheduling.Quartz", "Libraries\Scheduling.Quartz\Scheduling.Quartz.csproj", "{AE27F202-E0EC-48F2-89E4-67B0E46C5CE5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scheduling.Quartz.AspNetCore", "Libraries\Scheduling.Quartz.AspNetCore\Scheduling.Quartz.AspNetCore.csproj", "{B3E46074-08AC-4C8F-9C7E-09EBBE80B20B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -213,6 +222,18 @@ Global
 		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AB592EB-BF65-40FA-A99E-CBB72C65615F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AB592EB-BF65-40FA-A99E-CBB72C65615F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AB592EB-BF65-40FA-A99E-CBB72C65615F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AB592EB-BF65-40FA-A99E-CBB72C65615F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE27F202-E0EC-48F2-89E4-67B0E46C5CE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE27F202-E0EC-48F2-89E4-67B0E46C5CE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE27F202-E0EC-48F2-89E4-67B0E46C5CE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE27F202-E0EC-48F2-89E4-67B0E46C5CE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3E46074-08AC-4C8F-9C7E-09EBBE80B20B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3E46074-08AC-4C8F-9C7E-09EBBE80B20B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3E46074-08AC-4C8F-9C7E-09EBBE80B20B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3E46074-08AC-4C8F-9C7E-09EBBE80B20B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -247,6 +268,9 @@ Global
 		{E0AA72FD-C44D-4EBF-A7C7-C49943CE7FAA} = {713D630C-0C01-4A0B-B49D-752E17053559}
 		{DEC0D88B-003D-4454-9725-344DF5CED954} = {EF0CBA58-A0E1-412F-859A-E1B5083ADC12}
 		{ABEF72A5-87CC-4DD7-ADF3-35D136B0B3FD} = {1CAFD848-C533-45FD-A3CD-1204F9181908}
+		{2AB592EB-BF65-40FA-A99E-CBB72C65615F} = {1CAFD848-C533-45FD-A3CD-1204F9181908}
+		{AE27F202-E0EC-48F2-89E4-67B0E46C5CE5} = {1CAFD848-C533-45FD-A3CD-1204F9181908}
+		{B3E46074-08AC-4C8F-9C7E-09EBBE80B20B} = {EF0CBA58-A0E1-412F-859A-E1B5083ADC12}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21CF0CC5-F136-4044-B9B4-E52E6C37D68A}

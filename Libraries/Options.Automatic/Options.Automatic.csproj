@@ -3,9 +3,12 @@
     <Import Project="../netstandard.props" />
 
     <PropertyGroup>
-        <VersionPrefix>1.1.0</VersionPrefix>
+        <VersionPrefix>1.1.1</VersionPrefix>
         <Title>DecoupleIt - Automatic Options</Title>
         <Description>Implementation of automatic registration of options configuration.</Description>
+        <PackageReleaseNotes>
+            - fixed critical bug with loading section names
+        </PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>

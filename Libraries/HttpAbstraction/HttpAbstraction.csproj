@@ -1,15 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>1.1.0</VersionPrefix>
+        <VersionPrefix>1.1.1</VersionPrefix>
         <Title>DecoupleIt - http abstraction</Title>
         <Description>Implements http abstraction for uniformity of interfaces between controllers and services used on client side.</Description>
+        <PackageReleaseNotes>
+            - added required dependency
+        </PackageReleaseNotes>
     </PropertyGroup>
 
     <Import Project="../netstandard.props" />
 
     <ItemGroup>
       <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
+      <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
       <ProjectReference Include="..\Shared\Shared.csproj" />
       <ProjectReference Include="..\Tracing\Tracing.csproj" />
     </ItemGroup>

@@ -4,46 +4,34 @@ using JetBrains.Annotations;
 namespace GS.DecoupleIt.Tracing.AspNetCore
 {
     /// <summary>
-    ///     Tracing options.
+    ///     Http headers options of tracing.
     /// </summary>
-    [ConfigureAsNamespace]
-    public sealed class TracingOptions
+    [PublicAPI]
+    [Configure]
+    public sealed class HeadersOptions
     {
         /// <summary>
-        ///     Headers.
+        ///     Parent span id header name. Default: "X-B3-ParentSpanId".
         /// </summary>
         [NotNull]
-        public HeadersOptions Headers { get; set; } = new HeadersOptions();
+        public string ParentSpanIdHeaderName { get; set; } = "X-B3-ParentSpanId";
 
         /// <summary>
-        ///     Http headers options of tracing.
+        ///     Span id header name. Default: "X-B3-SpanId".
         /// </summary>
-        [PublicAPI]
-        public sealed class HeadersOptions
-        {
-            /// <summary>
-            ///     Parent span id header name. Default: "X-B3-ParentSpanId".
-            /// </summary>
-            [NotNull]
-            public string ParentSpanIdHeaderName { get; set; } = "X-B3-ParentSpanId";
+        [NotNull]
+        public string SpanIdHeaderName { get; set; } = "X-B3-SpanId";
 
-            /// <summary>
-            ///     Span id header name. Default: "X-B3-SpanId".
-            /// </summary>
-            [NotNull]
-            public string SpanIdHeaderName { get; set; } = "X-B3-SpanId";
+        /// <summary>
+        ///     Span name header name. Default: "X-SpanName".
+        /// </summary>
+        [NotNull]
+        public string SpanNameHeaderName { get; set; } = "X-SpanName";
 
-            /// <summary>
-            ///     Span name header name. Default: "X-SpanName".
-            /// </summary>
-            [NotNull]
-            public string SpanNameHeaderName { get; set; } = "X-SpanName";
-
-            /// <summary>
-            ///     Trace id header name. Default: "X-B3-TraceId".
-            /// </summary>
-            [NotNull]
-            public string TraceIdHeaderName { get; set; } = "X-B3-TraceId";
-        }
+        /// <summary>
+        ///     Trace id header name. Default: "X-B3-TraceId".
+        /// </summary>
+        [NotNull]
+        public string TraceIdHeaderName { get; set; } = "X-B3-TraceId";
     }
 }

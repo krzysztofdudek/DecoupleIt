@@ -9,11 +9,9 @@ namespace Samples.Documents.Command
 {
     public sealed class WebHost : DefaultWebHost
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
-            var host = new WebHost();
-
-            host.Run(args);
+            return DefaultWebHost.Main<WebHost>(args);
         }
 
         public override void ConfigureServices(WebHostBuilderContext context, IServiceCollection serviceCollection)

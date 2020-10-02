@@ -1,5 +1,6 @@
 using GS.DecoupleIt.AspNetCore.Service;
 using GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore;
+using GS.DecoupleIt.Scheduling.Quartz.AspNetCore;
 using GS.DecoupleIt.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,11 +13,9 @@ namespace Samples.Clients.Command
 {
     public sealed class WebHost : DefaultWebHost
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
-            var host = new WebHost();
-
-            host.Run(args);
+            return DefaultWebHost.Main<WebHost>(args);
         }
 
         public override void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder builder)
@@ -24,6 +23,8 @@ namespace Samples.Clients.Command
             base.ConfigureApplication(context, builder);
 
             builder.UseContextualUnitOfWork<ClientsDbContext>();
+
+            builder.UseQuartzSchedulingForAspNetCore();
         }
 
         public override void ConfigureServices(WebHostBuilderContext context, IServiceCollection serviceCollection)

@@ -122,8 +122,8 @@ namespace GS.DecoupleIt.Tracing.Tests
             {
                 var span = Tracer.CurrentSpan;
 
-                Assert.NotEqual(Guid.Empty, span.Id);
-                Assert.NotEqual(Guid.Empty, span.TraceId);
+                Assert.NotEqual<TracingId>(Guid.Empty, span.Id);
+                Assert.NotEqual<TracingId>(Guid.Empty, span.TraceId);
                 Assert.Null(span.ParentId);
                 Assert.NotNull(span.Name);
                 Assert.Equal(SpanType.ExternalRequest, span.Type);

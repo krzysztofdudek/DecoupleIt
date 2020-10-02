@@ -23,7 +23,8 @@ namespace GS.DecoupleIt.Optionals
         }
 
         /// <summary>
-        ///     Tries to cast <paramref name="obj" /> to <typeparamref name="T" />. If it does not succeed <see cref="None" /> is returned.
+        ///     Tries to cast <paramref name="obj" /> to <typeparamref name="T" />. If it does not succeed <see cref="None" /> is
+        ///     returned.
         /// </summary>
         /// <param name="obj">Object.</param>
         /// <typeparam name="T">Type of the object.</typeparam>

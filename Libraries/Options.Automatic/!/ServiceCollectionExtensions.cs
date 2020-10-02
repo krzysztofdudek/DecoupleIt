@@ -53,7 +53,8 @@ namespace GS.DecoupleIt.Options.Automatic
                                                  (configureAttribute?.ConfigurationSectionName ?? (type.FullName.AsNotNull()
                                                                                                        .EndsWith("Options")
                                                      ? type.FullName.AsNotNull()
-                                                           .Substring(type.FullName.AsNotNull()
+                                                           .Substring(0,
+                                                                      type.FullName.AsNotNull()
                                                                           .Length - 7)
                                                      : type.FullName))?.Replace('.', ':')
                                              })

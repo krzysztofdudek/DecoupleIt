@@ -1,6 +1,7 @@
 using System.Reflection;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Options.Automatic;
+using GS.DecoupleIt.Scheduling;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +14,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 #if NETCOREAPP2_2
 using Newtonsoft.Json;
+
 #elif NETCOREAPP3_1
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,6 +55,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             serviceCollection.ScanAssemblyForImplementations(ThisAssembly);
             serviceCollection.ScanAssemblyForOptions(ThisAssembly, context.Configuration.AsNotNull());
+            serviceCollection.ScanAssemblyForJobs(ThisAssembly, context.Configuration.AsNotNull());
         }
 
         /// <inheritdoc />

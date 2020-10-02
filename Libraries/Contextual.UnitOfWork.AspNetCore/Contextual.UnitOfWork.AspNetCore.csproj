@@ -1,8 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <VersionPrefix>1.3.0</VersionPrefix>
-        <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
         <Title>DecoupleIt - ASP .NET Core integration for contextual unit of work</Title>
         <Description>ASP .NET Core support for contextual unit of work.</Description>
         <PackageReleaseNotes>
@@ -14,10 +13,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Contextual.UnitOfWork\Contextual.UnitOfWork.csproj" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
-        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.*" />
     </ItemGroup>
 
 </Project>

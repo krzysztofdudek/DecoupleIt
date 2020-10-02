@@ -1,4 +1,3 @@
-using System;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.Tracing
@@ -18,10 +17,10 @@ namespace GS.DecoupleIt.Tracing
         /// <param name="parentId">Parent span identifier.</param>
         /// <param name="type">Type.</param>
         internal Span(
-            Guid traceId,
-            Guid id,
+            TracingId traceId,
+            TracingId id,
             [NotNull] string name,
-            Guid? parentId,
+            TracingId? parentId,
             SpanType type)
         {
             TraceId  = traceId;
@@ -34,12 +33,12 @@ namespace GS.DecoupleIt.Tracing
         /// <summary>
         ///     Unique identifier of caller operation.
         /// </summary>
-        public Guid TraceId { get; }
+        public TracingId TraceId { get; }
 
         /// <summary>
         ///     Unique identifier of scope.
         /// </summary>
-        public Guid Id { get; }
+        public TracingId Id { get; }
 
         /// <summary>
         ///     Name of scope.
@@ -50,7 +49,7 @@ namespace GS.DecoupleIt.Tracing
         /// <summary>
         ///     Identifier of parent span.
         /// </summary>
-        public Guid? ParentId { get; }
+        public TracingId? ParentId { get; }
 
         /// <summary>
         ///     Type of an scope indicates what is the "owner" of it.

@@ -133,7 +133,8 @@ namespace GS.DecoupleIt.InternalEvents.Scope
         }
 
         /// <summary>
-        ///     Initializes async local storage. The best way is to do this on the beginning of thread that will be using internal events.
+        ///     Initializes async local storage. The best way is to do this on the beginning of thread that will be using internal
+        ///     events.
         ///     At the end of usage of internal events is recommended to call <see cref="Clear" /> to clear storage.
         /// </summary>
         public static void Initialize()

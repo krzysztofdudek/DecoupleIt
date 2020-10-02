@@ -13,7 +13,7 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
     [Transient]
     internal sealed class TracingMiddleware : IMiddleware
     {
-        public TracingMiddleware([NotNull] IOptions<TracingOptions> options, [NotNull] ILogger<TracingMiddleware> logger)
+        public TracingMiddleware([NotNull] IOptions<HeadersOptions> options, [NotNull] ILogger<TracingMiddleware> logger)
         {
             _logger  = logger;
             _options = options.Value.AsNotNull();
@@ -29,13 +29,13 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
                 var request        = context.Request.AsNotNull();
                 var requestHeaders = request.Headers.AsNotNull();
 
-                var traceIds = requestHeaders.TryGetValue(_options.Headers.TraceIdHeaderName);
-                var spanIds  = requestHeaders.TryGetValue(_options.Headers.SpanIdHeaderName);
+                var traceIds = requestHeaders.TryGetValue(_options.TraceIdHeaderName);
+                var spanIds  = requestHeaders.TryGetValue(_options.SpanIdHeaderName);
 
-                var spanName = requestHeaders.TryGetValue(_options.Headers.SpanNameHeaderName)
+                var spanName = requestHeaders.TryGetValue(_options.SpanNameHeaderName)
                                              .ToString() ?? "undefined";
 
-                var parentSpanIds = requestHeaders.TryGetValue(_options.Headers.ParentSpanIdHeaderName);
+                var parentSpanIds = requestHeaders.TryGetValue(_options.ParentSpanIdHeaderName);
 
                 Guid traceId, spanId, parentSpanId;
 
@@ -68,10 +68,10 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
                                                                         .Response.AsNotNull()
                                                                         .Headers.AsNotNull();
 
-                                       responseHeaders.Add(_options.Headers.TraceIdHeaderName, traceId.ToString());
-                                       responseHeaders.Add(_options.Headers.SpanIdHeaderName, spanId.ToString());
-                                       responseHeaders.Add(_options.Headers.SpanNameHeaderName, spanName);
-                                       responseHeaders.Add(_options.Headers.ParentSpanIdHeaderName, parentSpanId.ToString());
+                                       responseHeaders.Add(_options.TraceIdHeaderName, traceId.ToString());
+                                       responseHeaders.Add(_options.SpanIdHeaderName, spanId.ToString());
+                                       responseHeaders.Add(_options.SpanNameHeaderName, spanName);
+                                       responseHeaders.Add(_options.ParentSpanIdHeaderName, parentSpanId.ToString());
 
                                        return Task.CompletedTask;
                                    },
@@ -98,6 +98,6 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
         private readonly ILogger<TracingMiddleware> _logger;
 
         [NotNull]
-        private readonly TracingOptions _options;
+        private readonly HeadersOptions _options;
     }
 }

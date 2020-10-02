@@ -122,10 +122,9 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
                       .AsNotNull();
 
             var tracingOptions = host.Services.AsNotNull()
-                                     .GetRequiredService<IOptions<TracingOptions>>()
+                                     .GetRequiredService<IOptions<HeadersOptions>>()
                                      .AsNotNull()
-                                     .Value.AsNotNull()
-                                     .Headers;
+                                     .Value;
 
             var httpClient = new HttpClient
             {

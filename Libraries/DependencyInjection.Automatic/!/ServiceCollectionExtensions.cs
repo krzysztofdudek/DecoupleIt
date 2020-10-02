@@ -46,7 +46,8 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         ///                 <term>ScopedAttribute</term>
         ///             </item>
         ///         </list>
-        ///         The method of registration of first three attributes is taken by looking at the nearest annotation of base class or implemented interface.
+        ///         The method of registration of first three attributes is taken by looking at the nearest annotation of base
+        ///         class or implemented interface.
         ///     </para>
         ///     <para>
         ///         Method scans given assembly for classes that can be registered and registers them according to default setting

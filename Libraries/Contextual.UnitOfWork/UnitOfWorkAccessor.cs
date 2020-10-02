@@ -40,7 +40,8 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         }
 
         /// <summary>
-        ///     Checks whether <typeparamref name="TUnitOfWork" /> is currently available in async local storage. Method can be used to validate if unit of work was
+        ///     Checks whether <typeparamref name="TUnitOfWork" /> is currently available in async local storage. Method can be
+        ///     used to validate if unit of work was
         ///     properly disposed.
         /// </summary>
         /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>

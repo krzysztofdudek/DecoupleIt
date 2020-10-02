@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore;
 using GS.DecoupleIt.DependencyInjection.Automatic;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
@@ -25,6 +27,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Rewrite;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 #elif NETCOREAPP3_1
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +63,31 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// </summary>
         protected virtual bool ValidateServices { get; } = true;
 
+        /// <summary>
+        ///     Template of main function that reports errors caused by test run.
+        /// </summary>
+        /// <param name="args">Arguments.</param>
+        /// <typeparam name="TWebHost">Type of web host.</typeparam>
+        /// <returns>Status code.</returns>
+        public static int Main<TWebHost>([CanBeNull] string[] args = default)
+            where TWebHost : DefaultWebHost, new()
+        {
+            var host = new TWebHost();
+
+            try
+            {
+                host.Run(args);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"ERROR: {exception.Message?.Replace("\n", " ")}");
+
+                return 1;
+            }
+
+            return 0;
+        }
+
 #if NETCOREAPP3_1
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
@@ -67,7 +95,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.IgnoreReadOnlyProperties = false;
-            options.JsonSerializerOptions.IgnoreNullValues         = true;
+            options.JsonSerializerOptions.IgnoreNullValues = true;
         }
 #elif NETCOREAPP2_2
         /// <inheritdoc />
@@ -298,14 +326,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
 #if NETCOREAPP3_1
                           .Configure((context, applicationBuilder) =>
                           {
-                              context            = context.AsNotNull();
+                              context = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
 #elif NETCOREAPP2_2
                           .Configure(applicationBuilder =>
                           {
                               var context = new WebHostBuilderContext
                               {
-                                  Configuration = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
+                                  Configuration      = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
                                   HostingEnvironment = applicationBuilder.ApplicationServices.GetRequiredService<IHostingEnvironment>()
                               };
 
@@ -323,13 +351,27 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               {
                                   var logger = context2.RequestServices.GetRequiredService<ILogger<DefaultWebHost>>();
 
+                                  var httpAbstractionOptions = context2.RequestServices.GetRequiredService<IOptions<HttpAbstractionOptions>>()
+                                                                       .Value;
+
+                                  var hostName = GetType()
+                                                 .Assembly.GetName()
+                                                 .Name;
+
+                                  context2.Response.OnStarting(() =>
+                                  {
+                                      context2.Response.Headers.Add(httpAbstractionOptions.HostIdentifierHeaderName, Identifier.ToString());
+                                      context2.Response.Headers.Add(httpAbstractionOptions.HostNameHeaderName, hostName);
+                                      context2.Response.Headers.Add(httpAbstractionOptions.HostVersionHeaderName, Version);
+
+                                      return Task.CompletedTask;
+                                  });
+
                                   using (logger.BeginScope(new
                                   {
                                       HostIdentifier = Identifier,
-                                      HostName = GetType()
-                                                 .Assembly.GetName()
-                                                 .Name,
-                                      HostVersion = Version
+                                      HostName       = hostName,
+                                      HostVersion    = Version
                                   }))
                                   {
                                       await next();
