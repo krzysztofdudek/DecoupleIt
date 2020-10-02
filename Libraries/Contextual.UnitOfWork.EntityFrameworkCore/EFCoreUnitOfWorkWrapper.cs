@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 #if NET5_0
 using Microsoft.EntityFrameworkCore.Query;
+
 #endif
 #if (NETCOREAPP3_1 || NETSTANDARD2_1 || NETCOREAPP2_2 || NETSTANDARD2_0) && !NET5_0
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -98,25 +99,25 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
         public IAsyncQueryProvider QueryProvider => ((IDbContextDependencies) _dbContext).QueryProvider;
 
 #if NET5_0
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void SetLease(DbContextLease lease)
         {
             ((IDbContextPoolable) _dbContext).SetLease(lease);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void ClearLease()
         {
             ((IDbContextPoolable) _dbContext).ClearLease();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void SnapshotConfiguration()
         {
             ((IDbContextPoolable) _dbContext).SnapshotConfiguration();
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public object GetOrAddSet(IDbSetSource source, string entityTypeName, Type type)
         {
             return ((IDbSetCache) _dbContext).GetOrAddSet(source, entityTypeName, type);
