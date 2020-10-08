@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
@@ -112,5 +113,12 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// <param name="context">Web host builder context.</param>
         /// <param name="builder">Cors policy builder.</param>
         void ConfigureCorsPolicyBuilder([NotNull] WebHostBuilderContext context, [NotNull] CorsPolicyBuilder builder);
+
+        /// <summary>
+        ///     Configures <see cref="LoggerConfiguration"/>.
+        /// </summary>
+        /// <param name="context">Web host builder context.</param>
+        /// <param name="configuration">Logger configuration.</param>
+        void ConfigureLogging([NotNull] WebHostBuilderContext context, [NotNull] LoggerConfiguration configuration);
     }
 }

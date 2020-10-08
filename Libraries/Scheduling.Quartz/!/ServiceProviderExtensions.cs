@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using GS.DecoupleIt.InternalEvents;
+using GS.DecoupleIt.InternalEvents.Scope;
 using GS.DecoupleIt.Scheduling.Exceptions;
 using GS.DecoupleIt.Shared;
+using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -77,9 +80,24 @@ namespace GS.DecoupleIt.Scheduling.Quartz
                 var job = (IJob) serviceProviderScope.ServiceProvider.GetRequiredService(jobType)
                                                      .AsNotNull();
 
+                var internalEventDispatcher = serviceProviderScope.ServiceProvider.GetRequiredService<IInternalEventDispatcher>().AsNotNull();
+
+                var logger = serviceProviderScope.ServiceProvider.GetRequiredService<ILogger<BaseQuartzJob>>().AsNotNull();
+
+                Tracer.Initialize();
+                InternalEventsScope.Initialize();
+
                 try
                 {
-                    await job.ExecuteAsync(context.CancellationToken);
+                    using var tracerSpan = Tracer.OpenRootSpan(jobType, SpanType.Job);
+
+                    using var loggerScope = logger.BeginTracerSpan();
+
+                    using var internalEventsScope = InternalEventsScope.OpenScope();
+
+                    await internalEventsScope.DispatchEventsAsync(internalEventDispatcher,
+                                                                  () => job.ExecuteAsync(context.CancellationToken),
+                                                                  context.CancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -87,6 +105,9 @@ namespace GS.DecoupleIt.Scheduling.Quartz
                 }
                 finally
                 {
+                    InternalEventsScope.Clear();
+                    Tracer.Clear();
+
                     _jobIsExecuting = false;
                 }
             }

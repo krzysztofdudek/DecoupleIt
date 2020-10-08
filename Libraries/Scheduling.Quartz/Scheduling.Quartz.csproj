@@ -7,7 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\InternalEvents\InternalEvents.csproj" />
         <ProjectReference Include="..\Scheduling\Scheduling.csproj" />
+        <ProjectReference Include="..\Tracing\Tracing.csproj" />
     </ItemGroup>
 
     <ItemGroup>

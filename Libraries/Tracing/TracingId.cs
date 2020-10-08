@@ -15,7 +15,7 @@ namespace GS.DecoupleIt.Tracing
         ///     Creates an instance of <see cref="TracingId" />.
         /// </summary>
         /// <param name="value"></param>
-        public TracingId([NotNull] string value)
+        private TracingId([NotNull] string value)
         {
             _value = value;
         }
@@ -57,6 +57,12 @@ namespace GS.DecoupleIt.Tracing
         public static implicit operator string(TracingId tracingId)
         {
             return tracingId._value;
+        }
+
+        [NotNull]
+        public override string ToString()
+        {
+            return _value;
         }
     }
 }

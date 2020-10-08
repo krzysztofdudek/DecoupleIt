@@ -19,6 +19,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 #if NETCOREAPP2_2
@@ -69,6 +71,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// <param name="args">Arguments.</param>
         /// <typeparam name="TWebHost">Type of web host.</typeparam>
         /// <returns>Status code.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ConstantConditionalAccessQualifier")]
         public static int Main<TWebHost>([CanBeNull] string[] args = default)
             where TWebHost : DefaultWebHost, new()
         {
@@ -127,6 +130,55 @@ namespace GS.DecoupleIt.AspNetCore.Service
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
         }
 
+        /// <inheritdoc />
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
+        public override void ConfigureLogging(WebHostBuilderContext context, LoggerConfiguration configuration)
+        {
+            configuration.MinimumLevel.Debug()
+                         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                         .Filter.ByExcluding(logEvent =>
+                         {
+                             if (logEvent.Level >= LogEventLevel.Warning)
+                                 return false;
+
+                             logEvent.Properties.TryGetValue("SourceContext", out var sourceContextValue);
+
+                             var sourceContext = sourceContextValue?.ToString()
+                                                                   .Trim('"');
+
+                             if (sourceContext is null)
+                                 return false;
+
+                             if (sourceContext.StartsWith("Microsoft.AspNetCore"))
+                                 return true;
+
+                             if (sourceContext.StartsWith("Quartz"))
+                                 return true;
+
+                             return false;
+                         })
+                         .Filter.ByExcluding(x =>
+                         {
+                             x.RemovePropertyIfPresent("ActionId");
+                             x.RemovePropertyIfPresent("ActionName");
+                             x.RemovePropertyIfPresent("SourceContext");
+
+                             x.RemovePropertyIfPresent("CorrelationId");
+                             x.RemovePropertyIfPresent("RequestPath");
+                             x.RemovePropertyIfPresent("ConnectionId");
+                             x.RemovePropertyIfPresent("RequestId");
+                             x.RemovePropertyIfPresent("EventId.Id");
+
+                             return false;
+                         })
+                         .Enrich.WithProperty("hostIdentifier", Identifier)
+                         .Enrich.WithProperty("hostName", GetType()
+                                                          .Assembly.GetName()
+                                                          .Name)
+                         .Enrich.WithProperty("hostVersion", Version)
+                         .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss:fff} {Level:u3} | {@SpanType} {@SpanName} | {@TraceId}:{@SpanId}:{@ParentSpanId}] {Message:lj}{NewLine}{Exception}");
+        }
+
         /// <inheritdoc cref="WebHostExtensions.Run" />
         /// <param name="args">Arguments.</param>
         public void Run([CanBeNull] [ItemCanBeNull] params string[] args)
@@ -175,6 +227,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
             return new IWebHostModule[0];
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CognitiveComplexity")]
         [NotNull]
@@ -211,12 +264,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
                               builder.AddEnvironmentVariables("DOTNET_");
                               builder.AddCommandLine(args);
-                          })
-                          .ConfigureLogging((context, builder) =>
-                          {
-                              builder.AddConfiguration(context.Configuration.GetSection("Logging"));
-                              builder.AddConsole();
-                              builder.AddDebug();
                           })
                           .ConfigureServices((context, collection) =>
                           {
@@ -449,6 +496,15 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                       module.ConfigureEndpoints(context, builder);
                               });
 #endif
+                          })
+                          .UseSerilog((context, configuration) =>
+                          {
+                              ConfigureLogging(context, configuration);
+
+                              foreach (var module in modules)
+                              {
+                                  module.ConfigureLogging(context, configuration);
+                              }
                           });
 
             ConfigureWebHostBuilder(webHostBuilder);

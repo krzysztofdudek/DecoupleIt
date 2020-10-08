@@ -1,29 +1,39 @@
 using System.Threading;
 using System.Threading.Tasks;
+using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Scheduling;
+using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Samples.Clients.Command.Model;
 
 namespace Samples.Clients.Command.Jobs
 {
     [Singleton]
-    [SimpleSchedule(Seconds = 5)]
+    [SimpleSchedule(Milliseconds = 1)]
     internal sealed class SampleJob : IJob
     {
-        public SampleJob([NotNull] ILogger<SampleJob> logger)
+        public SampleJob([NotNull] ILogger<SampleJob> logger, [NotNull] IUnitOfWorkAccessor unitOfWorkAccessor)
         {
-            _logger = logger;
+            _logger                  = logger;
+            _unitOfWorkAccessor = unitOfWorkAccessor;
         }
 
-        public Task ExecuteAsync(CancellationToken cancellationToken = default)
+        public async Task ExecuteAsync(CancellationToken cancellationToken = default)
         {
             _logger.LogInformation("Sample job log.");
 
-            return Task.CompletedTask;
+            await using var dbContext = _unitOfWorkAccessor.Get<ClientsDbContext>();
+
+            var _ = await dbContext.Clients.ToListAsync(cancellationToken).AsNotNull();
         }
 
         [NotNull]
         private readonly ILogger<SampleJob> _logger;
+
+        [NotNull]
+        private readonly IUnitOfWorkAccessor _unitOfWorkAccessor;
     }
 }
