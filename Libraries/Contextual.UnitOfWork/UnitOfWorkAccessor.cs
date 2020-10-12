@@ -114,8 +114,15 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 return (TUnitOfWork) storageEntry.UnitOfWork;
             }
 
-            var instance = _serviceProvider.GetRequiredService<TUnitOfWork>()
+            TUnitOfWork instance;
+            var         factory = _serviceProvider.GetService<Func<TUnitOfWork>>();
+
+            if (factory is null)
+                instance = _serviceProvider.GetRequiredService<TUnitOfWork>()
                                            .AsNotNull();
+            else
+                instance = factory()
+                    .AsNotNull();
 
             lock (StorageEntries)
             {
@@ -174,6 +181,8 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 if (StorageEntries.Value.Count == 0)
                     StorageEntries.Value = null;
             }
+
+            entry.UnitOfWork.Disposed -= OnInstanceDisposed;
         }
 
         [NotNull]

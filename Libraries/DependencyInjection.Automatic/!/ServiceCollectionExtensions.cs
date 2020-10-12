@@ -89,15 +89,17 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
 
                 var serviceDescriptors = GetImplementationServices(implementationType, ignoredTypes);
 
-                foreach (var (serviceDescriptor, registerManyTimes) in serviceDescriptors)
-                {
-                    var descriptor = serviceDescriptor.AsNotNull();
-
-                    if (registerManyTimes || registerAsManyTypes.Contains(descriptor.ServiceType))
-                        serviceCollection.Add(descriptor);
+                foreach (var entry in serviceDescriptors)
+                    if (entry.RegisterManyTimes || registerAsManyTypes.Contains(entry.ServiceDescriptor.ServiceType))
+                    {
+                        serviceCollection.Add(entry.ServiceDescriptor);
+                        serviceCollection.Add(entry.FactoryServiceDescriptor);
+                    }
                     else
-                        serviceCollection.AddOrReplace(descriptor);
-                }
+                    {
+                        serviceCollection.AddOrReplace(entry.ServiceDescriptor);
+                        serviceCollection.AddOrReplace(entry.FactoryServiceDescriptor);
+                    }
             }
         }
 
@@ -118,25 +120,80 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         };
 
         [NotNull]
-        private static IEnumerable<(ServiceDescriptor ServiceDescriptor, bool RegisterManyTimes)> GetImplementationServices(
-            [NotNull] Type implementationType,
+        private static ServiceDescriptor CreateFactoryServiceDescriptor([NotNull] Type instanceType, [NotNull] Type serviceType)
+        {
+            return (ServiceDescriptor) typeof(ServiceCollectionExtensions)
+                                       .GetMethod(nameof(CreateFactoryServiceDescriptorTyped), BindingFlags.NonPublic | BindingFlags.Static)
+                                       .AsNotNull()
+                                       .MakeGenericMethod(instanceType, serviceType)
+                                       .Invoke(null, null)
+                                       .AsNotNull();
+        }
+
+        private static ServiceDescriptor CreateFactoryServiceDescriptorTyped<TInstanceType, TServiceType>()
+        {
+            var type = typeof(TInstanceType);
+
+            var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+
+            if (constructors.Length > 1)
+                throw new InvalidOperationException($"Ambiguous constructor for {type.FullName}.");
+
+            var constructor = constructors.Single()
+                                          .AsNotNull();
+
+            var parameters = constructor.GetParameters();
+
+            return ServiceDescriptor.Transient(serviceProvider =>
+            {
+                return new Func<TServiceType>(() =>
+                {
+                    var parameterValues = parameters.Select(parameter =>
+                                                    {
+                                                        if (parameter.ParameterType.IsGenericType &&
+                                                            parameter.ParameterType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                                                            return serviceProvider.AsNotNull()
+                                                                                  .GetService(parameter.ParameterType);
+
+                                                        return serviceProvider.AsNotNull()
+                                                                              .GetRequiredService(parameter.ParameterType);
+                                                    })
+                                                    .ToArray();
+
+                    var instance = (TServiceType) constructor.Invoke(parameterValues);
+
+                    return instance;
+                });
+            });
+        }
+
+        [NotNull]
+        private static IEnumerable<ImplementationsServiceDescriptors> GetImplementationServices(
+            [NotNull] Type instanceType,
             [NotNull] [ItemNotNull] Type[] ignoredTypes)
         {
-            return implementationType.GetAllInterfaces()
-                                     .Concat(implementationType.GetAllBaseTypes())
-                                     .Distinct()
-                                     .Except(AlwaysIgnoredTypes)
-                                     .Except(ignoredTypes)
-                                     .Where(x => x != null)
-                                     .Select(serviceType => ServiceDescriptor.Transient(serviceType,
-                                                                                        serviceProvider => serviceProvider.AsNotNull()
-                                                                                            .GetRequiredService(implementationType))
-                                                                             .AsNotNull())
-                                     .Select(x => (ServiceDescriptor: x, RegisterManyTimes: x.ServiceType.AsNotNull()
-                                                                                             .GetCustomAttributes<RegisterManyTimesAttribute>(false)
-                                                                                             .Any()))
-                                     .ToList()
-                                     .AsCollectionWithNotNullItems();
+            return instanceType.GetAllInterfaces()
+                               .Concat(instanceType.GetAllBaseTypes())
+                               .Distinct()
+                               .Except(AlwaysIgnoredTypes)
+                               .Except(ignoredTypes)
+                               .Where(x => x != null)
+                               .Select(serviceType =>
+                               {
+                                   var serviceDescriptor = ServiceDescriptor.Transient(serviceType,
+                                                                                       serviceProvider => serviceProvider.AsNotNull()
+                                                                                           .GetRequiredService(instanceType))
+                                                                            .AsNotNull();
+
+                                   var factoryServiceDescriptor = CreateFactoryServiceDescriptor(instanceType, serviceType);
+
+                                   var registerManyTimes = serviceType.GetCustomAttributes<RegisterManyTimesAttribute>(false)
+                                                                      .Any();
+
+                                   return new ImplementationsServiceDescriptors(serviceDescriptor, factoryServiceDescriptor, registerManyTimes);
+                               })
+                               .ToList()
+                               .AsCollectionWithNotNullItems();
         }
 
         [NotNull]
@@ -165,7 +222,11 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
                 _                    => ServiceDescriptor.Singleton(type, type)
             };
 
+            var factoryServiceDescriptor = CreateFactoryServiceDescriptor(type, type);
+
             serviceCollection.AddOrReplace(serviceDescriptor.AsNotNull());
+
+            serviceCollection.AddOrReplace(factoryServiceDescriptor);
         }
 
         private static bool ValidateType([NotNull] Type type, [NotNull] Type[] ignoredTypes, [NotNull] [ItemNotNull] Type[] ignoredBaseTypes)
@@ -204,6 +265,27 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
 
             return _attributesMeaningAuto.Intersect(attributesTypes)
                                          .Any();
+        }
+
+        private readonly struct ImplementationsServiceDescriptors
+        {
+            [NotNull]
+            public readonly ServiceDescriptor ServiceDescriptor;
+
+            [NotNull]
+            public readonly ServiceDescriptor FactoryServiceDescriptor;
+
+            public ImplementationsServiceDescriptors(
+                [NotNull] ServiceDescriptor serviceDescriptor,
+                [NotNull] ServiceDescriptor factoryServiceDescriptor,
+                bool registerManyTimes)
+            {
+                ServiceDescriptor        = serviceDescriptor;
+                FactoryServiceDescriptor = factoryServiceDescriptor;
+                RegisterManyTimes        = registerManyTimes;
+            }
+
+            public readonly bool RegisterManyTimes;
         }
     }
 }
