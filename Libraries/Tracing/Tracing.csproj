@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>2.0.0</VersionPrefix>
+        <VersionPrefix>2.0.1</VersionPrefix>
         <Title>DecoupleIt - Tracing</Title>
         <Description>Implementation of tracing pattern allowing to define own scopes per case.</Description>
         <PackageReleaseNotes>
-            - removed unnecessary dependency
+            - added ToString method to TracingId
         </PackageReleaseNotes>
     </PropertyGroup>
 
