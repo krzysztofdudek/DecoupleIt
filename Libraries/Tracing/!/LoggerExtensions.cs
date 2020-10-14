@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
@@ -21,13 +22,27 @@ namespace GS.DecoupleIt.Tracing
         {
             var span = Tracer.CurrentSpan;
 
-            return logger.BeginScope(new
+            return logger.BeginScope(new Dictionary<string, object>
                          {
-                             TraceId      = span.TraceId,
-                             SpanId       = span.Id,
-                             ParentSpanId = span.ParentId,
-                             SpanName     = span.Name,
-                             SpanType     = span.Type
+                             {
+                                 "TraceId", span.TraceId
+                             },
+
+                             {
+                                 "SpanId", span.Id
+                             },
+
+                             {
+                                 "ParentSpanId", span.ParentId
+                             },
+
+                             {
+                                 "SpanName", span.Name
+                             },
+
+                             {
+                                 "SpanType", span.Type
+                             }
                          })
                          .AsNotNull();
         }
