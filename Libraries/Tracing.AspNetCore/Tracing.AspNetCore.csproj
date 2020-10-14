@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>1.1.0</VersionPrefix>
+        <VersionPrefix>1.2.0</VersionPrefix>
         <Title>DecoupleIt - ASP .NET Core integration for tracing</Title>
         <Description>ASP .NET Core support for tracing.</Description>
         <PackageReleaseNotes>
-            - added required dependency
+            - added support for TracingId
         </PackageReleaseNotes>
     </PropertyGroup>
 

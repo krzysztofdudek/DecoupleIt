@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
@@ -28,36 +27,19 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
             {
                 var request        = context.Request.AsNotNull();
                 var requestHeaders = request.Headers.AsNotNull();
+                var traceIds       = requestHeaders.TryGetValue(_options.TraceIdHeaderName);
+                var traceId        = traceIds.Count == 1 ? traceIds[0] : null;
+                var spanIds        = requestHeaders.TryGetValue(_options.SpanIdHeaderName);
+                var spanId         = spanIds.Count == 1 ? spanIds[0] : null;
+                var spanNames      = requestHeaders.TryGetValue(_options.SpanNameHeaderName);
+                var spanName       = spanNames.Count == 1 ? spanNames[0] : null;
+                var parentSpanIds  = requestHeaders.TryGetValue(_options.ParentSpanIdHeaderName);
+                var parentSpanId   = parentSpanIds.Count == 1 ? parentSpanIds[0] : null;
 
-                var traceIds = requestHeaders.TryGetValue(_options.TraceIdHeaderName);
-                var spanIds  = requestHeaders.TryGetValue(_options.SpanIdHeaderName);
+                if (traceId is null || spanId is null)
+                    traceId = spanId = Tracer.NewTracingIdGenerator();
 
-                var spanName = requestHeaders.TryGetValue(_options.SpanNameHeaderName)
-                                             .ToString() ?? "undefined";
-
-                var parentSpanIds = requestHeaders.TryGetValue(_options.ParentSpanIdHeaderName);
-
-                Guid traceId, spanId, parentSpanId;
-
-                if (traceIds.Count == 1 && spanIds.Count == 1)
-                {
-                    traceId = traceIds[0]
-                        .IfNotNull(Guid.Parse);
-
-                    spanId = spanIds[0]
-                        .IfNotNull(Guid.Parse);
-
-                    if (parentSpanIds.Count == 1)
-                        parentSpanId = parentSpanIds[0]
-                            .IfNotNull(Guid.Parse);
-                    else
-                        parentSpanId = default;
-                }
-                else
-                {
-                    traceId      = spanId = Guid.NewGuid();
-                    parentSpanId = default;
-                }
+                spanName ??= string.Empty;
 
                 context.Response.AsNotNull()
                        .OnStarting(httpContextObject =>
@@ -68,10 +50,10 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
                                                                         .Response.AsNotNull()
                                                                         .Headers.AsNotNull();
 
-                                       responseHeaders.Add(_options.TraceIdHeaderName, traceId.ToString());
-                                       responseHeaders.Add(_options.SpanIdHeaderName, spanId.ToString());
+                                       responseHeaders.Add(_options.TraceIdHeaderName, traceId);
+                                       responseHeaders.Add(_options.SpanIdHeaderName, spanId);
                                        responseHeaders.Add(_options.SpanNameHeaderName, spanName);
-                                       responseHeaders.Add(_options.ParentSpanIdHeaderName, parentSpanId.ToString());
+                                       responseHeaders.Add(_options.ParentSpanIdHeaderName, parentSpanId);
 
                                        return Task.CompletedTask;
                                    },
