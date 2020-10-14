@@ -1,12 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>1.1.1</VersionPrefix>
+        <VersionPrefix>1.2.0</VersionPrefix>
         <Title>DecoupleIt - Internal events</Title>
         <Description>Library implements concept of application internal events allowing to decouple code and make it more "reactive" rather than "imperative".</Description>
         <PackageReleaseNotes>
-            - allow only once to dispose InternalEventsScope
-            - added methods for InternalEventsScope allowing to maintain storage
+            - refresh depencencies
         </PackageReleaseNotes>
     </PropertyGroup>
 

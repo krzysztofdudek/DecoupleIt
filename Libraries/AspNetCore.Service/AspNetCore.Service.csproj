@@ -1,13 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>1.3.0</VersionPrefix>
+        <VersionPrefix>1.5.0</VersionPrefix>
         <Title>DecoupleIt - ASP .NET Core base service library</Title>
         <Description>Implements base web application host with extensible modules.</Description>
         <PackageReleaseNotes>
-            - added scheduling library to dependencies
-            - added template of main method reporting erorrs caused by test run
-            - make automatic loading of configuration working
+            - refresh depencencies
         </PackageReleaseNotes>
     </PropertyGroup>
 
@@ -29,22 +27,22 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.*" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.*" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.*" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.*" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="2.*" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.*" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.*" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.*" />
-        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.*" />
-        <PackageReference Include="Microsoft.AspNetCore.Rewrite" Version="2.*" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Rewrite" Version="2.2.0" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.*" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.*" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.*" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.9" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.9" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.9" />
     </ItemGroup>
 
 </Project>

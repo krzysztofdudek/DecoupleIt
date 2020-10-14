@@ -1,18 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>1.1.1</VersionPrefix>
+        <VersionPrefix>1.2.0</VersionPrefix>
         <Title>DecoupleIt - Shared library</Title>
         <Description>Library consists of shared elements used within DecoupleIt packages.</Description>
         <PackageReleaseNotes>
-            - removed Microsoft.Extensions.Configuration.Binder from dependencies
+            - refresh depencencies
         </PackageReleaseNotes>
     </PropertyGroup>
 
     <Import Project="../netstandard.props" />
 
     <ItemGroup>
-        <PackageReference Include="JetBrains.Annotations" Version="2020.*" />
+        <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">

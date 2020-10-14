@@ -9,13 +9,16 @@ namespace GS.DecoupleIt.Options.Automatic
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     [MeansImplicitUse(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
     [PublicAPI]
-    public sealed class ConfigureAttribute : Attribute
+    public sealed class ConfigureAttribute : Attribute, IConfigureAttribute
     {
         /// <summary>
         ///     Configuration section name.
         /// </summary>
         [CanBeNull]
         public string ConfigurationSectionName { get; }
+
+        /// <inheritdoc />
+        public short Priority { get; }
 
         /// <summary>
         ///     Creates an instance of <see cref="ConfigureAttribute" />. Sets custom configuration section name.

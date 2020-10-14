@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>1.3.0</VersionPrefix>
+        <VersionPrefix>1.4.0</VersionPrefix>
         <Title>DecoupleIt - ASP .NET Core integration for contextual unit of work</Title>
         <Description>ASP .NET Core support for contextual unit of work.</Description>
         <PackageReleaseNotes>
-            - added middleware maintaining async local unit of work storage
+            - refresh depencencies
         </PackageReleaseNotes>
     </PropertyGroup>
 

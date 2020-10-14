@@ -3,10 +3,10 @@ using System.Net.Http;
 using GS.DecoupleIt.HttpAbstraction.Exceptions;
 using GS.DecoupleIt.Options.Automatic;
 using GS.DecoupleIt.Shared;
-using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestEase.Implementation;
 
@@ -45,6 +45,9 @@ namespace GS.DecoupleIt.HttpAbstraction
                 var serviceAssemblyName = typeof(TService).Assembly.GetName()
                                                           .Name.AsNotNull();
 
+                var logger = serviceProvider.GetRequiredService<ILogger<Requester>>()
+                                            .AsNotNull();
+
                 var serviceName = serviceAssemblyName.EndsWith(".Contracts")
                     ? serviceAssemblyName.Substring(0, serviceAssemblyName.LastIndexOf(".", StringComparison.Ordinal))
                     : serviceAssemblyName;
@@ -52,26 +55,12 @@ namespace GS.DecoupleIt.HttpAbstraction
                 if (!servicesUrisOptions.TryGetValue(serviceName, out var uri))
                     throw new MissingServiceUriMapping(serviceName);
 
-                var currentTracerScope = Tracer.CurrentSpan;
-
                 var httpClient = new HttpClient(new WebRequestHandler(options))
                 {
                     BaseAddress = new Uri(uri.AsNotNull()),
                     Timeout     = TimeSpan.FromMilliseconds(options.TimeoutMs),
                     DefaultRequestHeaders =
                     {
-                        {
-                            options.TraceIdHeaderName, currentTracerScope.TraceId.ToString()
-                        },
-                        {
-                            options.SpanIdHeaderName, currentTracerScope.Id.ToString()
-                        },
-                        {
-                            options.ParentSpanIdHeaderName, currentTracerScope.ParentId?.ToString()
-                        },
-                        {
-                            options.SpanNameHeaderName, currentTracerScope.Name
-                        },
                         {
                             options.HostIdentifierHeaderName, options.HostIdentifier.ToString()
                         },
@@ -84,7 +73,7 @@ namespace GS.DecoupleIt.HttpAbstraction
                     }
                 };
 
-                var requester = new Requester(httpClient);
+                var requester = new Requester(httpClient, options, logger);
 
                 return ImplementationBuilder.Instance.CreateImplementation<TService>(requester);
             });

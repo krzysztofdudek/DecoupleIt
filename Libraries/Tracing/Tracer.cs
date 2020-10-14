@@ -26,7 +26,7 @@ namespace GS.DecoupleIt.Tracing
         ///     Gets span for current async flow.
         /// </summary>
         /// <exception cref="NotInTheContextOfSpan">Current thread is not in the context of any span.</exception>
-        public static Span CurrentSpan => CurrentTracer._span;
+        public static Span CurrentSpan => CurrentTracer.Descriptor;
 
         /// <summary>
         ///     Gets tracer for current async flow.
@@ -300,6 +300,8 @@ namespace GS.DecoupleIt.Tracing
             ((ISpan) CurrentTracer).PushMetric(metric);
         }
 
+        public Span Descriptor { get; }
+
         /// <inheritdoc />
         public TimeSpan Duration => _stopwatch.Elapsed;
 
@@ -339,8 +341,6 @@ namespace GS.DecoupleIt.Tracing
         [NotNull]
         private readonly List<Metric> _metrics = new List<Metric>();
 
-        private readonly Span _span;
-
         [NotNull]
         private readonly Stopwatch _stopwatch;
 
@@ -354,7 +354,7 @@ namespace GS.DecoupleIt.Tracing
 
         private Tracer(Span span)
         {
-            _span      = span;
+            Descriptor = span;
             _stopwatch = Stopwatch.StartNew();
         }
 
@@ -396,7 +396,7 @@ namespace GS.DecoupleIt.Tracing
 
             _isDisposed = true;
 
-            InvokeSpanClosed(_span, Duration);
+            InvokeSpanClosed(Descriptor, Duration);
         }
 
         void IDisposable.Dispose()
@@ -409,8 +409,8 @@ namespace GS.DecoupleIt.Tracing
 
         private void InvokeMetricPushed(Metric metric)
         {
-            MetricPushed?.Invoke(_span, metric);
-            InstanceMetricPushed?.Invoke(_span, metric);
+            MetricPushed?.Invoke(Descriptor, metric);
+            InstanceMetricPushed?.Invoke(Descriptor, metric);
         }
 
         void ISpan.PushMetric(Metric metric)

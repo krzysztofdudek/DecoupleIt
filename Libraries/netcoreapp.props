@@ -10,8 +10,8 @@
     <Import Project="../GS.props" />
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
-        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.*" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="2.*" />
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="2.2.0" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">

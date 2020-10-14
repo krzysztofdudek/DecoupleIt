@@ -11,6 +11,11 @@ namespace GS.DecoupleIt.Tracing
     public interface ISpan : IDisposable
     {
         /// <summary>
+        ///     Description of span.
+        /// </summary>
+        Span Descriptor { get; }
+
+        /// <summary>
         ///     Gets the duration of scope.
         /// </summary>
         TimeSpan Duration { get; }

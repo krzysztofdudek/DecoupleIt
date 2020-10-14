@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>1.1.1</VersionPrefix>
+        <VersionPrefix>1.2.0</VersionPrefix>
         <Title>DecoupleIt - http abstraction</Title>
         <Description>Implements http abstraction for uniformity of interfaces between controllers and services used on client side.</Description>
         <PackageReleaseNotes>
-            - added required dependency
+            - refresh depencencies
         </PackageReleaseNotes>
     </PropertyGroup>
 
@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="RestEase" Version="1.4.*" />
+      <PackageReference Include="RestEase" Version="1.4.12" />
     </ItemGroup>
 
 </Project>

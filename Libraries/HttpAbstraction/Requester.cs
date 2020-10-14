@@ -1,6 +1,8 @@
 using System.Net.Http;
 using System.Threading.Tasks;
+using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using RestEase;
 
 namespace GS.DecoupleIt.HttpAbstraction
@@ -9,9 +11,11 @@ namespace GS.DecoupleIt.HttpAbstraction
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
     internal sealed class Requester : RestEase.Implementation.Requester
     {
-        public Requester([NotNull] HttpClient httpClient) : base(httpClient)
+        public Requester([NotNull] HttpClient httpClient, [NotNull] HttpAbstractionOptions options, [NotNull] ILogger<Requester> logger) : base(httpClient)
         {
             _httpClient = httpClient;
+            _options    = options;
+            _logger     = logger;
         }
 
         [NotNull]
@@ -41,6 +45,14 @@ namespace GS.DecoupleIt.HttpAbstraction
 
             var completionOption = readBody ? HttpCompletionOption.ResponseContentRead : HttpCompletionOption.ResponseHeadersRead;
 
+            using var span = Tracer.OpenChildSpan($"{message.Method} {message.RequestUri}", SpanType.OutgoingRequest);
+            span.AttachResource(_logger.BeginTracerSpan());
+
+            message.Headers.Add(_options.TraceIdHeaderName, span.Descriptor.TraceId.ToString());
+            message.Headers.Add(_options.SpanIdHeaderName, span.Descriptor.Id.ToString());
+            message.Headers.Add(_options.ParentSpanIdHeaderName, span.Descriptor.ParentId?.ToString());
+            message.Headers.Add(_options.SpanNameHeaderName, span.Descriptor.Name);
+
             var response = await _httpClient.SendAsync(message, completionOption, requestInfo.CancellationToken)
                                             .ConfigureAwait(false);
 
@@ -53,5 +65,11 @@ namespace GS.DecoupleIt.HttpAbstraction
 
         [NotNull]
         private readonly HttpClient _httpClient;
+
+        [NotNull]
+        private readonly ILogger<Requester> _logger;
+
+        [NotNull]
+        private readonly HttpAbstractionOptions _options;
     }
 }

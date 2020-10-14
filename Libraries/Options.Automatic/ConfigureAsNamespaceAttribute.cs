@@ -9,5 +9,9 @@ namespace GS.DecoupleIt.Options.Automatic
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     [MeansImplicitUse(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
     [PublicAPI]
-    public sealed class ConfigureAsNamespaceAttribute : Attribute { }
+    public sealed class ConfigureAsNamespaceAttribute : Attribute, IConfigureAttribute
+    {
+        /// <inheritdoc />
+        public short Priority { get; }
+    }
 }

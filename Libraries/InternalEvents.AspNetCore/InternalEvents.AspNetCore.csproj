@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>1.1.2</VersionPrefix>
+        <VersionPrefix>1.2.0</VersionPrefix>
         <Title>DecoupleIt - ASP .NET Core integration for internal events</Title>
         <Description>ASP .NET Core support for internal events.</Description>
         <PackageReleaseNotes>
-            - upgrade Options.Automatic library fixing critital bug
+            - refresh depencencies
         </PackageReleaseNotes>
     </PropertyGroup>
 
