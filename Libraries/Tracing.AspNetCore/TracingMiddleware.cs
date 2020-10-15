@@ -4,7 +4,6 @@ using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -13,16 +12,16 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
     [Transient]
     internal sealed class TracingMiddleware : IMiddleware
     {
-        public TracingMiddleware([NotNull] IOptions<HeadersOptions> options, [NotNull] ILogger<TracingMiddleware> logger)
+        public TracingMiddleware([NotNull] IOptions<HeadersOptions> options, [NotNull] ITracer tracer)
         {
-            _logger  = logger;
+            _tracer  = tracer;
             _options = options.Value.AsNotNull();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
         public async Task InvokeAsync([NotNull] HttpContext context, [NotNull] RequestDelegate next)
         {
-            Tracer.Initialize();
+            _tracer.Initialize();
 
             try
             {
@@ -38,9 +37,7 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
                 var parentSpanId   = parentSpanIds.Count == 1 ? parentSpanIds[0] : null;
 
                 if (traceId is null || spanId is null)
-                    traceId = spanId = Tracer.NewTracingIdGenerator();
-
-                spanName ??= string.Empty;
+                    traceId = spanId = _tracer.NewTracingIdGenerator();
 
                 context.Response.AsNotNull()
                        .OnStarting(httpContextObject =>
@@ -60,20 +57,18 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
                                    },
                                    context);
 
-                using var scope = Tracer.OpenRootSpan(traceId,
-                                                      spanId,
-                                                      spanName,
-                                                      parentSpanId,
-                                                      SpanType.ExternalRequest);
-
-                scope.AttachResource(_logger.BeginTracerSpan());
+                using var scope = _tracer.OpenRootSpan(traceId,
+                                                       spanId,
+                                                       spanName ?? "unknown",
+                                                       parentSpanId,
+                                                       SpanType.ExternalRequest);
 
                 await next(context)
                     .AsNotNull();
             }
             finally
             {
-                Tracer.Clear();
+                _tracer.Clear();
             }
         }
 
@@ -86,9 +81,9 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
         }
 
         [NotNull]
-        private readonly ILogger<TracingMiddleware> _logger;
+        private readonly HeadersOptions _options;
 
         [NotNull]
-        private readonly HeadersOptions _options;
+        private readonly ITracer _tracer;
     }
 }

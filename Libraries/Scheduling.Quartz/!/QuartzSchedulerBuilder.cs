@@ -7,6 +7,7 @@ namespace GS.DecoupleIt.Scheduling.Quartz
     /// <summary>
     ///     Configures Quartz scheduler.
     /// </summary>
+    [PublicAPI]
     public sealed class QuartzSchedulerBuilder
     {
         internal Action<Exception, IServiceProvider> ActionOnError;

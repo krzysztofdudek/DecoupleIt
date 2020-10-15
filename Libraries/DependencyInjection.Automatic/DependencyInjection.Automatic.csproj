@@ -3,12 +3,10 @@
     <Import Project="../netstandard.props" />
 
     <PropertyGroup>
-        <VersionPrefix>2.0.0</VersionPrefix>
+        <VersionPrefix>3.0.0</VersionPrefix>
+        <VersionSuffix>alpha.0</VersionSuffix>
         <Title>DecoupleIt - Automatic registration for Microsoft.Extensions.DependencyInjection</Title>
         <Description>Implementation of automatic registration of services adapted to cooperate with Microsoft.Extensions.DependencyInjection.</Description>
-        <PackageReleaseNotes>
-            - learned how dependencies work (now they not require the newet microsoft libs)
-        </PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>

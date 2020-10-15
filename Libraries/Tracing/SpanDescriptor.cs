@@ -6,17 +6,17 @@ namespace GS.DecoupleIt.Tracing
     ///     Scope describes single level of tracing stack. It allows to trace back to origin from every log from the system.
     /// </summary>
     [PublicAPI]
-    public readonly struct Span
+    public readonly struct SpanDescriptor
     {
         /// <summary>
-        ///     Opens an instance of <see cref="Span" />.
+        ///     Opens an instance of <see cref="TracerSpan" />.
         /// </summary>
         /// <param name="traceId">Trace identifier.</param>
         /// <param name="id">Identifier.</param>
         /// <param name="name">Name.</param>
         /// <param name="parentId">Parent span identifier.</param>
         /// <param name="type">Type.</param>
-        internal Span(
+        internal SpanDescriptor(
             TracingId traceId,
             TracingId id,
             [NotNull] string name,

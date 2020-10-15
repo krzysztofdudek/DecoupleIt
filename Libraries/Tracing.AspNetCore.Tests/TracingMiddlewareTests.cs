@@ -49,10 +49,12 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
 
                                              applicationBuilder.Use((context, func) =>
                                              {
-                                                 traceId      = Tracer.CurrentSpan.TraceId;
-                                                 spanId       = Tracer.CurrentSpan.Id;
-                                                 spanName     = Tracer.CurrentSpan.Name;
-                                                 parentSpanId = Tracer.CurrentSpan.ParentId;
+                                                 var tracer = context.RequestServices.GetService<ITracer>();
+
+                                                 traceId      = tracer.CurrentSpan.Descriptor.TraceId;
+                                                 spanId       = tracer.CurrentSpan.Descriptor.Id;
+                                                 spanName     = tracer.CurrentSpan.Descriptor.Name;
+                                                 parentSpanId = tracer.CurrentSpan.Descriptor.ParentId;
 
                                                  return Task.CompletedTask;
                                              });
@@ -88,10 +90,12 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
 
                            applicationBuilder.Use((context, func) =>
                            {
-                               traceId = Tracer.CurrentSpan.TraceId;
-                               spanId = Tracer.CurrentSpan.Id;
-                               spanName = Tracer.CurrentSpan.Name;
-                               parentSpanId = Tracer.CurrentSpan.ParentId;
+                               var tracer = context.RequestServices.GetService<ITracer>();
+
+                               traceId = tracer.CurrentSpan.Descriptor.TraceId;
+                               spanId = tracer.CurrentSpan.Descriptor.Id;
+                               spanName = tracer.CurrentSpan.Descriptor.Name;
+                               parentSpanId = tracer.CurrentSpan.Descriptor.ParentId;
 
                                return Task.CompletedTask;
                            });

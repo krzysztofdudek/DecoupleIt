@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using GS.DecoupleIt.DependencyInjection.Automatic;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.Scheduling
@@ -7,6 +8,7 @@ namespace GS.DecoupleIt.Scheduling
     /// <summary>
     ///     Base job interface.
     /// </summary>
+    [Singleton]
     public interface IJob
     {
         /// <summary>

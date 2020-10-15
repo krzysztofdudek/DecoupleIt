@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>2.0.0</VersionPrefix>
+        <VersionPrefix>3.0.0</VersionPrefix>
+        <VersionSuffix>alpha.1</VersionSuffix>
         <Title>DecoupleIt - Scheduling using Quartz</Title>
         <Description>Library uses Quartz as a scheduler for registered jobs using attributes from GS.DecoupleIt.Scheduling.</Description>
-        <PackageReleaseNotes>
-            - learned how dependencies work (now they not require the newet microsoft libs)
-        </PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\InternalEvents\InternalEvents.csproj" />
         <ProjectReference Include="..\Scheduling\Scheduling.csproj" />
+        <ProjectReference Include="..\Tracing\Tracing.csproj" />
     </ItemGroup>
 
     <ItemGroup>

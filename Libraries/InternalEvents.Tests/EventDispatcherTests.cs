@@ -5,6 +5,7 @@ using GS.DecoupleIt.InternalEvents.Scope;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -28,6 +29,10 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
             serviceCollection.AddInternalEvents();
             serviceCollection.AddLogging();
+
+            serviceCollection.AddTracing(new ConfigurationBuilder().Build()
+                                                                   .AsNotNull());
+
             serviceCollection.ScanAssemblyForImplementations(typeof(EventDispatcherTests).Assembly);
 
             var serviceProvider = serviceCollection.BuildServiceProvider()
@@ -36,9 +41,12 @@ namespace GS.DecoupleIt.InternalEvents.Tests
             var internalEventDispatcher = serviceProvider.GetRequiredService<IInternalEventDispatcher>()
                                                          .AsNotNull();
 
-            Tracer.Initialize();
+            var tracer = serviceProvider.GetRequiredService<ITracer>()
+                                        .AsNotNull();
 
-            using (Tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
+            tracer.Initialize();
+
+            using (tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
             {
                 using (var scope = InternalEventsScope.OpenScope())
                 {
@@ -47,7 +55,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                 }
             }
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]

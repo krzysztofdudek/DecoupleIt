@@ -1,12 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>2.0.0</VersionPrefix>
+        <VersionPrefix>3.0.0</VersionPrefix>
+        <VersionSuffix>alpha.0</VersionSuffix>
         <Title>DecoupleIt - Shared library</Title>
         <Description>Library consists of shared elements used within DecoupleIt packages.</Description>
-        <PackageReleaseNotes>
-            - learned how dependencies work (now they not require the newet microsoft libs)
-        </PackageReleaseNotes>
     </PropertyGroup>
 
     <Import Project="../netstandard.props" />
@@ -30,17 +28,17 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.0" />
-        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.9" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.9" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.9" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.9" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.0" />
-        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.9" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.9" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.9" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.9" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">

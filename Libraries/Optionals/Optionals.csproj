@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>2.0.0</VersionPrefix>
+        <VersionPrefix>3.0.0</VersionPrefix>
+        <VersionSuffix>alpha.0</VersionSuffix>
         <Title>DecoupleIt - Optional</Title>
         <Description>Library implements optionals based on Zoran Horvat work.</Description>
-        <PackageReleaseNotes>
-            - learned how dependencies work (now they not require the newet microsoft libs)
-        </PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>

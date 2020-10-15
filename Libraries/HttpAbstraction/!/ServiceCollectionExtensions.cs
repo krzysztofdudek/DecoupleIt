@@ -3,10 +3,10 @@ using System.Net.Http;
 using GS.DecoupleIt.HttpAbstraction.Exceptions;
 using GS.DecoupleIt.Options.Automatic;
 using GS.DecoupleIt.Shared;
+using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestEase.Implementation;
 
@@ -45,7 +45,7 @@ namespace GS.DecoupleIt.HttpAbstraction
                 var serviceAssemblyName = typeof(TService).Assembly.GetName()
                                                           .Name.AsNotNull();
 
-                var logger = serviceProvider.GetRequiredService<ILogger<Requester>>()
+                var tracer = serviceProvider.GetRequiredService<ITracer>()
                                             .AsNotNull();
 
                 var serviceName = serviceAssemblyName.EndsWith(".Contracts")
@@ -73,9 +73,11 @@ namespace GS.DecoupleIt.HttpAbstraction
                     }
                 };
 
-                var requester = new Requester(httpClient, options, logger);
+                var requester = new Requester(httpClient, options, tracer);
 
-                return ImplementationBuilder.Instance.CreateImplementation<TService>(requester);
+                var implementation = ImplementationBuilder.Instance.CreateImplementation<TService>(requester);
+
+                return implementation;
             });
 
             return serviceCollection;

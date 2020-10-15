@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing.Exceptions;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace GS.DecoupleIt.Tracing
 {
@@ -14,124 +16,75 @@ namespace GS.DecoupleIt.Tracing
     ///     Class is not inheritable.
     /// </summary>
     [PublicAPI]
-    public sealed class Tracer : ISpan
+    [Singleton]
+    internal sealed class Tracer : ITracer
     {
-        /// <summary>
-        ///     Generator of new <see cref="TracingId" />.
-        /// </summary>
-        [NotNull]
-        public static Func<TracingId> NewTracingIdGenerator = () => (TracingId) Guid.NewGuid();
-
-        /// <summary>
-        ///     Gets span for current async flow.
-        /// </summary>
-        /// <exception cref="NotInTheContextOfSpan">Current thread is not in the context of any span.</exception>
-        public static Span CurrentSpan => CurrentTracer.Descriptor;
-
-        /// <summary>
-        ///     Gets tracer for current async flow.
-        /// </summary>
-        /// <exception cref="NotInTheContextOfSpan">Current thread is not in the context of any span..</exception>
-        [NotNull]
-        internal static Tracer CurrentTracer =>
+        /// <inheritdoc />
+        public ITracerSpan CurrentSpan =>
             Trace.Count > 0
                 ? Trace.Peek()
                        .AsNotNull()
                 : throw new NotInTheContextOfSpan();
 
-        /// <summary>
-        ///     Indicates if there is root span opened.
-        /// </summary>
-        public static bool IsRootSpanOpened => Trace.Count > 0;
+        /// <inheritdoc />
+        public bool IsRootSpanOpened => Trace.Count > 0;
+
+        /// <inheritdoc />
+        public Func<TracingId> NewTracingIdGenerator { get; set; } = () => (TracingId) Guid.NewGuid();
 
         /// <summary>
-        ///     Event is invoked when metric is pushed.
+        ///     Contains stack of spans for current async flow.
         /// </summary>
-        [CanBeNull]
-        public static event MetricPushedDelegate MetricPushed;
-
-        /// <summary>
-        ///     Event is invoked when any span is closed.
-        /// </summary>
-        [CanBeNull]
-        public static event SpanClosedDelegate SpanClosed;
-
-        /// <summary>
-        ///     Event is invoked when a new span is opened.
-        /// </summary>
-        [CanBeNull]
-        public static event SpanOpenedDelegate SpanOpened;
-
-        /// <inheritdoc cref="ISpan.AttachResource" />
-        [NotNull]
-        public static ISpan AttachResource([NotNull] IDisposable resource, [CanBeNull] object key = default)
-        {
-            ((ISpan) CurrentTracer).AttachResource(resource);
-
-            return CurrentTracer;
-        }
-
-        /// <summary>
-        ///     Clears storage for current thread. It is recommended to use this method at the end of thread that used tracer. It
-        ///     will provide an avoidance for potential memory leaks caused by missing disposals of spans.
-        /// </summary>
-        public static void Clear()
-        {
-            if (TraceStorage.Value == null)
-                return;
-
-            foreach (var tracer in TraceStorage.Value.ToNotNullList())
-                tracer.Close();
-
-            TraceStorage.Value = null;
-        }
-
-        /// <summary>
-        ///     Gets the resource of given type and key.
-        /// </summary>
-        /// <param name="key">Key.</param>
-        /// <typeparam name="TResource">Type of the resource.</typeparam>
-        /// <returns>Resource.</returns>
-        /// <exception cref="ResourceNotFound">Resource not found.</exception>
-        [NotNull]
-        public static TResource GetResource<TResource>([CanBeNull] object key = default)
-            where TResource : class
-        {
-            foreach (var tracer in Trace.ToList())
-            {
-                var attachedResource = tracer.AsNotNull()
-                                             ._attachedResources.FirstOrDefault(x => x.Resource is TResource && (x.Key?.Equals(key) ?? true));
-
-                if (attachedResource != null)
-                    return (TResource) attachedResource.Resource;
-            }
-
-            throw new ResourceNotFound();
-        }
-
-        /// <summary>
-        ///     As tracer has to be initialized, the best way to do this is execute initialization at the beginning of thread,
-        ///     where tracer will be used.
-        /// </summary>
-        public static void Initialize()
-        {
-            TraceStorage.Value = new Stack<Tracer>();
-        }
-
-        /// <summary>
-        ///     Opens child span.
-        /// </summary>
-        /// <param name="name">Name.</param>
-        /// <param name="type">Type.</param>
-        /// <returns>Span lifetime.</returns>
         /// <exception cref="TraceIsNotInitialized">
         ///     Trace was not initialized. The best option is to initialize it at the beginning
         ///     of the thread.
         /// </exception>
-        /// <exception cref="RootSpanIsNotOpened">Root span is not opened.</exception>
         [NotNull]
-        [MustUseReturnValue]
-        public static ISpan OpenChildSpan([NotNull] string name, SpanType type)
+        [ItemNotNull]
+        internal Stack<TracerSpan> Trace => _traceStorage.Value ?? throw new TraceIsNotInitialized();
+
+        /// <inheritdoc />
+        public event SpanClosedDelegate SpanClosed;
+
+        /// <inheritdoc />
+        public event SpanOpenedDelegate SpanOpened;
+
+        public Tracer([NotNull] ILogger<Tracer> logger, [NotNull] IOptions<LoggerPropertiesOptions> loggerPropertiesOptions)
+        {
+            _logger                  = logger;
+            _loggerPropertiesOptions = loggerPropertiesOptions.Value.AsNotNull();
+        }
+
+        /// <inheritdoc />
+        public void Clear()
+        {
+            if (_traceStorage.Value == null)
+                return;
+
+            foreach (var span in _traceStorage.Value.ToNotNullList())
+                span.Close();
+
+            _traceStorage.Value = null;
+        }
+
+        /// <inheritdoc />
+        public void Initialize()
+        {
+            _traceStorage.Value = new Stack<TracerSpan>();
+        }
+
+        internal void InvokeSpanClosed(SpanDescriptor span, TimeSpan duration)
+        {
+            SpanClosed?.Invoke(span, duration);
+        }
+
+        internal void InvokeSpanOpened(SpanDescriptor span)
+        {
+            SpanOpened?.Invoke(span);
+        }
+
+        /// <inheritdoc />
+        public ITracerSpan OpenChildSpan(string name, SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(name), name);
             ContractGuard.IfEnumArgumentIsOutOfRange(nameof(type), type);
@@ -139,62 +92,38 @@ namespace GS.DecoupleIt.Tracing
             if (Trace.Count == 0)
                 throw new RootSpanIsNotOpened();
 
-            var span = new Span(CurrentSpan.TraceId,
-                                NewTracingIdGenerator(),
-                                name,
-                                CurrentSpan.Id,
-                                type);
+            var spanDescriptor = new SpanDescriptor(CurrentSpan.Descriptor.TraceId,
+                                                    NewTracingIdGenerator(),
+                                                    name,
+                                                    CurrentSpan.Descriptor.Id,
+                                                    type);
 
-            var tracer = new Tracer(span);
+            var span = new TracerSpan(spanDescriptor, this);
 
-            Trace.Push(tracer);
+            Trace.Push(span);
 
-            InvokeSpanOpened(span);
+            span.AttachResource(_logger.BeginScope(GetLoggerProperties(span))
+                                       .AsNotNull());
 
-            return tracer;
+            InvokeSpanOpened(spanDescriptor);
+
+            return span;
         }
 
-        /// <summary>
-        ///     Opens child span.
-        /// </summary>
-        /// <param name="creatorType">Type of span creator.</param>
-        /// <param name="type">Type.</param>
-        /// <returns>Span lifetime.</returns>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        /// <exception cref="RootSpanIsNotOpened">Root span is not opened.</exception>
-        [NotNull]
-        [MustUseReturnValue]
-        public static ISpan OpenChildSpan([NotNull] Type creatorType, SpanType type)
+        /// <inheritdoc />
+        public ITracerSpan OpenChildSpan(Type creatorType, SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(creatorType), creatorType);
 
             return OpenChildSpan(creatorType.FullName.AsNotNull(), type);
         }
 
-        /// <summary>
-        ///     Opens root span.
-        /// </summary>
-        /// <param name="traceId">Trace id.</param>
-        /// <param name="id">Id.</param>
-        /// <param name="name">Name.</param>
-        /// <param name="parentId">Parent span id.</param>
-        /// <param name="type">Type.</param>
-        /// <returns>Span lifetime.</returns>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        /// <exception cref="RootSpanIsAlreadyOpened">Root span already opened.</exception>
-        [NotNull]
-        [MustUseReturnValue]
-        public static ISpan OpenRootSpan(
+        /// <inheritdoc />
+        public ITracerSpan OpenRootSpan(
             TracingId traceId,
             TracingId id,
-            [NotNull] string name,
-            [CanBeNull] TracingId? parentId,
+            string name,
+            TracingId? parentId,
             SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(name), name);
@@ -203,41 +132,29 @@ namespace GS.DecoupleIt.Tracing
             if (Trace.Count > 0)
                 throw new RootSpanIsAlreadyOpened();
 
-            var span = new Span(traceId,
-                                id,
-                                name,
-                                parentId,
-                                type);
+            var spanDescriptor = new SpanDescriptor(traceId,
+                                                    id,
+                                                    name,
+                                                    parentId,
+                                                    type);
 
-            var tracer = new Tracer(span);
+            var span = new TracerSpan(spanDescriptor, this);
 
-            Trace.Push(tracer);
+            Trace.Push(span);
 
-            InvokeSpanOpened(span);
+            span.AttachResource(_logger.BeginScope(GetLoggerProperties(span))
+                                       .AsNotNull());
 
-            return tracer;
+            InvokeSpanOpened(spanDescriptor);
+
+            return span;
         }
 
-        /// <summary>
-        ///     Opens root span.
-        /// </summary>
-        /// <param name="traceId">Trace id.</param>
-        /// <param name="id">Id.</param>
-        /// <param name="creatorType">Type of span creator.</param>
-        /// <param name="parentId">Parent span id.</param>
-        /// <param name="type">Type.</param>
-        /// <returns>Span lifetime.</returns>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        /// <exception cref="RootSpanIsAlreadyOpened">Root span already opened.</exception>
-        [NotNull]
-        [MustUseReturnValue]
-        public static ISpan OpenRootSpan(
+        /// <inheritdoc />
+        public ITracerSpan OpenRootSpan(
             TracingId traceId,
             TracingId id,
-            [NotNull] Type creatorType,
+            Type creatorType,
             TracingId? parentId,
             SpanType type)
         {
@@ -250,20 +167,8 @@ namespace GS.DecoupleIt.Tracing
                                 type);
         }
 
-        /// <summary>
-        ///     Opens root span.
-        /// </summary>
-        /// <param name="name">Name.</param>
-        /// <param name="type">Type.</param>
-        /// <returns>Span lifetime.</returns>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        /// <exception cref="RootSpanIsAlreadyOpened">Root span already opened.</exception>
-        [NotNull]
-        [MustUseReturnValue]
-        public static ISpan OpenRootSpan([NotNull] string name, SpanType type)
+        /// <inheritdoc />
+        public ITracerSpan OpenRootSpan(string name, SpanType type)
         {
             var newSpanIdentifier = NewTracingIdGenerator();
 
@@ -274,164 +179,50 @@ namespace GS.DecoupleIt.Tracing
                                 type);
         }
 
-        /// <summary>
-        ///     Opens root span.
-        /// </summary>
-        /// <param name="creatorType">Type of span creator.</param>
-        /// <param name="type">Type.</param>
-        /// <returns>Span lifetime.</returns>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        /// <exception cref="RootSpanIsAlreadyOpened">Root span already opened.</exception>
-        [NotNull]
-        [MustUseReturnValue]
-        public static ISpan OpenRootSpan([NotNull] Type creatorType, SpanType type)
+        /// <inheritdoc />
+        public ITracerSpan OpenRootSpan(Type creatorType, SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(creatorType), creatorType);
 
             return OpenRootSpan(creatorType.FullName.AsNotNull(), type);
         }
 
-        /// <inheritdoc cref="ISpan.PushMetric" />
-        public static void PushMetric(Metric metric)
-        {
-            ((ISpan) CurrentTracer).PushMetric(metric);
-        }
-
-        public Span Descriptor { get; }
-
-        /// <inheritdoc />
-        public TimeSpan Duration => _stopwatch.Elapsed;
-
-        /// <inheritdoc />
-        public IReadOnlyCollection<Metric> Metrics => _metrics;
+        [NotNull]
+        private readonly ILogger<Tracer> _logger;
 
         [NotNull]
-        private static readonly AsyncLocal<Stack<Tracer>> TraceStorage = new AsyncLocal<Stack<Tracer>>();
-
-        /// <summary>
-        ///     Contains stack of spans for current async flow.
-        /// </summary>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        [NotNull]
-        [ItemNotNull]
-        private static Stack<Tracer> Trace => TraceStorage.Value ?? throw new TraceIsNotInitialized();
-
-        private static void InvokeSpanClosed(Span span, TimeSpan duration)
-        {
-            SpanClosed?.Invoke(span, duration);
-        }
-
-        private static void InvokeSpanOpened(Span span)
-        {
-            SpanOpened?.Invoke(span);
-        }
+        private readonly LoggerPropertiesOptions _loggerPropertiesOptions;
 
         [NotNull]
-        [ItemNotNull]
-        private readonly List<AttachedResource> _attachedResources = new List<AttachedResource>();
-
-        private bool _isDisposed;
+        private readonly AsyncLocal<Stack<TracerSpan>> _traceStorage = new AsyncLocal<Stack<TracerSpan>>();
 
         [NotNull]
-        private readonly List<Metric> _metrics = new List<Metric>();
-
-        [NotNull]
-        private readonly Stopwatch _stopwatch;
-
-        private event MetricPushedDelegate InstanceMetricPushed;
-
-        event MetricPushedDelegate ISpan.MetricPushed
+        private Dictionary<string, object> GetLoggerProperties([NotNull] ITracerSpan span)
         {
-            add => InstanceMetricPushed += value;
-            remove => InstanceMetricPushed -= value;
-        }
+            var dictionary = new SelfDescribingDictionary<string, object>();
 
-        private Tracer(Span span)
-        {
-            Descriptor = span;
-            _stopwatch = Stopwatch.StartNew();
-        }
+            foreach (var property in _loggerPropertiesOptions.TraceId.Distinct()
+                                                             .AsCollectionWithNotNullItems())
+                dictionary.Add(property, span.Descriptor.TraceId);
 
-        ISpan ISpan.AttachResource(object resource, object key)
-        {
-            ContractGuard.IfArgumentIsNull(nameof(resource), resource);
+            foreach (var property in _loggerPropertiesOptions.SpanId.Distinct()
+                                                             .AsCollectionWithNotNullItems())
+                dictionary.Add(property, span.Descriptor.Id);
 
-            CheckIfDisposed();
+            if (span.Descriptor.ParentId != null)
+                foreach (var property in _loggerPropertiesOptions.ParentSpanId.Distinct()
+                                                                 .AsCollectionWithNotNullItems())
+                    dictionary.Add(property, span.Descriptor.ParentId);
 
-            _attachedResources.Add(new AttachedResource(resource, key));
+            foreach (var property in _loggerPropertiesOptions.SpanName.Distinct()
+                                                             .AsCollectionWithNotNullItems())
+                dictionary.Add(property, span.Descriptor.Name);
 
-            return this;
-        }
+            foreach (var property in _loggerPropertiesOptions.SpanType.Distinct()
+                                                             .AsCollectionWithNotNullItems())
+                dictionary.Add(property, span.Descriptor.Type);
 
-        private void CheckIfDisposed()
-        {
-            if (_isDisposed)
-                throw new ObjectDisposedException("Tracer has been disposed.");
-        }
-
-        private void Close()
-        {
-            CheckIfDisposed();
-
-            if (CurrentTracer != this)
-                throw new InvalidOperationException("Can not dispose if it's not current span.");
-
-            Trace.Pop();
-
-            foreach (var attachedResource in _attachedResources.ToNotNullList())
-            {
-                if (attachedResource.Resource is IDisposable disposable)
-                    disposable.Dispose();
-
-                _attachedResources.Remove(attachedResource);
-            }
-
-            _stopwatch.Stop();
-
-            _isDisposed = true;
-
-            InvokeSpanClosed(Descriptor, Duration);
-        }
-
-        void IDisposable.Dispose()
-        {
-            if (_isDisposed)
-                return;
-
-            Close();
-        }
-
-        private void InvokeMetricPushed(Metric metric)
-        {
-            MetricPushed?.Invoke(Descriptor, metric);
-            InstanceMetricPushed?.Invoke(Descriptor, metric);
-        }
-
-        void ISpan.PushMetric(Metric metric)
-        {
-            _metrics.Add(metric);
-
-            InvokeMetricPushed(metric);
-        }
-
-        private sealed class AttachedResource
-        {
-            public readonly object Key;
-
-            [NotNull]
-            public readonly object Resource;
-
-            public AttachedResource([NotNull] object resource, object key)
-            {
-                Resource = resource;
-                Key      = key;
-            }
+            return dictionary;
         }
     }
 }

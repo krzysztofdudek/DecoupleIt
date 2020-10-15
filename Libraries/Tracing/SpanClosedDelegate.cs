@@ -7,5 +7,5 @@ namespace GS.DecoupleIt.Tracing
     /// </summary>
     /// <param name="span">Closed span.</param>
     /// <param name="duration">Duration of span.</param>
-    public delegate void SpanClosedDelegate(Span span, TimeSpan duration);
+    public delegate void SpanClosedDelegate(SpanDescriptor span, TimeSpan duration);
 }

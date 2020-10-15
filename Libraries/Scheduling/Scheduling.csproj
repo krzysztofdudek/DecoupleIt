@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>2.0.0</VersionPrefix>
+        <VersionPrefix>3.0.0</VersionPrefix>
+        <VersionSuffix>alpha.1</VersionSuffix>
         <Title>DecoupleIt - Scheduling</Title>
         <Description>Library implements scheduling abstraction based on annotating classes with attributes.</Description>
-        <PackageReleaseNotes>
-            - learned how dependencies work (now they not require the newet microsoft libs)
-        </PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
+        <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
         <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
 

@@ -9,6 +9,7 @@ namespace GS.DecoupleIt.InternalEvents.Scope
     /// <summary>
     ///     Represents internal events scope, that events are bound to.
     /// </summary>
+    [PublicAPI]
     public interface IInternalEventsScope : IDisposable
     {
         /// <summary>

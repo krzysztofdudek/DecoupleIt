@@ -26,7 +26,7 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
 
             var assembly = typeof(ServiceCollectionExtensions).Assembly;
 
-            serviceCollection.AddTracing();
+            serviceCollection.AddTracing(configuration);
 
             serviceCollection.ScanAssemblyForImplementations(typeof(ServiceCollectionExtensions).Assembly);
             serviceCollection.ScanAssemblyForOptions(assembly, configuration);

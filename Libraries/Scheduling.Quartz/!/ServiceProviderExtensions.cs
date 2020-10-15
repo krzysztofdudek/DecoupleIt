@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using GS.DecoupleIt.InternalEvents;
+using GS.DecoupleIt.InternalEvents.Scope;
 using GS.DecoupleIt.Scheduling.Exceptions;
 using GS.DecoupleIt.Shared;
+using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -71,22 +74,37 @@ namespace GS.DecoupleIt.Scheduling.Quartz
                 var jobType         = jobParameters.JobType;
                 var actionOnError   = jobParameters.ActionOnError;
 
-                using var serviceProviderScope = serviceProvider.CreateScope()
-                                                                .AsNotNull();
+                var job = (IJob) serviceProvider.GetRequiredService(jobType)
+                                                .AsNotNull();
 
-                var job = (IJob) serviceProviderScope.ServiceProvider.GetRequiredService(jobType)
-                                                     .AsNotNull();
+                var internalEventDispatcher = serviceProvider.GetRequiredService<IInternalEventDispatcher>()
+                                                             .AsNotNull();
+
+                var tracer = serviceProvider.GetRequiredService<ITracer>()
+                                            .AsNotNull();
+
+                tracer.Initialize();
+                InternalEventsScope.Initialize();
 
                 try
                 {
-                    await job.ExecuteAsync(context.CancellationToken);
+                    using var tracerSpan = tracer.OpenRootSpan(jobType, SpanType.Job);
+
+                    using var internalEventsScope = InternalEventsScope.OpenScope();
+
+                    await internalEventsScope.DispatchEventsAsync(internalEventDispatcher,
+                                                                  () => job.ExecuteAsync(context.CancellationToken),
+                                                                  context.CancellationToken);
                 }
                 catch (Exception exception)
                 {
-                    actionOnError?.Invoke(exception, serviceProviderScope.ServiceProvider);
+                    actionOnError?.Invoke(exception, serviceProvider);
                 }
                 finally
                 {
+                    InternalEventsScope.Clear();
+                    tracer.Clear();
+
                     _jobIsExecuting = false;
                 }
             }

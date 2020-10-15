@@ -15,7 +15,7 @@ namespace GS.DecoupleIt.InternalEvents
         /// <summary>
         ///     Identifier.
         /// </summary>
-        public Guid Identifier { get; }
+        public Guid EventIdentifier { get; }
 
         /// <summary>
         ///     Timestamp from moment of creation. It's in UTC time zone.
@@ -40,8 +40,8 @@ namespace GS.DecoupleIt.InternalEvents
         /// </summary>
         protected Event()
         {
-            Identifier = Guid.NewGuid();
-            TimeStamp  = DateTime.UtcNow;
+            EventIdentifier = Guid.NewGuid();
+            TimeStamp       = DateTime.UtcNow;
         }
     }
 }

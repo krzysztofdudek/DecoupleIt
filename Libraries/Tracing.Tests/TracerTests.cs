@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing.Exceptions;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
 
@@ -20,50 +18,66 @@ namespace GS.DecoupleIt.Tracing.Tests
         [JetBrains.Annotations.NotNull]
         private static Type CreatorType => typeof(TracerTests);
 
+        [JetBrains.Annotations.NotNull]
+        private ITracer CreateTracer()
+        {
+            return new Tracer(new NullLogger<Tracer>(),
+                              Microsoft.Extensions.Options.Options.Create(new LoggerPropertiesOptions())
+                                       .AsNotNull());
+        }
+
         [Fact]
         public void CanNotDisposeNotCurrentSpan()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
 
-            var rootSpan  = Tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest);
-            var childSpan = Tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequest);
+            tracer.Initialize();
+
+            var rootSpan  = tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest);
+            var childSpan = tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequest);
 
             Assert.Throws<InvalidOperationException>(() => { rootSpan.Dispose(); });
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void CanTryToDisposeClosedSpan()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
 
-            var span = Tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest);
+            tracer.Initialize();
+
+            var span = tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest);
 
             span.Dispose();
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void ClearInitialized()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
 
-            Tracer.Clear();
+            tracer.Initialize();
+
+            tracer.Clear();
 
             Assert.Throws<TraceIsNotInitialized>(() =>
             {
-                var _ = Tracer.CurrentSpan;
+                var _ = tracer.CurrentSpan;
             });
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void DisposeResourcesOnSpanClose()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
+
+            tracer.Initialize();
 
             var isDisposed = false;
 
@@ -75,338 +89,200 @@ namespace GS.DecoupleIt.Tracing.Tests
                       .AsNotNull()
                       .Do(_ => isDisposed = true);
 
-            using (Tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest))
+            using (var span = tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest))
             {
-                Tracer.AttachResource(disposable);
+                span.AttachResource(disposable);
             }
 
             Assert.True(isDisposed);
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void get_CurrentSpan_NotInTheContextOfSpan()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
+
+            tracer.Initialize();
 
             Assert.Throws<NotInTheContextOfSpan>(() =>
             {
-                var _ = Tracer.CurrentSpan;
+                var _ = tracer.CurrentSpan;
             });
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void get_CurrentSpan_TraceIsNotInitialized()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
 
-            Tracer.Clear();
+            tracer.Initialize();
+
+            tracer.Clear();
 
             Assert.Throws<TraceIsNotInitialized>(() =>
             {
-                var _ = Tracer.CurrentSpan;
+                var _ = tracer.CurrentSpan;
             });
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void GetCurrentSpan()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
 
-            using (Tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest))
+            tracer.Initialize();
+
+            using (tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest))
             {
-                var span = Tracer.CurrentSpan;
+                var span = tracer.CurrentSpan;
 
-                Assert.NotEqual<TracingId>(Guid.Empty, span.Id);
-                Assert.NotEqual<TracingId>(Guid.Empty, span.TraceId);
-                Assert.Null(span.ParentId);
-                Assert.NotNull(span.Name);
-                Assert.Equal(SpanType.ExternalRequest, span.Type);
+                Assert.NotEqual<TracingId>(Guid.Empty, span.Descriptor.Id);
+                Assert.NotEqual<TracingId>(Guid.Empty, span.Descriptor.TraceId);
+                Assert.Null(span.Descriptor.ParentId);
+                Assert.NotNull(span.Descriptor.Name);
+                Assert.Equal(SpanType.ExternalRequest, span.Descriptor.Type);
             }
 
-            Tracer.Clear();
-        }
-
-        [Fact]
-        public void GetResource_ExistsTyped()
-        {
-            Tracer.Initialize();
-
-            using (var rootSpan = Tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest))
-            {
-                rootSpan.AttachResource(new StringBuilder());
-
-                using (var childSpan = Tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequestHandler))
-                {
-                    var resource = Tracer.GetResource<StringBuilder>();
-
-                    Assert.NotNull(resource);
-                }
-            }
-
-            Tracer.Clear();
-        }
-
-        [Fact]
-        public void GetResource_ExistsTypedAndKeyed()
-        {
-            Tracer.Initialize();
-
-            using (var rootSpan = Tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest))
-            {
-                rootSpan.AttachResource(new StringBuilder(), "Key");
-
-                using (var childSpan = Tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequestHandler))
-                {
-                    var resource = Tracer.GetResource<StringBuilder>("Key");
-
-                    Assert.NotNull(resource);
-                }
-            }
-
-            Tracer.Clear();
-        }
-
-        [Fact]
-        public void GetResource_InvalidKey()
-        {
-            Tracer.Initialize();
-
-            using (var rootSpan = Tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest))
-            {
-                rootSpan.AttachResource(new StringBuilder(), "Key1");
-
-                using (var childSpan = Tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequestHandler))
-                {
-                    Assert.Throws<ResourceNotFound>(() => { Tracer.GetResource<StringBuilder>("Key2"); });
-                }
-            }
-
-            Tracer.Clear();
-        }
-
-        [Fact]
-        public void GetResource_InvalidType()
-        {
-            Tracer.Initialize();
-
-            using (var rootSpan = Tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest))
-            {
-                rootSpan.AttachResource(new List<StringBuilder>());
-
-                using (var childSpan = Tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequestHandler))
-                {
-                    Assert.Throws<ResourceNotFound>(() => { Tracer.GetResource<StringBuilder>(); });
-                }
-            }
-
-            Tracer.Clear();
-        }
-
-        [Fact]
-        public void HandleMetricOnSpanLevel()
-        {
-            Tracer.Initialize();
-
-            var wasMetricPushed = false;
-
-            var metric = new Metric("Name", 1);
-
-            void TracerOnMetricPushed(Span _, Metric __)
-            {
-                wasMetricPushed = true;
-            }
-
-            Tracer.Initialize();
-
-            ISpan span;
-
-            using (span = Tracer.OpenRootSpan(typeof(TracerTests), SpanType.ExternalRequest))
-            {
-                span.MetricPushed += TracerOnMetricPushed;
-
-                Tracer.PushMetric(metric);
-
-                span.MetricPushed -= TracerOnMetricPushed;
-            }
-
-            Tracer.Clear();
-
-            Assert.True(wasMetricPushed);
-
-            Assert.Contains(metric, span.Metrics.ToList());
-
-            Tracer.Clear();
-        }
-
-        [Fact]
-        public void HandleMetricOnStaticLevel()
-        {
-            Tracer.Initialize();
-
-            var wasMetricPushed = false;
-
-            var metric = new Metric("Name", 1);
-
-            void TracerOnMetricPushed(Span _, Metric __)
-            {
-                wasMetricPushed = true;
-            }
-
-            Tracer.Initialize();
-            Tracer.MetricPushed += TracerOnMetricPushed;
-
-            ISpan span;
-
-            using (span = Tracer.OpenRootSpan(typeof(TracerTests), SpanType.ExternalRequest))
-            {
-                Tracer.PushMetric(metric);
-            }
-
-            Tracer.MetricPushed -= TracerOnMetricPushed;
-            Tracer.Clear();
-
-            Assert.True(wasMetricPushed);
-
-            Assert.Contains(metric, span.Metrics.ToList());
-
-            Tracer.Clear();
-        }
-
-        [Fact]
-        public void InitializationOfMetric()
-        {
-            Tracer.Initialize();
-
-            const string  name  = "name";
-            const decimal value = 100;
-
-            var metric = new Metric(name, value);
-
-            Assert.Equal(name, metric.Name);
-            Assert.Equal(value, metric.Value);
-
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void IsNotRootSpanOpened()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
 
-            Assert.False(Tracer.IsRootSpanOpened);
+            tracer.Initialize();
 
-            Tracer.Clear();
+            Assert.False(tracer.IsRootSpanOpened);
+
+            tracer.Clear();
         }
 
         [Fact]
         public void IsRootSpanOpened()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
+
+            tracer.Initialize();
 
             var traceId      = Guid.NewGuid();
             var spanId       = Guid.NewGuid();
             var spanName     = SpanName;
             var parentSpanId = Guid.NewGuid();
 
-            using (var _ = Tracer.OpenRootSpan(traceId,
+            using (var _ = tracer.OpenRootSpan(traceId,
                                                spanId,
                                                spanName,
                                                parentSpanId,
                                                SpanType.ExternalRequest))
             {
-                Assert.True(Tracer.IsRootSpanOpened);
+                Assert.True(tracer.IsRootSpanOpened);
             }
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void OpenChildSpan_NoParent_CreatorTypeAsName()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
+
+            tracer.Initialize();
 
             Assert.Throws<RootSpanIsNotOpened>(() =>
             {
-                using (var _ = Tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequest)) { }
+                using (var _ = tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequest)) { }
             });
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void OpenChildSpan_NoParent_OwnName()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
+
+            tracer.Initialize();
 
             Assert.Throws<RootSpanIsNotOpened>(() =>
             {
-                using (var _ = Tracer.OpenChildSpan(SpanName, SpanType.ExternalRequest)) { }
+                using (var _ = tracer.OpenChildSpan(SpanName, SpanType.ExternalRequest)) { }
             });
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void OpenChildSpan_NoRootSpan()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
+
+            tracer.Initialize();
 
             Assert.Throws<RootSpanIsNotOpened>(() =>
             {
-                var _ = Tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequest);
+                var _ = tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequest);
             });
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void OpenChildSpan_WithRootSpan()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
 
-            var rootSpan  = Tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest);
-            var childSpan = Tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequest);
+            tracer.Initialize();
 
-            Tracer.Clear();
+            var rootSpan  = tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest);
+            var childSpan = tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequest);
+
+            tracer.Clear();
         }
 
         [Fact]
         public void OpenRootSpan_NoParent_CreatorTypeAsName()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
 
-            using (var _ = Tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest)) { }
+            tracer.Initialize();
 
-            Tracer.Clear();
+            using (var _ = tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest)) { }
+
+            tracer.Clear();
         }
 
         [Fact]
         public void OpenRootSpan_NoParent_OwnName()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
 
-            using (var _ = Tracer.OpenRootSpan(SpanName, SpanType.ExternalRequest)) { }
+            tracer.Initialize();
 
-            Tracer.Clear();
+            using (var _ = tracer.OpenRootSpan(SpanName, SpanType.ExternalRequest)) { }
+
+            tracer.Clear();
         }
 
         [Fact]
         public void OpenRootSpan_RootSpanAlreadyDefined()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
+
+            tracer.Initialize();
 
             var traceId      = Guid.NewGuid();
             var spanId       = Guid.NewGuid();
             var creatorType  = CreatorType;
             var parentSpanId = Guid.NewGuid();
 
-            using (var rootSpan = Tracer.OpenRootSpan(traceId,
+            using (var rootSpan = tracer.OpenRootSpan(traceId,
                                                       spanId,
                                                       creatorType,
                                                       parentSpanId,
@@ -414,7 +290,7 @@ namespace GS.DecoupleIt.Tracing.Tests
             {
                 Assert.Throws<RootSpanIsAlreadyOpened>(() =>
                 {
-                    using (var _ = Tracer.OpenRootSpan(traceId,
+                    using (var _ = tracer.OpenRootSpan(traceId,
                                                        spanId,
                                                        creatorType,
                                                        parentSpanId,
@@ -422,45 +298,49 @@ namespace GS.DecoupleIt.Tracing.Tests
                 });
             }
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void OpenRootSpan_WithParent_CreatorTypeAsName()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
+
+            tracer.Initialize();
 
             var traceId      = Guid.NewGuid();
             var spanId       = Guid.NewGuid();
             var creatorType  = CreatorType;
             var parentSpanId = Guid.NewGuid();
 
-            using (var _ = Tracer.OpenRootSpan(traceId,
+            using (var _ = tracer.OpenRootSpan(traceId,
                                                spanId,
                                                creatorType,
                                                parentSpanId,
                                                SpanType.ExternalRequest)) { }
 
-            Tracer.Clear();
+            tracer.Clear();
         }
 
         [Fact]
         public void OpenRootSpan_WithParent_OwnName()
         {
-            Tracer.Initialize();
+            var tracer = CreateTracer();
+
+            tracer.Initialize();
 
             var traceId      = Guid.NewGuid();
             var spanId       = Guid.NewGuid();
             var spanName     = SpanName;
             var parentSpanId = Guid.NewGuid();
 
-            using (var _ = Tracer.OpenRootSpan(traceId,
+            using (var _ = tracer.OpenRootSpan(traceId,
                                                spanId,
                                                spanName,
                                                parentSpanId,
                                                SpanType.ExternalRequest)) { }
 
-            Tracer.Clear();
+            tracer.Clear();
         }
     }
 }

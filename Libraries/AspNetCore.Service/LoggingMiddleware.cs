@@ -21,14 +21,18 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 
 namespace GS.DecoupleIt.AspNetCore.Service
 {
+    /// <summary>
+    ///     Middleware logging requests and responses.
+    /// </summary>
     [Transient]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
-    internal sealed class LoggingMiddleware : IMiddleware
+    public sealed class LoggingMiddleware : IMiddleware
     {
-        public LoggingMiddleware([NotNull] ILogger<LoggingMiddleware> logger, [NotNull] IOptions<ServiceOptions> serviceOptions)
+        public LoggingMiddleware([NotNull] ILogger<LoggingMiddleware> logger, [NotNull] IOptions<ServiceOptions> serviceOptions, [NotNull] ITracer tracer)
         {
             _logger         = logger;
+            _tracer         = tracer;
             _serviceOptions = serviceOptions.Value;
         }
 
@@ -65,7 +69,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
             var requestBody = await ReadStream(context.Request.Body);
 
-            using var scope = Tracer.OpenChildSpan($"{controllerName}.{actionName}", SpanType.ExternalRequestHandler);
+            using var scope = _tracer.OpenChildSpan($"{controllerName}.{actionName}", SpanType.ExternalRequestHandler);
 
             if (_serviceOptions.LogRequests)
                 LogStart(context, requestBody);
@@ -127,6 +131,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
         [NotNull]
         private readonly ServiceOptions _serviceOptions;
 
+        [NotNull]
+        private readonly ITracer _tracer;
+
         private void LogFinish([NotNull] HttpContext context, [CanBeNull] string responseBody, TimeSpan duration)
         {
             var message = new StringBuilder("External request handling finished after {@Duration}ms.\nHeaders: {@Headers}");
@@ -139,7 +146,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
             if (!string.IsNullOrWhiteSpace(responseBody))
             {
-                message.Append("\nBody: {@Body}");
+                message.Append("\nBody: {@Body:l}");
                 args.Add(responseBody);
             }
 
@@ -148,18 +155,20 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
         private void LogStart([NotNull] HttpContext context, [CanBeNull] string requestBody)
         {
-            var message = new StringBuilder("External request handling started.\nMethod: {@Method}\nPath: {@Path}\nHeaders: {@Headers}");
+            var message = new StringBuilder(
+                "External request handling started.\nMethod: {@Method}\nPath: {@Path}\nQuery string: {@Query}\nHeaders: {@Headers}");
 
             var args = new List<object>
             {
                 context.Request.Method,
                 context.Request.Path.Value,
+                context.Request.QueryString.Value,
                 context.Request.Headers.ToDictionary(x => x.Key, x => x.Value)
             };
 
             if (!string.IsNullOrWhiteSpace(requestBody))
             {
-                message.Append("\nBody: {@Body}");
+                message.Append("\nBody: {@Body:l}");
                 args.Add(requestBody);
             }
 

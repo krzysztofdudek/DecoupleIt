@@ -11,6 +11,7 @@ namespace GS.DecoupleIt.InternalEvents.Scope
     /// <summary>
     ///     Manages internal event scopes.
     /// </summary>
+    [PublicAPI]
     public sealed class InternalEventsScope : IInternalEventsScope
     {
         [NotNull]
@@ -180,13 +181,13 @@ namespace GS.DecoupleIt.InternalEvents.Scope
                 await invokeEvents()
                     .AsNotNull();
 
-                await Task.WhenAll(Events.Select(@event => internalEventDispatcher.DispatchOnSuccessAsync(@event, cancellationToken)))
-                          .AsNotNull();
+                foreach (var @event in Events)
+                    await internalEventDispatcher.DispatchOnSuccessAsync(@event, cancellationToken);
             }
             catch (Exception exception)
             {
-                await Task.WhenAll(Events.Select(@event => internalEventDispatcher.DispatchOnFailureAsync(@event, exception, cancellationToken)))
-                          .AsNotNull();
+                foreach (var @event in Events)
+                    await internalEventDispatcher.DispatchOnFailureAsync(@event, exception, cancellationToken);
 
                 throw;
             }

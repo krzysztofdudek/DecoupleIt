@@ -4,5 +4,5 @@ namespace GS.DecoupleIt.Tracing
     ///     Delegate handling opening of spans.
     /// </summary>
     /// <param name="span">Opened span.</param>
-    public delegate void SpanOpenedDelegate(Span span);
+    public delegate void SpanOpenedDelegate(SpanDescriptor span);
 }

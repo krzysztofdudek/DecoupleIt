@@ -1,18 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>2.1.2</VersionPrefix>
+        <VersionPrefix>3.0.0</VersionPrefix>
+        <VersionSuffix>alpha.0</VersionSuffix>
         <Title>DecoupleIt - Tracing</Title>
         <Description>Implementation of tracing pattern allowing to define own scopes per case.</Description>
-        <PackageReleaseNotes>
-            - made parent id optional for OpenRootSpan
-        </PackageReleaseNotes>
     </PropertyGroup>
 
     <Import Project="../netstandard.props" />
 
     <ItemGroup>
       <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
+      <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
       <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
 

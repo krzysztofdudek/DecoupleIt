@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
-using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
@@ -15,10 +12,14 @@ namespace GS.DecoupleIt.InternalEvents
     [Transient]
     internal sealed class InternalEventDispatcher : IInternalEventDispatcher
     {
-        public InternalEventDispatcher([NotNull] IEventHandlerFactory eventHandlerFactory, [NotNull] ILogger<InternalEventDispatcher> logger)
+        public InternalEventDispatcher(
+            [NotNull] IEventHandlerFactory eventHandlerFactory,
+            [NotNull] ILogger<InternalEventDispatcher> logger,
+            [NotNull] ITracer tracer)
         {
             _eventHandlerFactory = eventHandlerFactory;
             _logger              = logger;
+            _tracer              = tracer;
         }
 
         public Task DispatchOnEmissionAsync(Event @event, CancellationToken cancellationToken = default)
@@ -77,6 +78,9 @@ namespace GS.DecoupleIt.InternalEvents
         [NotNull]
         private readonly ILogger<InternalEventDispatcher> _logger;
 
+        [NotNull]
+        private readonly ITracer _tracer;
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AccessToDisposedClosure")]
         private async Task DispatchAsync(
             [NotNull] Event @event,
@@ -84,58 +88,34 @@ namespace GS.DecoupleIt.InternalEvents
             bool onEmission,
             CancellationToken cancellationToken = default)
         {
-            ISpan        eventScope = null;
-            Stopwatch    stopwatch  = null;
-            Func<double> getDuration;
+            using var span = _tracer.OpenChildSpan(@event.GetType(), SpanType.InternalEvent);
 
-            if (Tracer.IsRootSpanOpened)
-            {
-                eventScope = Tracer.OpenChildSpan(@event.GetType(), SpanType.InternalEvent);
-                eventScope.AttachResource(_logger.BeginTracerSpan());
+            using var internalEventsScope = Scope.InternalEventsScope.OpenScope();
 
-                getDuration = () => eventScope.Duration.TotalMilliseconds;
-            }
-            else
-            {
-                stopwatch = Stopwatch.StartNew();
+            var eventType = @event.GetType();
 
-                getDuration = () => stopwatch.ElapsedMilliseconds;
-            }
+            var eventHandlers = onEmission ? _eventHandlerFactory.ResolveOnEmissionEventHandlers(eventType) :
+                exception is null          ? _eventHandlerFactory.ResolveOnSuccessEventHandlers(eventType) :
+                                             (IReadOnlyCollection<object>) _eventHandlerFactory.ResolveOnFailureEventHandlers(eventType);
+
+            _logger.LogInformation("Event dispatching started, {@EventHandlersCount} will handle it.", eventHandlers.Count);
 
             try
             {
-                using var internalEventsScope = Scope.InternalEventsScope.OpenScope();
+                await internalEventsScope.DispatchEventsAsync(this,
+                                                              () => ProcessEventHandlers(@event,
+                                                                                         eventHandlers,
+                                                                                         exception,
+                                                                                         cancellationToken),
+                                                              cancellationToken);
 
-                var eventType = @event.GetType();
-
-                var eventHandlers = onEmission ? _eventHandlerFactory.ResolveOnEmissionEventHandlers(eventType) :
-                    exception is null          ? _eventHandlerFactory.ResolveOnSuccessEventHandlers(eventType) :
-                                                 (IReadOnlyCollection<object>) _eventHandlerFactory.ResolveOnFailureEventHandlers(eventType);
-
-                _logger.LogInformation("Event dispatching started, {@EventHandlersCount} will handle it.", eventHandlers.Count);
-
-                try
-                {
-                    await internalEventsScope.DispatchEventsAsync(this,
-                                                                  () => ProcessEventHandlers(@event,
-                                                                                             eventHandlers,
-                                                                                             exception,
-                                                                                             cancellationToken),
-                                                                  cancellationToken);
-
-                    _logger.LogInformation("Event dispatching finished after {@Duration}ms.", getDuration());
-                }
-                catch
-                {
-                    _logger.LogInformation("Event dispatching failed after {@Duration}ms.", getDuration());
-
-                    throw;
-                }
+                _logger.LogInformation("Event dispatching finished after {@Duration}ms.", span.Duration.Milliseconds);
             }
-            finally
+            catch
             {
-                eventScope?.Dispose();
-                stopwatch?.Stop();
+                _logger.LogInformation("Event dispatching failed after {@Duration}ms.", span.Duration.Milliseconds);
+
+                throw;
             }
         }
 
@@ -146,74 +126,47 @@ namespace GS.DecoupleIt.InternalEvents
             [NotNull] object eventHandler,
             CancellationToken cancellationToken)
         {
-            ISpan        eventScope = null;
-            Stopwatch    stopwatch  = null;
-            Func<double> getDuration;
+            using var span = _tracer.OpenChildSpan(eventHandler.GetType(), SpanType.InternalEventHandler);
 
-            if (Tracer.IsRootSpanOpened)
-            {
-                eventScope = Tracer.OpenChildSpan(eventHandler.GetType(), SpanType.InternalEventHandler);
-                eventScope.AttachResource(_logger.BeginTracerSpan());
+            using var internalEventsScope = Scope.InternalEventsScope.OpenScope();
 
-                getDuration = () => eventScope.Duration.TotalMilliseconds;
-            }
-            else
-            {
-                stopwatch = Stopwatch.StartNew();
-
-                getDuration = () => stopwatch.ElapsedMilliseconds;
-            }
+            _logger.LogInformation("Event handler invocation started.");
 
             try
             {
-                using var internalEventsScope = Scope.InternalEventsScope.OpenScope();
+                await internalEventsScope.DispatchEventsAsync(this,
+                                                              () => InvokeEventHandler(@event,
+                                                                                       eventHandler,
+                                                                                       exception,
+                                                                                       cancellationToken),
+                                                              cancellationToken);
 
-                _logger.LogInformation("Event handler invocation started.");
-
-                try
-                {
-                    await internalEventsScope.DispatchEventsAsync(this,
-                                                                  () => InvokeEventHandler(@event,
-                                                                                           eventHandler,
-                                                                                           exception,
-                                                                                           cancellationToken),
-                                                                  cancellationToken);
-
-                    _logger.LogInformation("Event handler invocation finished after {@Duration}ms.", getDuration());
-                }
-                catch (Exception caughtException)
-                {
-                    _logger.LogInformation(new EventId(),
-                                           caughtException,
-                                           "Event handler invocation failed after {@Duration}ms.",
-                                           getDuration());
-
-                    if (eventHandler is IOnEmissionEventHandler)
-                        throw;
-                }
+                _logger.LogInformation("Event handler invocation finished after {@Duration}ms.", span.Duration.Milliseconds);
             }
-            finally
+            catch (Exception caughtException)
             {
-                eventScope?.Dispose();
-                stopwatch?.Stop();
+                _logger.LogInformation(new EventId(),
+                                       caughtException,
+                                       "Event handler invocation failed after {@Duration}ms.",
+                                       span.Duration.Milliseconds);
+
+                if (eventHandler is IOnEmissionEventHandler)
+                    throw;
             }
         }
 
         [NotNull]
-        private Task ProcessEventHandlers(
+        private async Task ProcessEventHandlers(
             [NotNull] Event @event,
             [NotNull] [ItemNotNull] IEnumerable<object> eventHandlers,
             [CanBeNull] Exception exception,
             CancellationToken cancellationToken)
         {
-            var tasks = eventHandlers.Select(eventHandler => ProcessEventHandler(@event,
-                                                                                 exception,
-                                                                                 eventHandler,
-                                                                                 cancellationToken))
-                                     .ToArray();
-
-            return Task.WhenAll(tasks)
-                       .AsNotNull();
+            foreach (var eventHandler in eventHandlers)
+                await ProcessEventHandler(@event,
+                                          exception,
+                                          eventHandler,
+                                          cancellationToken);
         }
     }
 }
