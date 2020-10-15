@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>2.0.0</VersionPrefix>
+        <VersionPrefix>2.0.1</VersionPrefix>
         <Title>DecoupleIt - ASP .NET Core integration for tracing</Title>
         <Description>ASP .NET Core support for tracing.</Description>
         <PackageReleaseNotes>
-            - learned how dependencies work (now they not require the newet microsoft libs)
+            - middleware replaces tracing headers to be the same as in Tracer scope
         </PackageReleaseNotes>
     </PropertyGroup>
 

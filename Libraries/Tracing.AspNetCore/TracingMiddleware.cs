@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace GS.DecoupleIt.Tracing.AspNetCore
 {
@@ -50,10 +51,10 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
                                                                         .Response.AsNotNull()
                                                                         .Headers.AsNotNull();
 
-                                       responseHeaders.Add(_options.TraceIdHeaderName, traceId);
-                                       responseHeaders.Add(_options.SpanIdHeaderName, spanId);
-                                       responseHeaders.Add(_options.SpanNameHeaderName, spanName);
-                                       responseHeaders.Add(_options.ParentSpanIdHeaderName, parentSpanId);
+                                       AddOrReplace(responseHeaders, _options.TraceIdHeaderName, traceId);
+                                       AddOrReplace(responseHeaders, _options.SpanIdHeaderName, spanId);
+                                       AddOrReplace(responseHeaders, _options.SpanNameHeaderName, spanName);
+                                       AddOrReplace(responseHeaders, _options.ParentSpanIdHeaderName, parentSpanId);
 
                                        return Task.CompletedTask;
                                    },
@@ -74,6 +75,14 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
             {
                 Tracer.Clear();
             }
+        }
+
+        private static void AddOrReplace([NotNull] IHeaderDictionary headerDictionary, [NotNull] string key, StringValues stringValues)
+        {
+            if (headerDictionary.ContainsKey(key))
+                headerDictionary.Remove(key);
+
+            headerDictionary.Add(key, stringValues);
         }
 
         [NotNull]
