@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>2.1.1</VersionPrefix>
+        <VersionPrefix>2.1.2</VersionPrefix>
         <Title>DecoupleIt - Tracing</Title>
         <Description>Implementation of tracing pattern allowing to define own scopes per case.</Description>
         <PackageReleaseNotes>
-            - learned how dependencies work (now they not require the newet microsoft libs)
+            - made parent id optional for OpenRootSpan
         </PackageReleaseNotes>
     </PropertyGroup>
 

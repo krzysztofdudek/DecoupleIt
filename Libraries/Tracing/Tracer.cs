@@ -238,7 +238,7 @@ namespace GS.DecoupleIt.Tracing
             TracingId traceId,
             TracingId id,
             [NotNull] Type creatorType,
-            TracingId parentId,
+            TracingId? parentId,
             SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(creatorType), creatorType);
