@@ -8,8 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
         <ProjectReference Include="..\Shared\Shared.csproj" />
+        <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
         <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
     </ItemGroup>
 

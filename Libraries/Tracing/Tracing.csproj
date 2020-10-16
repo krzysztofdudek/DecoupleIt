@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <VersionPrefix>3.0.0</VersionPrefix>
-        <VersionSuffix>alpha.0</VersionSuffix>
+        <VersionSuffix>alpha.1</VersionSuffix>
         <Title>DecoupleIt - Tracing</Title>
         <Description>Implementation of tracing pattern allowing to define own scopes per case.</Description>
     </PropertyGroup>

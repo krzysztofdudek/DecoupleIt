@@ -22,7 +22,7 @@ namespace GS.DecoupleIt.Tracing
         /// <inheritdoc />
         public ITracerSpan CurrentSpan =>
             Trace.Count > 0
-                ? Trace.Peek()
+                ? Trace.Last()
                        .AsNotNull()
                 : throw new NotInTheContextOfSpan();
 
@@ -41,7 +41,7 @@ namespace GS.DecoupleIt.Tracing
         /// </exception>
         [NotNull]
         [ItemNotNull]
-        internal Stack<TracerSpan> Trace => _traceStorage.Value ?? throw new TraceIsNotInitialized();
+        internal List<TracerSpan> Trace => _traceStorage.Value ?? throw new TraceIsNotInitialized();
 
         /// <inheritdoc />
         public event SpanClosedDelegate SpanClosed;
@@ -70,17 +70,7 @@ namespace GS.DecoupleIt.Tracing
         /// <inheritdoc />
         public void Initialize()
         {
-            _traceStorage.Value = new Stack<TracerSpan>();
-        }
-
-        internal void InvokeSpanClosed(SpanDescriptor span, TimeSpan duration)
-        {
-            SpanClosed?.Invoke(span, duration);
-        }
-
-        internal void InvokeSpanOpened(SpanDescriptor span)
-        {
-            SpanOpened?.Invoke(span);
+            _traceStorage.Value = new List<TracerSpan>();
         }
 
         /// <inheritdoc />
@@ -98,9 +88,11 @@ namespace GS.DecoupleIt.Tracing
                                                     CurrentSpan.Descriptor.Id,
                                                     type);
 
-            var span = new TracerSpan(spanDescriptor, this);
+            var span = new TracerSpan(spanDescriptor);
 
-            Trace.Push(span);
+            span.Closed += SpanOnClosed;
+
+            Trace.Add(span);
 
             span.AttachResource(_logger.BeginScope(GetLoggerProperties(span))
                                        .AsNotNull());
@@ -138,9 +130,11 @@ namespace GS.DecoupleIt.Tracing
                                                     parentId,
                                                     type);
 
-            var span = new TracerSpan(spanDescriptor, this);
+            var span = new TracerSpan(spanDescriptor);
 
-            Trace.Push(span);
+            span.Closed += SpanOnClosed;
+
+            Trace.Add(span);
 
             span.AttachResource(_logger.BeginScope(GetLoggerProperties(span))
                                        .AsNotNull());
@@ -194,7 +188,7 @@ namespace GS.DecoupleIt.Tracing
         private readonly LoggerPropertiesOptions _loggerPropertiesOptions;
 
         [NotNull]
-        private readonly AsyncLocal<Stack<TracerSpan>> _traceStorage = new AsyncLocal<Stack<TracerSpan>>();
+        private readonly AsyncLocal<List<TracerSpan>> _traceStorage = new AsyncLocal<List<TracerSpan>>();
 
         [NotNull]
         private Dictionary<string, object> GetLoggerProperties([NotNull] ITracerSpan span)
@@ -223,6 +217,25 @@ namespace GS.DecoupleIt.Tracing
                 dictionary.Add(property, span.Descriptor.Type);
 
             return dictionary;
+        }
+
+        private void InvokeSpanClosed(SpanDescriptor span, TimeSpan duration)
+        {
+            SpanClosed?.Invoke(span, duration);
+        }
+
+        private void InvokeSpanOpened(SpanDescriptor span)
+        {
+            SpanOpened?.Invoke(span);
+        }
+
+        private void SpanOnClosed([NotNull] TracerSpan span)
+        {
+            Trace.Remove(span);
+
+            InvokeSpanClosed(span.Descriptor, span.Duration);
+
+            span.Closed -= SpanOnClosed;
         }
     }
 }

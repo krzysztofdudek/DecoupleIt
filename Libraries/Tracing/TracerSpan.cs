@@ -17,10 +17,11 @@ namespace GS.DecoupleIt.Tracing
         /// <inheritdoc />
         public TimeSpan Duration => _stopwatch.Elapsed;
 
-        internal TracerSpan(SpanDescriptor span, [NotNull] Tracer tracer)
+        internal event Action<TracerSpan> Closed;
+
+        internal TracerSpan(SpanDescriptor span)
         {
             Descriptor = span;
-            _tracer    = tracer;
             _stopwatch = Stopwatch.StartNew();
         }
 
@@ -34,15 +35,9 @@ namespace GS.DecoupleIt.Tracing
             _attachedResources.Add(resource);
         }
 
-        public void Close()
+        internal void Close()
         {
             CheckIfDisposed();
-
-            if (_tracer.CurrentSpan != this)
-                throw new InvalidOperationException(
-                    $"Can not dispose span if it's not current span. Current is called \"{_tracer.CurrentSpan.Descriptor.Name}\".");
-
-            _tracer.Trace.Pop();
 
             foreach (var attachedResource in _attachedResources.ToNotNullList())
             {
@@ -55,7 +50,7 @@ namespace GS.DecoupleIt.Tracing
 
             _isDisposed = true;
 
-            _tracer.InvokeSpanClosed(Descriptor, Duration);
+            Closed?.Invoke(this);
         }
 
         [NotNull]
@@ -66,9 +61,6 @@ namespace GS.DecoupleIt.Tracing
 
         [NotNull]
         private readonly Stopwatch _stopwatch;
-
-        [NotNull]
-        private readonly Tracer _tracer;
 
         private void CheckIfDisposed()
         {

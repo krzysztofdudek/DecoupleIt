@@ -174,7 +174,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                          })
                          .WriteTo.Console(
                              outputTemplate:
-                             "[{Timestamp:HH:mm:ss:fff} {Level:u3} | {@SpanType} {@SpanName} | {@TraceId}:{@SpanId}:{@ParentSpanId}] {Message:lj}{NewLine}{Exception}");
+                             "[{Timestamp:HH:mm:ss:fff} {Level:u3} | {@SpanType} {@SpanName} | {@TraceId}:{@SpanId}:{@ParentSpanId}]\n{Message:lj}{NewLine}{Exception}");
         }
 
         /// <inheritdoc cref="WebHostExtensions.Run" />

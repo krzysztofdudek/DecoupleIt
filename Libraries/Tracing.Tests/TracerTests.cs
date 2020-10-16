@@ -27,21 +27,6 @@ namespace GS.DecoupleIt.Tracing.Tests
         }
 
         [Fact]
-        public void CanNotDisposeNotCurrentSpan()
-        {
-            var tracer = CreateTracer();
-
-            tracer.Initialize();
-
-            var rootSpan  = tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest);
-            var childSpan = tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequest);
-
-            Assert.Throws<InvalidOperationException>(() => { rootSpan.Dispose(); });
-
-            tracer.Clear();
-        }
-
-        [Fact]
         public void CanTryToDisposeClosedSpan()
         {
             var tracer = CreateTracer();

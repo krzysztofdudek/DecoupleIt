@@ -92,13 +92,27 @@ namespace GS.DecoupleIt.InternalEvents
 
             using var internalEventsScope = Scope.InternalEventsScope.OpenScope();
 
-            var eventType = @event.GetType();
+            var                         eventType = @event.GetType();
+            IReadOnlyCollection<object> eventHandlers;
+            string                      mode;
 
-            var eventHandlers = onEmission ? _eventHandlerFactory.ResolveOnEmissionEventHandlers(eventType) :
-                exception is null          ? _eventHandlerFactory.ResolveOnSuccessEventHandlers(eventType) :
-                                             (IReadOnlyCollection<object>) _eventHandlerFactory.ResolveOnFailureEventHandlers(eventType);
+            if (onEmission)
+            {
+                eventHandlers = _eventHandlerFactory.ResolveOnEmissionEventHandlers(eventType);
+                mode          = "on emission";
+            }
+            else if (exception is null)
+            {
+                eventHandlers = _eventHandlerFactory.ResolveOnSuccessEventHandlers(eventType);
+                mode          = "on success";
+            }
+            else
+            {
+                eventHandlers = _eventHandlerFactory.ResolveOnFailureEventHandlers(eventType);
+                mode          = "on failure";
+            }
 
-            _logger.LogInformation("Event dispatching started, {@EventHandlersCount} will handle it.", eventHandlers.Count);
+            _logger.LogInformation("Event dispatching {@EventDispatchingMode} started, {@EventHandlersCount} will handle it.", mode, eventHandlers.Count);
 
             try
             {
@@ -106,14 +120,15 @@ namespace GS.DecoupleIt.InternalEvents
                                                               () => ProcessEventHandlers(@event,
                                                                                          eventHandlers,
                                                                                          exception,
+                                                                                         mode,
                                                                                          cancellationToken),
                                                               cancellationToken);
 
-                _logger.LogInformation("Event dispatching finished after {@Duration}ms.", span.Duration.Milliseconds);
+                _logger.LogInformation("Event dispatching {@EventDispatchingMode} finished after {@Duration}ms.", mode, span.Duration.Milliseconds);
             }
             catch
             {
-                _logger.LogInformation("Event dispatching failed after {@Duration}ms.", span.Duration.Milliseconds);
+                _logger.LogInformation("Event dispatching {@EventDispatchingMode} failed after {@Duration}ms.", mode, span.Duration.Milliseconds);
 
                 throw;
             }
@@ -124,13 +139,14 @@ namespace GS.DecoupleIt.InternalEvents
             [NotNull] Event @event,
             [CanBeNull] Exception exception,
             [NotNull] object eventHandler,
+            [NotNull] string mode,
             CancellationToken cancellationToken)
         {
             using var span = _tracer.OpenChildSpan(eventHandler.GetType(), SpanType.InternalEventHandler);
 
             using var internalEventsScope = Scope.InternalEventsScope.OpenScope();
 
-            _logger.LogInformation("Event handler invocation started.");
+            _logger.LogInformation("Event handler {@EventDispatchingMode} invocation started.", mode);
 
             try
             {
@@ -141,13 +157,13 @@ namespace GS.DecoupleIt.InternalEvents
                                                                                        cancellationToken),
                                                               cancellationToken);
 
-                _logger.LogInformation("Event handler invocation finished after {@Duration}ms.", span.Duration.Milliseconds);
+                _logger.LogInformation("Event handler {@EventDispatchingMode} invocation finished after {@Duration}ms.", mode, span.Duration.Milliseconds);
             }
             catch (Exception caughtException)
             {
-                _logger.LogInformation(new EventId(),
-                                       caughtException,
-                                       "Event handler invocation failed after {@Duration}ms.",
+                _logger.LogInformation(caughtException,
+                                       "Event handler {@EventDispatchingMode} invocation failed after {@Duration}ms.",
+                                       mode,
                                        span.Duration.Milliseconds);
 
                 if (eventHandler is IOnEmissionEventHandler)
@@ -160,12 +176,14 @@ namespace GS.DecoupleIt.InternalEvents
             [NotNull] Event @event,
             [NotNull] [ItemNotNull] IEnumerable<object> eventHandlers,
             [CanBeNull] Exception exception,
+            [NotNull] string mode,
             CancellationToken cancellationToken)
         {
             foreach (var eventHandler in eventHandlers)
                 await ProcessEventHandler(@event,
                                           exception,
                                           eventHandler,
+                                          mode,
                                           cancellationToken);
         }
     }
