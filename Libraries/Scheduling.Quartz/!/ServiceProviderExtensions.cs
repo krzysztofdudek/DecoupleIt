@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using GS.DecoupleIt.InternalEvents;
 using GS.DecoupleIt.InternalEvents.Scope;
-using GS.DecoupleIt.Scheduling.Exceptions;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
@@ -26,10 +25,6 @@ namespace GS.DecoupleIt.Scheduling.Quartz
         /// <param name="serviceProvider">Service provider.</param>
         /// <param name="configure">Configure builder.</param>
         /// <returns>Service provider.</returns>
-        /// <exception cref="NoJobsRegistered">
-        ///     Exception is thrown when scheduler is tried to run, but there are no registered
-        ///     jobs.
-        /// </exception>
         [NotNull]
         public static IServiceProvider UseQuartzScheduling(
             [NotNull] this IServiceProvider serviceProvider,
@@ -44,7 +39,7 @@ namespace GS.DecoupleIt.Scheduling.Quartz
             var jobsCollection = serviceProvider.GetService<IRegisteredJobs>();
 
             if (jobsCollection is null)
-                throw new NoJobsRegistered();
+                return serviceProvider;
 
             foreach (var jobEntry in serviceProvider.GetRequiredService<IRegisteredJobs>()
                                                     .AsNotNull())

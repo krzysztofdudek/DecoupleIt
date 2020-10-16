@@ -1,5 +1,4 @@
 using System;
-using GS.DecoupleIt.Scheduling.Exceptions;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
@@ -19,10 +18,6 @@ namespace GS.DecoupleIt.Scheduling.Quartz.AspNetCore
         /// </summary>
         /// <param name="builder">Application builder.</param>
         /// <param name="configure">Configure builder.</param>
-        /// <exception cref="NoJobsRegistered">
-        ///     Exception is thrown when scheduler is tried to run, but there are no registered
-        ///     jobs.
-        /// </exception>
         /// <returns>Application builder.</returns>
         [NotNull]
         public static IApplicationBuilder UseQuartzSchedulingForAspNetCore(
