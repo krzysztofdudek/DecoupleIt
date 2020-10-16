@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GS.DecoupleIt.InternalEvents
 {
-    [Transient]
+    [Singleton]
     internal sealed class InternalEventDispatcher : IInternalEventDispatcher
     {
         public InternalEventDispatcher(

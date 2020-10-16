@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GS.DecoupleIt.InternalEvents
 {
-    [Transient]
+    [Singleton]
     internal sealed class EventHandlerFactory : IEventHandlerFactory
     {
         public EventHandlerFactory([NotNull] IServiceProvider serviceProvider)
