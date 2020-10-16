@@ -83,30 +83,39 @@ namespace GS.DecoupleIt.Scheduling.Quartz
                 var tracer = serviceProvider.GetRequiredService<ITracer>()
                                             .AsNotNull();
 
+                var logger = serviceProvider.GetRequiredService<ILogger<BaseQuartzJob>>()
+                                            .AsNotNull();
+
                 tracer.Initialize();
                 InternalEventsScope.Initialize();
 
-                try
+                using (var tracerSpan = tracer.OpenRootSpan(jobType, SpanType.Job))
                 {
-                    using var tracerSpan = tracer.OpenRootSpan(jobType, SpanType.Job);
+                    using (var internalEventsScope = InternalEventsScope.OpenScope())
+                    {
+                        try
+                        {
+                            logger.LogDebug("Job executing started.");
 
-                    using var internalEventsScope = InternalEventsScope.OpenScope();
+                            await internalEventsScope.DispatchEventsAsync(internalEventDispatcher,
+                                                                          () => job.ExecuteAsync(context.CancellationToken),
+                                                                          context.CancellationToken);
 
-                    await internalEventsScope.DispatchEventsAsync(internalEventDispatcher,
-                                                                  () => job.ExecuteAsync(context.CancellationToken),
-                                                                  context.CancellationToken);
-                }
-                catch (Exception exception)
-                {
-                    actionOnError?.Invoke(exception, serviceProvider);
-                }
-                finally
-                {
-                    InternalEventsScope.Clear();
-                    tracer.Clear();
+                            logger.LogDebug("Job executing finished after {@Duration}.", tracerSpan.Duration.Milliseconds);
+                        }
+                        catch (Exception exception)
+                        {
+                            logger.LogDebug("Job execution failed after {@Duration}.", tracerSpan.Duration.Milliseconds);
 
-                    _jobIsExecuting = false;
+                            actionOnError?.Invoke(exception, serviceProvider);
+                        }
+                    }
                 }
+
+                InternalEventsScope.Clear();
+                tracer.Clear();
+
+                _jobIsExecuting = false;
             }
 
             private static bool _jobIsExecuting;
