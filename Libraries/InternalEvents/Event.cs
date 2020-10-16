@@ -25,14 +25,14 @@ namespace GS.DecoupleIt.InternalEvents
         /// <inheritdoc cref="IInternalEventsScope.EmitEvent" />
         public void Emit()
         {
-            InternalEventsScope.CurrentScope.EmitEvent(this);
+            InternalEventsScope.EmitEvent(this);
         }
 
         /// <inheritdoc cref="IInternalEventsScope.EmitEventAsync" />
         [NotNull]
         public Task EmitAsync(CancellationToken cancellationToken = default)
         {
-            return InternalEventsScope.CurrentScope.EmitEventAsync(this, cancellationToken);
+            return InternalEventsScope.EmitEventAsync(this, cancellationToken);
         }
 
         /// <summary>

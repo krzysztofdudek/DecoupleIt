@@ -14,11 +14,6 @@ namespace GS.DecoupleIt.InternalEvents.Scope
     [PublicAPI]
     public sealed class InternalEventsScope : IInternalEventsScope
     {
-        [NotNull]
-        internal static IInternalEventsScope CurrentScope =>
-            Stack.Peek()
-                 .AsNotNull();
-
         /// <summary>
         ///     Event is invoked when event is emitted.
         /// </summary>
@@ -123,6 +118,9 @@ namespace GS.DecoupleIt.InternalEvents.Scope
         /// <inheritdoc cref="IInternalEventsScope.EmitEvent" />
         internal static void EmitEvent([NotNull] Event @event)
         {
+            if (Stack.Count == 0)
+                return;
+
             CurrentScope.EmitEvent(@event);
         }
 
@@ -130,7 +128,7 @@ namespace GS.DecoupleIt.InternalEvents.Scope
         [NotNull]
         internal static Task EmitEventAsync([NotNull] Event @event, CancellationToken cancellationToken = default)
         {
-            return CurrentScope.EmitEventAsync(@event, cancellationToken);
+            return Stack.Count == 0 ? Task.CompletedTask : CurrentScope.EmitEventAsync(@event, cancellationToken);
         }
 
         /// <summary>
@@ -211,6 +209,11 @@ namespace GS.DecoupleIt.InternalEvents.Scope
 
         [NotNull]
         private static readonly AsyncLocal<Stack<InternalEventsScope>> AsyncLocalStack = new AsyncLocal<Stack<InternalEventsScope>>();
+
+        [NotNull]
+        private static IInternalEventsScope CurrentScope =>
+            Stack.Peek()
+                 .AsNotNull();
 
         [NotNull]
         private static Stack<InternalEventsScope> Stack => AsyncLocalStack.Value ?? (AsyncLocalStack.Value = new Stack<InternalEventsScope>());
