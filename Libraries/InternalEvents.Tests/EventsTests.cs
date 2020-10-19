@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using GS.DecoupleIt.InternalEvents.Scope;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
@@ -232,80 +231,6 @@ namespace GS.DecoupleIt.InternalEvents.Tests
             }
 
             tracer.Clear();
-
-            Assert.True(wasEventEmitted);
-
-            Assert.Contains(@event, scope.Events.ToList());
-        }
-
-        [Fact]
-        public void HandleEventOnStaticLevel()
-        {
-            var wasEventEmitted = false;
-
-            var @event = new ExampleEvent();
-
-            Task TracerOnEventEmitted(IInternalEventsScope scope2, Event _1, CancellationToken _2)
-            {
-                wasEventEmitted = true;
-
-                return Task.CompletedTask;
-            }
-
-            InternalEventsScope.EventEmitted += TracerOnEventEmitted;
-
-            IInternalEventsScope scope;
-
-            var tracer = CreateTracer();
-
-            tracer.Initialize();
-
-            using (tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
-            using (scope = InternalEventsScope.OpenScope())
-            {
-                InternalEventsScope.EmitEvent(@event);
-            }
-
-            tracer.Clear();
-
-            InternalEventsScope.EventEmitted -= TracerOnEventEmitted;
-
-            Assert.True(wasEventEmitted);
-
-            Assert.Contains(@event, scope.Events.ToList());
-        }
-
-        [Fact]
-        public async Task HandleEventOnStaticLevelEmittedAsynchonously()
-        {
-            var wasEventEmitted = false;
-
-            var @event = new ExampleEvent();
-
-            Task TracerOnEventEmitted(IInternalEventsScope scope2, Event _1, CancellationToken _2)
-            {
-                wasEventEmitted = true;
-
-                return Task.CompletedTask;
-            }
-
-            InternalEventsScope.EventEmitted += TracerOnEventEmitted;
-
-            IInternalEventsScope scope;
-
-            var tracer = CreateTracer();
-
-            tracer.Initialize();
-
-            using (tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
-            using (scope = InternalEventsScope.OpenScope())
-            {
-                await InternalEventsScope.EmitEventAsync(@event);
-            }
-
-            tracer.Clear();
-
-            InternalEventsScope.EventEmitted -= TracerOnEventEmitted;
 
             Assert.True(wasEventEmitted);
 

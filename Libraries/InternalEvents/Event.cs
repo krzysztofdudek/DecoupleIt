@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using GS.DecoupleIt.InternalEvents.Scope;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.InternalEvents

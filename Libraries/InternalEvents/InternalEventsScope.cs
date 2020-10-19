@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 
-namespace GS.DecoupleIt.InternalEvents.Scope
+namespace GS.DecoupleIt.InternalEvents
 {
     /// <summary>
     ///     Manages internal event scopes.
@@ -14,12 +14,6 @@ namespace GS.DecoupleIt.InternalEvents.Scope
     [PublicAPI]
     public sealed class InternalEventsScope : IInternalEventsScope
     {
-        /// <summary>
-        ///     Event is invoked when event is emitted.
-        /// </summary>
-        [CanBeNull]
-        public static event EventEmittedAsyncDelegate EventEmitted;
-
         /// <summary>
         ///     Aggregates events and enables to process them in batch.
         /// </summary>
@@ -54,9 +48,14 @@ namespace GS.DecoupleIt.InternalEvents.Scope
 
             StackEventEmitted += OnEventEmitted;
 
-            aggregateEventsMethod();
-
-            StackEventEmitted -= OnEventEmitted;
+            try
+            {
+                aggregateEventsMethod();
+            }
+            finally
+            {
+                StackEventEmitted -= OnEventEmitted;
+            }
 
             processAggregateEventsMethod(events);
         }
@@ -95,10 +94,15 @@ namespace GS.DecoupleIt.InternalEvents.Scope
 
             StackEventEmitted += OnEventEmitted;
 
-            await aggregateEventsMethod()
-                .AsNotNull();
-
-            StackEventEmitted -= OnEventEmitted;
+            try
+            {
+                await aggregateEventsMethod()
+                    .AsNotNull();
+            }
+            finally
+            {
+                StackEventEmitted -= OnEventEmitted;
+            }
 
             await processAggregateEventsMethod(events)
                 .AsNotNull();
@@ -158,6 +162,8 @@ namespace GS.DecoupleIt.InternalEvents.Scope
         /// <inheritdoc />
         public IReadOnlyCollection<Event> Events => _events;
 
+        public event EventEmittedAsyncDelegate EventEmitted;
+
         /// <inheritdoc />
         public async Task DispatchEventsAsync(
             IInternalEventDispatcher internalEventDispatcher,
@@ -189,8 +195,10 @@ namespace GS.DecoupleIt.InternalEvents.Scope
 
                 throw;
             }
-
-            EventEmitted -= ScopeLifetimeOnEventEmitted;
+            finally
+            {
+                EventEmitted -= ScopeLifetimeOnEventEmitted;
+            }
         }
 
         /// <inheritdoc />
@@ -229,14 +237,6 @@ namespace GS.DecoupleIt.InternalEvents.Scope
         [NotNull]
         private readonly Stack<InternalEventsScope> _stack;
 
-        event EventEmittedAsyncDelegate IInternalEventsScope.EventEmitted
-        {
-            add => InstanceEventEmitted += value;
-            remove => InstanceEventEmitted -= value;
-        }
-
-        private event EventEmittedAsyncDelegate InstanceEventEmitted;
-
         private InternalEventsScope([NotNull] Stack<InternalEventsScope> stackOfEvents)
         {
             _stack = stackOfEvents;
@@ -265,11 +265,6 @@ namespace GS.DecoupleIt.InternalEvents.Scope
         private async Task InvokeEventEmitted([NotNull] Event @event, CancellationToken cancellationToken)
         {
             var task = EventEmitted?.Invoke(this, @event, cancellationToken);
-
-            if (task != null)
-                await task;
-
-            task = InstanceEventEmitted?.Invoke(this, @event, cancellationToken);
 
             if (task != null)
                 await task;

@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
-using GS.DecoupleIt.InternalEvents.Scope;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;

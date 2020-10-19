@@ -90,7 +90,7 @@ namespace GS.DecoupleIt.InternalEvents
         {
             using var span = _tracer.OpenChildSpan(@event.GetType(), SpanType.InternalEvent);
 
-            using var internalEventsScope = Scope.InternalEventsScope.OpenScope();
+            using var internalEventsScope = InternalEventsScope.OpenScope();
 
             var                         eventType = @event.GetType();
             IReadOnlyCollection<object> eventHandlers;
@@ -144,7 +144,7 @@ namespace GS.DecoupleIt.InternalEvents
         {
             using var span = _tracer.OpenChildSpan(eventHandler.GetType(), SpanType.InternalEventHandler);
 
-            using var internalEventsScope = Scope.InternalEventsScope.OpenScope();
+            using var internalEventsScope = InternalEventsScope.OpenScope();
 
             _logger.LogInformation("Event handler {@EventDispatchingMode} invocation started.", mode);
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using GS.DecoupleIt.DependencyInjection.Automatic;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.InternalEvents
@@ -8,7 +7,6 @@ namespace GS.DecoupleIt.InternalEvents
     /// <summary>
     ///     Factory of event handlers.
     /// </summary>
-    [Transient]
     public interface IEventHandlerFactory
     {
         /// <summary>
