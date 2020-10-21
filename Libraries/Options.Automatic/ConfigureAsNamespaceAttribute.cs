@@ -7,7 +7,7 @@ namespace GS.DecoupleIt.Options.Automatic
     ///     Marks options class to be configured automatically with the same path as namespace.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-    [MeansImplicitUse(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
+    [MeansImplicitUse(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature, ImplicitUseTargetFlags.WithMembers)]
     [PublicAPI]
     public sealed class ConfigureAsNamespaceAttribute : Attribute, IConfigureAttribute
     {

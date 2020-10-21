@@ -1,5 +1,4 @@
 using GS.DecoupleIt.Options.Automatic;
-using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.AspNetCore.Service
 {
@@ -7,7 +6,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
     ///     Options of a service.
     /// </summary>
     [ConfigureAsNamespace]
-    [PublicAPI]
     public class ServiceOptions
     {
         /// <summary>

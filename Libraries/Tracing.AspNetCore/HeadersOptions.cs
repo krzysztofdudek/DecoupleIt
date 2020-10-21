@@ -6,7 +6,6 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
     /// <summary>
     ///     Http headers options of tracing.
     /// </summary>
-    [PublicAPI]
     [Configure]
     public sealed class HeadersOptions
     {

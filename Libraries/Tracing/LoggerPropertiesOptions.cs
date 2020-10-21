@@ -7,7 +7,6 @@ namespace GS.DecoupleIt.Tracing
     /// <summary>
     ///     Options providing information about properties that are attached to logger.
     /// </summary>
-    [PublicAPI]
     [Configure]
     public class LoggerPropertiesOptions
     {

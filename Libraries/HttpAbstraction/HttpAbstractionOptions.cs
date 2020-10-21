@@ -8,7 +8,6 @@ namespace GS.DecoupleIt.HttpAbstraction
     ///     Options of http clients.
     /// </summary>
     [ConfigureAsNamespace]
-    [PublicAPI]
     public sealed class HttpAbstractionOptions
     {
         /// <summary>
