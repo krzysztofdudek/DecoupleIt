@@ -18,35 +18,41 @@ namespace GS.DecoupleIt.InternalEvents
 
         public IReadOnlyCollection<IOnEmissionEventHandler> ResolveOnEmissionEventHandlers(Type eventType)
         {
-            var serviceType = typeof(IEnumerable<>).MakeGenericType(typeof(IOnEmissionEventHandler<>).MakeGenericType(eventType));
-
-            var services = (IEnumerable<IOnEmissionEventHandler>) _serviceProvider.GetRequiredService(serviceType)
-                                                                                  .AsNotNull();
-
-            return services.ToList();
+            return GetServiceType<IOnEmissionEventHandler>(eventType, typeof(IOnEmissionEventHandler<>));
         }
 
         public IReadOnlyCollection<IOnFailureEventHandler> ResolveOnFailureEventHandlers(Type eventType)
         {
-            var serviceType = typeof(IEnumerable<>).MakeGenericType(typeof(IOnFailureEventHandler<>).MakeGenericType(eventType));
-
-            var services = (IEnumerable<IOnFailureEventHandler>) _serviceProvider.GetRequiredService(serviceType)
-                                                                                 .AsNotNull();
-
-            return services.ToList();
+            return GetServiceType<IOnFailureEventHandler>(eventType, typeof(IOnFailureEventHandler<>));
         }
 
         public IReadOnlyCollection<IOnSuccessEventHandler> ResolveOnSuccessEventHandlers(Type eventType)
         {
-            var serviceType = typeof(IEnumerable<>).MakeGenericType(typeof(IOnSuccessEventHandler<>).MakeGenericType(eventType));
-
-            var services = (IEnumerable<IOnSuccessEventHandler>) _serviceProvider.GetRequiredService(serviceType)
-                                                                                 .AsNotNull();
-
-            return services.ToList();
+            return GetServiceType<IOnSuccessEventHandler>(eventType, typeof(IOnSuccessEventHandler<>));
         }
 
         [NotNull]
+        private static readonly Dictionary<(Type, Type), Type> Cache = new Dictionary<(Type, Type), Type>();
+
+        [NotNull]
         private readonly IServiceProvider _serviceProvider;
+
+        [NotNull]
+        [ItemNotNull]
+        private IReadOnlyCollection<TEventHandler> GetServiceType<TEventHandler>([NotNull] Type eventType, [NotNull] Type eventHandlerType)
+        {
+            var cacheKey = (eventType, eventHandlerType);
+
+            if (!Cache.TryGetValue(cacheKey, out var serviceType))
+            {
+                serviceType = typeof(IEnumerable<>).MakeGenericType(typeof(IOnEmissionEventHandler<>).MakeGenericType(eventType));
+
+                Cache.Add(cacheKey, serviceType);
+            }
+
+            var services = (IEnumerable<IOnEmissionEventHandler>) _serviceProvider.GetRequiredService(serviceType.AsNotNull());
+
+            return (IReadOnlyCollection<TEventHandler>) services.ToList();
+        }
     }
 }

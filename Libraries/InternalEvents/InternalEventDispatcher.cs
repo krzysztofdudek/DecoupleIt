@@ -47,29 +47,19 @@ namespace GS.DecoupleIt.InternalEvents
         }
 
         [NotNull]
-        private static async Task InvokeEventHandler(
+        private static Task InvokeEventHandler(
             [NotNull] Event @event,
             [NotNull] object eventHandler,
             [CanBeNull] Exception exception,
             CancellationToken cancellationToken)
         {
-            switch (eventHandler)
+            return eventHandler switch
             {
-                case IOnSuccessEventHandler onSuccessEventHandler:
-                    await onSuccessEventHandler.HandleAsync(@event, cancellationToken);
-
-                    break;
-                case IOnEmissionEventHandler onEmissionEventHandler:
-                    await onEmissionEventHandler.HandleAsync(@event, cancellationToken);
-
-                    break;
-                case IOnFailureEventHandler onFailureEventHandler when exception != null:
-                    await onFailureEventHandler.HandleAsync(@event, exception, cancellationToken);
-
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(eventHandler), "Event handler is of invalid type.");
-            }
+                IOnSuccessEventHandler onSuccessEventHandler => onSuccessEventHandler.HandleAsync(@event, cancellationToken),
+                IOnEmissionEventHandler onEmissionEventHandler => onEmissionEventHandler.HandleAsync(@event, cancellationToken),
+                IOnFailureEventHandler onFailureEventHandler when exception != null => onFailureEventHandler.HandleAsync(@event, exception, cancellationToken),
+                _ => throw new ArgumentOutOfRangeException(nameof(eventHandler), "Event handler is of invalid type.")
+            };
         }
 
         [NotNull]
