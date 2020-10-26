@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore;
@@ -29,7 +30,6 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Rewrite;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-
 #elif NETCOREAPP3_1
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
@@ -99,7 +99,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.IgnoreReadOnlyProperties = false;
-            options.JsonSerializerOptions.IgnoreNullValues = true;
+            options.JsonSerializerOptions.IgnoreNullValues         = true;
         }
 #elif NETCOREAPP2_2
         /// <inheritdoc />
@@ -371,14 +371,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
 #if NETCOREAPP3_1
                           .Configure((context, applicationBuilder) =>
                           {
-                              context = context.AsNotNull();
+                              context            = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
 #elif NETCOREAPP2_2
                           .Configure(applicationBuilder =>
                           {
                               var context = new WebHostBuilderContext
                               {
-                                  Configuration      = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
+                                  Configuration = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
                                   HostingEnvironment = applicationBuilder.ApplicationServices.GetRequiredService<IHostingEnvironment>()
                               };
 
@@ -520,6 +520,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
             return webHost;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
         private void ValidateServicesIfArePossibleToInstantiate([NotNull] [ItemNotNull] IServiceCollection collection)
         {
             var anyCorrupted = false;
@@ -545,7 +546,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
                         {
                             anyCorrupted = true;
 
-                            Console.Error.WriteLine($"ERROR: {exception.Message}");
+                            var message = exception.Message is null ? null : Regex.Replace(exception.Message, @"\s+", " ");
+
+                            var stackTrace = exception.StackTrace is null ? null : Regex.Replace(exception.StackTrace, @"\s+", " ");
+
+                            Console.Error.WriteLine($"ERROR: {message} | StackTrace: {stackTrace}");
                         }
                 }
 

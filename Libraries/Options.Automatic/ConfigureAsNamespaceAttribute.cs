@@ -12,6 +12,6 @@ namespace GS.DecoupleIt.Options.Automatic
     public sealed class ConfigureAsNamespaceAttribute : Attribute, IConfigureAttribute
     {
         /// <inheritdoc />
-        public short Priority { get; }
+        public short Priority { get; set; }
     }
 }

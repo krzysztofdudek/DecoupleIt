@@ -64,6 +64,8 @@ namespace GS.DecoupleIt.Options.Automatic
                                  configuration,
                                  sectionNames,
                                  type);
+
+                RegisterPostConfigurationForProperties(serviceCollection, configuration, type);
             }
 
             return serviceCollection;
@@ -85,25 +87,31 @@ namespace GS.DecoupleIt.Options.Automatic
         [ItemCanBeNull]
         private static IEnumerable<string> GetSectionNames([NotNull] Type type, [NotNull] [ItemNotNull] IEnumerable<IConfigureAttribute> configureAttributes)
         {
+            static string TransformNameToPath(string name)
+            {
+                return name.AsNotNull()
+                           .Replace('.', ':')
+                           .Replace('+', ':');
+            }
+
             var sectionNames = new List<string>();
 
             foreach (var attribute in configureAttributes)
                 switch (attribute)
                 {
-                    case ConfigureAttribute configureAttribute when configureAttribute.ConfigurationSectionName != null:
-                        sectionNames.Add(configureAttribute.ConfigurationSectionName.Replace('.', ':'));
+                    case ConfigureAttribute configureAttribute when configureAttribute.ConfigurationPath != null:
+                        sectionNames.Add(TransformNameToPath(configureAttribute.ConfigurationPath));
 
                         break;
-                    case ConfigureAttribute configureAttribute when configureAttribute.ConfigurationSectionName == null:
-                        sectionNames.Add(GetOptionsPath(type)
-                                             .Replace('.', ':'));
+                    case ConfigureAttribute configureAttribute when configureAttribute.ConfigurationPath == null:
+                        sectionNames.Add(TransformNameToPath(GetOptionsPath(type)));
 
                         break;
                     case ConfigureAsNamespaceAttribute _ when type.Namespace == null:
                         throw new InvalidOperationException("Cannot register options by namespace by type without it.");
 
                     case ConfigureAsNamespaceAttribute _:
-                        sectionNames.Add(type.Namespace.Replace('.', ':'));
+                        sectionNames.Add(TransformNameToPath(type.Namespace));
 
                         break;
                 }
@@ -124,6 +132,58 @@ namespace GS.DecoupleIt.Options.Automatic
 
             foreach (var configuration in configurations.Skip(1))
                 serviceCollection.PostConfigure<TOptions>(options => { configuration.Bind(options); });
+        }
+
+        private static void RegisterPostConfigurationForProperties(
+            [NotNull] IServiceCollection serviceCollection,
+            [NotNull] IConfiguration configuration,
+            [NotNull] Type type)
+        {
+            var propertiesWithCustomConfiguration = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                                        .Select(property => (property, attributes: property.GetCustomAttributes<ConfigurePropertyAttribute>()
+                                                                                 .ToList()
+                                                                                 .AsEnumerable()))
+                                                        .Where(x => x.attributes.AsNotNull()
+                                                                     .Any());
+
+            foreach (var (property, attributes) in propertiesWithCustomConfiguration)
+            {
+                var methodInfo = typeof(ServiceCollectionExtensions)
+                                 .GetMethod(nameof(RegisterPostConfigureForProperty), BindingFlags.Static | BindingFlags.NonPublic)
+                                 .AsNotNull()
+                                 .MakeGenericMethod(type)
+                                 .AsNotNull();
+
+                methodInfo.Invoke(null,
+                                  new object[]
+                                  {
+                                      serviceCollection,
+                                      configuration,
+                                      property,
+                                      attributes
+                                  });
+            }
+        }
+
+        private static void RegisterPostConfigureForProperty<TOptions>(
+            [NotNull] IServiceCollection serviceCollection,
+            [NotNull] IConfiguration configuration,
+            [NotNull] PropertyInfo property,
+            [NotNull] [ItemNotNull] IEnumerable<ConfigurePropertyAttribute> attributes)
+            where TOptions : class
+        {
+            serviceCollection.PostConfigure<TOptions>(options =>
+            {
+                foreach (var attribute in attributes.OrderBy(x => x.Priority)
+                                                    .AsCollectionWithNotNullItems())
+                {
+                    var value = configuration[attribute.ConfigurationPath];
+
+                    var propertyTypedValue = Convert.ChangeType(value, property.PropertyType);
+
+                    property.SetValue(options, propertyTypedValue);
+                }
+            });
         }
 
         private static void RegisterSections(

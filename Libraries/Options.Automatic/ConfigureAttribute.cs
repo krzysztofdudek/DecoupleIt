@@ -6,32 +6,32 @@ namespace GS.DecoupleIt.Options.Automatic
     /// <summary>
     ///     Marks options class to be configured automatically.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     [MeansImplicitUse(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature, ImplicitUseTargetFlags.WithMembers)]
     [PublicAPI]
     public sealed class ConfigureAttribute : Attribute, IConfigureAttribute
     {
         /// <summary>
-        ///     Configuration section name.
+        ///     Configuration path.
         /// </summary>
         [CanBeNull]
-        public string ConfigurationSectionName { get; }
+        public string ConfigurationPath { get; }
 
         /// <inheritdoc />
-        public short Priority { get; }
+        public short Priority { get; set; }
 
         /// <summary>
-        ///     Creates an instance of <see cref="ConfigureAttribute" />. Sets custom configuration section name.
+        ///     Marks options class to be configured automatically from configuration path specified in <paramref name="configurationPath" />.
         /// </summary>
-        /// <param name="configurationSectionName">Configuration section name.</param>
-        public ConfigureAttribute([CanBeNull] string configurationSectionName)
+        /// <param name="configurationPath">Configuration path.</param>
+        public ConfigureAttribute([NotNull] string configurationPath)
         {
-            ConfigurationSectionName = configurationSectionName;
+            ConfigurationPath = configurationPath;
         }
 
         /// <summary>
-        ///     Creates an instance of <see cref="ConfigureAttribute" />. Uses default configuration section name, namespace of
-        ///     options class.
+        ///     Marks options class to be configured automatically from:<br />
+        ///     [namespace].[class name without "Options"] configuration path.<br />
         /// </summary>
         public ConfigureAttribute() { }
     }
