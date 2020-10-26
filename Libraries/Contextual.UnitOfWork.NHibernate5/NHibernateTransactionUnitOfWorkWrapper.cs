@@ -40,11 +40,12 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         ///     Creates an instance of <see cref="NHibernateTransactionUnitOfWorkWrapper" />.
         /// </summary>
         /// <param name="unitOfWorkAccessor">Unit of work accessor.</param>
-        public NHibernateTransactionUnitOfWorkWrapper([NotNull] IUnitOfWorkAccessor unitOfWorkAccessor)
+        /// <param name="isolationLevel">Isolation level.</param>
+        public NHibernateTransactionUnitOfWorkWrapper([NotNull] IUnitOfWorkAccessor unitOfWorkAccessor, IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             Session = unitOfWorkAccessor.Get<NHibernateSessionUnitOfWorkWrapper>();
 
-            _transactionImplementation = Session.BeginTransaction()
+            _transactionImplementation = Session.BeginTransaction(isolationLevel)
                                                 .AsNotNull();
         }
 
@@ -70,9 +71,12 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public async Task CommitAsync(CancellationToken cancellationToken = new CancellationToken())
+        public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocation(this))
+                return;
+
+            if (_transactionImplementation.WasCommitted)
                 return;
 
             await _transactionImplementation.CommitAsync(cancellationToken)
