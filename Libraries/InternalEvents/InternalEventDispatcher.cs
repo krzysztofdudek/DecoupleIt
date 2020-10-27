@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
@@ -88,18 +89,24 @@ namespace GS.DecoupleIt.InternalEvents
 
             if (onEmission)
             {
-                eventHandlers = _eventHandlerFactory.ResolveOnEmissionEventHandlers(eventType);
-                mode          = "on emission";
+                eventHandlers = _eventHandlerFactory.ResolveOnEmissionEventHandlers(eventType)
+                                                    .ToList();
+
+                mode = "on emission";
             }
             else if (exception is null)
             {
-                eventHandlers = _eventHandlerFactory.ResolveOnSuccessEventHandlers(eventType);
-                mode          = "on success";
+                eventHandlers = _eventHandlerFactory.ResolveOnSuccessEventHandlers(eventType)
+                                                    .ToList();
+
+                mode = "on success";
             }
             else
             {
-                eventHandlers = _eventHandlerFactory.ResolveOnFailureEventHandlers(eventType);
-                mode          = "on failure";
+                eventHandlers = _eventHandlerFactory.ResolveOnFailureEventHandlers(eventType)
+                                                    .ToList();
+
+                mode = "on failure";
             }
 
             _logger.LogInformation("Event dispatching {@EventDispatchingMode} started, {@EventHandlersCount} will handle it.", mode, eventHandlers.Count);

@@ -16,7 +16,7 @@ namespace GS.DecoupleIt.InternalEvents
         /// <returns>A collection of event handlers.</returns>
         [NotNull]
         [ItemNotNull]
-        IReadOnlyCollection<IOnEmissionEventHandler> ResolveOnEmissionEventHandlers([NotNull] Type eventType);
+        IEnumerable<IOnEmissionEventHandler> ResolveOnEmissionEventHandlers([NotNull] Type eventType);
 
         /// <summary>
         ///     Creates instances of on failure event handlers dedicated for given event type.
@@ -25,7 +25,7 @@ namespace GS.DecoupleIt.InternalEvents
         /// <returns>A collection of event handlers.</returns>
         [NotNull]
         [ItemNotNull]
-        IReadOnlyCollection<IOnFailureEventHandler> ResolveOnFailureEventHandlers([NotNull] Type eventType);
+        IEnumerable<IOnFailureEventHandler> ResolveOnFailureEventHandlers([NotNull] Type eventType);
 
         /// <summary>
         ///     Creates instances of on success event handlers dedicated for given event type.
@@ -34,6 +34,6 @@ namespace GS.DecoupleIt.InternalEvents
         /// <returns>A collection of event handlers.</returns>
         [NotNull]
         [ItemNotNull]
-        IReadOnlyCollection<IOnSuccessEventHandler> ResolveOnSuccessEventHandlers([NotNull] Type eventType);
+        IEnumerable<IOnSuccessEventHandler> ResolveOnSuccessEventHandlers([NotNull] Type eventType);
     }
 }

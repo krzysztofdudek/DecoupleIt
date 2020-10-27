@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
@@ -16,17 +15,17 @@ namespace GS.DecoupleIt.InternalEvents
             _serviceProvider = serviceProvider;
         }
 
-        public IReadOnlyCollection<IOnEmissionEventHandler> ResolveOnEmissionEventHandlers(Type eventType)
+        public IEnumerable<IOnEmissionEventHandler> ResolveOnEmissionEventHandlers(Type eventType)
         {
             return GetServiceType<IOnEmissionEventHandler>(eventType, typeof(IOnEmissionEventHandler<>));
         }
 
-        public IReadOnlyCollection<IOnFailureEventHandler> ResolveOnFailureEventHandlers(Type eventType)
+        public IEnumerable<IOnFailureEventHandler> ResolveOnFailureEventHandlers(Type eventType)
         {
             return GetServiceType<IOnFailureEventHandler>(eventType, typeof(IOnFailureEventHandler<>));
         }
 
-        public IReadOnlyCollection<IOnSuccessEventHandler> ResolveOnSuccessEventHandlers(Type eventType)
+        public IEnumerable<IOnSuccessEventHandler> ResolveOnSuccessEventHandlers(Type eventType)
         {
             return GetServiceType<IOnSuccessEventHandler>(eventType, typeof(IOnSuccessEventHandler<>));
         }
@@ -39,20 +38,21 @@ namespace GS.DecoupleIt.InternalEvents
 
         [NotNull]
         [ItemNotNull]
-        private IReadOnlyCollection<TEventHandler> GetServiceType<TEventHandler>([NotNull] Type eventType, [NotNull] Type eventHandlerType)
+        private IEnumerable<TEventHandler> GetServiceType<TEventHandler>([NotNull] Type eventType, [NotNull] Type eventHandlerType)
         {
             var cacheKey = (eventType, eventHandlerType);
 
             if (!Cache.TryGetValue(cacheKey, out var serviceType))
             {
-                serviceType = typeof(IEnumerable<>).MakeGenericType(typeof(IOnEmissionEventHandler<>).MakeGenericType(eventType));
+                serviceType = typeof(IEnumerable<>).MakeGenericType(eventHandlerType.MakeGenericType(eventType));
 
                 Cache.Add(cacheKey, serviceType);
             }
 
-            var services = (IEnumerable<IOnEmissionEventHandler>) _serviceProvider.GetRequiredService(serviceType.AsNotNull());
+            var services = _serviceProvider.GetRequiredService(serviceType.AsNotNull())
+                                           .AsNotNull();
 
-            return (IReadOnlyCollection<TEventHandler>) services.ToList();
+            return (IEnumerable<TEventHandler>) services;
         }
     }
 }
