@@ -41,15 +41,19 @@ namespace GS.DecoupleIt.Scheduling
             ValidateAmbiguousAttributes(jobs);
             ValidateInvalidConfiguration(jobs);
 
-            var jobsCollection = (JobsCollection) serviceCollection.SingleOrDefault(x => x.ImplementationInstance is JobsCollection)
-                                                                   ?.ImplementationInstance ?? new JobsCollection();
+            var existingCollection = serviceCollection.SingleOrDefault(x => x.ImplementationInstance is JobsCollection)
+                                                      ?.ImplementationInstance;
+
+            var jobsCollection = (JobsCollection) existingCollection ?? new JobsCollection();
 
             jobsCollection.AddRange(jobs.Select(x => new JobEntry(x.x.AsNotNull(),
                                                                   x.Item2.AsNotNull()
                                                                    .First()
-                                                                   .AsNotNull())));
+                                                                   .AsNotNull()))
+                                        .Where(x => jobsCollection.All(y => y.JobType != x.JobType)));
 
-            serviceCollection.AddSingleton<IRegisteredJobs>(jobsCollection);
+            if (existingCollection is null)
+                serviceCollection.AddSingleton<IRegisteredJobs>(jobsCollection);
 
             return serviceCollection;
         }
@@ -79,7 +83,7 @@ namespace GS.DecoupleIt.Scheduling
                                                                                    .ToList());
         }
 
-        private static void ValidateInvalidConfiguration([NotNull] List<(Type x, List<IScheduleAttribute>)> jobs)
+        private static void ValidateInvalidConfiguration([NotNull] IEnumerable<(Type x, List<IScheduleAttribute>)> jobs)
         {
             var errors = new StringBuilder();
 
