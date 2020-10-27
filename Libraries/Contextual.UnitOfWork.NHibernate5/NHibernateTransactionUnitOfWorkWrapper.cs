@@ -89,7 +89,8 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))
                 return;
 
-            _transactionImplementation.Rollback();
+            if (!_transactionImplementation.WasCommitted)
+                _transactionImplementation.Rollback();
 
             _transactionImplementation.Dispose();
 
