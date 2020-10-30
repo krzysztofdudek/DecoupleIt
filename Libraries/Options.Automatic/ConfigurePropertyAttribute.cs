@@ -12,6 +12,11 @@ namespace GS.DecoupleIt.Options.Automatic
     public sealed class ConfigurePropertyAttribute : Attribute, IConfigureAttribute
     {
         /// <summary>
+        ///     Should null value
+        /// </summary>
+        public bool AssignNull { get; set; }
+
+        /// <summary>
         ///     Configuration path.
         /// </summary>
         [CanBeNull]

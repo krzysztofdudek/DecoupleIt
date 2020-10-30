@@ -62,6 +62,37 @@ namespace GS.DecoupleIt.Options.Automatic.Tests
             public int Property { get; set; }
         }
 
+        [Configure("NewSection")]
+        internal sealed class ConfigurePropertyWithNullOptions
+        {
+            [ConfigureProperty("OldSection:Property", AssignNull = true)]
+            public string Property { get; set; }
+        }
+
+        [Configure("NewSection")]
+        internal sealed class DontConfigurePropertyWithNullOptions
+        {
+            [ConfigureProperty("OldSection:Property")]
+            public string Property { get; set; }
+        }
+
+        [Fact]
+        public void ConfigureNullProperty()
+        {
+            var serviceProvider = GetServiceProvider(new Dictionary<string, string>
+            {
+                {
+                    "NewSection:Property", "1"
+                }
+            });
+
+            var options = serviceProvider.GetRequiredService<IOptions<ConfigurePropertyWithNullOptions>>()
+                                         .AsNotNull()
+                                         .Value.AsNotNull();
+
+            Assert.Null(options.Property);
+        }
+
         [Fact]
         public void ConfigureProperty()
         {
@@ -154,6 +185,23 @@ namespace GS.DecoupleIt.Options.Automatic.Tests
                                          .Value.AsNotNull();
 
             Assert.Equal(2, options.Property);
+        }
+
+        [Fact]
+        public void DoNotConfigureNullProperty()
+        {
+            var serviceProvider = GetServiceProvider(new Dictionary<string, string>
+            {
+                {
+                    "NewSection:Property", "1"
+                }
+            });
+
+            var options = serviceProvider.GetRequiredService<IOptions<DontConfigurePropertyWithNullOptions>>()
+                                         .AsNotNull()
+                                         .Value.AsNotNull();
+
+            Assert.Equal("1", options.Property);
         }
     }
 }

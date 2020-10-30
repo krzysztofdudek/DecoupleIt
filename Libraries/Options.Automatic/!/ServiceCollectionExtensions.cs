@@ -179,6 +179,16 @@ namespace GS.DecoupleIt.Options.Automatic
                 {
                     var value = configuration[attribute.ConfigurationPath];
 
+                    if (value is null)
+                    {
+                        if (!attribute.AssignNull)
+                            continue;
+
+                        property.SetValue(options, null);
+
+                        return;
+                    }
+
                     var propertyTypedValue = Convert.ChangeType(value, property.PropertyType);
 
                     property.SetValue(options, propertyTypedValue);
