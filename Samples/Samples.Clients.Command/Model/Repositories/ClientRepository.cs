@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.DependencyInjection.Automatic;
@@ -19,27 +20,33 @@ namespace Samples.Clients.Command.Model.Repositories
             _accessor = accessor;
         }
 
-        public async Task AddAsync(Client client)
+        public async Task AddAsync(Client client, CancellationToken cancellationToken = default)
         {
             await using var context = _accessor.Get<ClientsDbContext>();
 
-            await context.AddAsync(client);
+            await context.AddAsync(client, cancellationToken);
+
+            await context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<IReadOnlyCollection<Client>> GetAllAsync()
+        public async Task<IReadOnlyCollection<Client>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             await using var context = _accessor.Get<ClientsDbContext>();
 
-            return await context.Clients.ToListAsync()
+            return await context.Clients.AsNoTracking()
+                                .AsNotNull()
+                                .ToListAsync(cancellationToken)
                                 .AsNotNull()
                                 .WithNotNullItems();
         }
 
-        public async Task<Optional<Client>> GetAsync(Guid id)
+        public async Task<Optional<Client>> GetAsync(Guid id, CancellationToken cancellationToken = default)
         {
             await using var context = _accessor.Get<ClientsDbContext>();
 
-            return await context.Clients.FirstOrDefaultAsync(x => x.Id == id)
+            return await context.Clients.AsNoTracking()
+                                .AsNotNull()
+                                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
                                 .AsOptional();
         }
 
