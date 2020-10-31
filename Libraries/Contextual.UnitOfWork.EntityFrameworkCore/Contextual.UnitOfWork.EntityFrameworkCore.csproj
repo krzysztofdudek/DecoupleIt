@@ -30,6 +30,6 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.0-*" />
     </ItemGroup>
 
-    <Import Project="../netstandard.props" />
+    <Import Project="../libraries.core.props" />
 
 </Project>

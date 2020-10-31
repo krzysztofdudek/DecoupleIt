@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace GS.DecoupleIt.Scheduling
 {
     /// <summary>
-    ///     Extends <see cref="IServiceCollection" /> with methods registering jobs to be run later.
+    ///     Extends <see cref="IServiceCollection" /> with methods registering jobs to be scheduled.
     /// </summary>
     [NotNull]
     public static class ServiceCollectionExtensions
@@ -22,7 +22,7 @@ namespace GS.DecoupleIt.Scheduling
         ///     implementation, for ex. Quartz.
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
-        /// <param name="assembly">Assembly.</param>
+        /// <param name="assembly">Assembly to scan.</param>
         /// <param name="configuration">Configuration.</param>
         /// <returns>Service collection.</returns>
         /// <exception cref="AmbiguousSchedulingAttributes">

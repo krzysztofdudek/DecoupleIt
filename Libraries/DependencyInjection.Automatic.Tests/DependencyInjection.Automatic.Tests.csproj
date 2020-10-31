@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="../netcoreapp.tests.props" />
+    <Import Project="../tests.props" />
 
     <PropertyGroup>
         <TargetFrameworks>netcoreapp2.2;netcoreapp3.1</TargetFrameworks>

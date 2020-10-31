@@ -22,7 +22,7 @@ namespace GS.DecoupleIt.Scheduling.Quartz
         ///     Uses <see cref="Quartz" /> to run all registered jobs.
         /// </summary>
         /// <param name="serviceProvider">Service provider.</param>
-        /// <param name="configure">Configure builder.</param>
+        /// <param name="configure">Configure builder delegate.</param>
         /// <returns>Service provider.</returns>
         [NotNull]
         public static IServiceProvider UseQuartzScheduling(

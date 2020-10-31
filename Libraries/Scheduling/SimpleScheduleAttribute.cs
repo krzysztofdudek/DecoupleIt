@@ -4,13 +4,14 @@ using JetBrains.Annotations;
 namespace GS.DecoupleIt.Scheduling
 {
     /// <summary>
-    ///     Marks job class to be registered with <see cref="ServiceCollectionExtensions.ScanAssemblyForJobs" />. This type of a job is running from the start of an
+    ///     Marks the job class to be registered automatically. This type of a job is running from the start of an
     ///     application with specific period and count of repetitions.
     /// </summary>
     [UsedImplicitly(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
     [MeansImplicitUse(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
     [BaseTypeRequired(typeof(IJob))]
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+    [PublicAPI]
     public sealed class SimpleScheduleAttribute : Attribute, IScheduleAttribute
     {
         /// <summary>
@@ -34,7 +35,7 @@ namespace GS.DecoupleIt.Scheduling
         public int Minutes { get; set; }
 
         /// <summary>
-        ///     Repeat count. If value is equal to or less than zero job will be repeated forever.
+        ///     Repeat count. If value is equal to or less than zero, job will be repeated forever.
         /// </summary>
         public int RepeatCount { get; set; }
 

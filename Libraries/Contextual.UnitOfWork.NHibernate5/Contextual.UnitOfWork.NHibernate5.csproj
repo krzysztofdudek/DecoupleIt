@@ -14,6 +14,6 @@
         <PackageReference Include="NHibernate" Version="5.3.3" />
     </ItemGroup>
 
-    <Import Project="../netstandard.props" />
+    <Import Project="../libraries.core.props" />
 
 </Project>

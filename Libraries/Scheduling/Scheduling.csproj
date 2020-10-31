@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <VersionPrefix>3.0.0</VersionPrefix>
-        <VersionSuffix>alpha.5</VersionSuffix>
         <Title>DecoupleIt - Scheduling</Title>
         <Description>Library implements scheduling abstraction based on annotating classes with attributes.</Description>
     </PropertyGroup>
@@ -13,6 +12,6 @@
         <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
 
-    <Import Project="../netstandard.props" />
+    <Import Project="../libraries.core.props" />
 
 </Project>

@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 namespace GS.DecoupleIt.Scheduling.Exceptions
 {
     /// <summary>
-    ///     Exception is thrown when one of jobs' schedule configurations is invalid.
+    ///     Exception is thrown when one of jobs' schedule configurations is invalid. Class is not inheritable.
     /// </summary>
     public sealed class InvalidScheduleConfiguration : Exception
     {

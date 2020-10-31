@@ -469,7 +469,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
                               applicationBuilder.UseMiddleware<LoggingMiddleware>();
 
-                              applicationBuilder.UseContextualUnitOfWork();
+                              applicationBuilder.MaintainStorageOfContextualUnitOfWork();
 
                               applicationBuilder.UseInternalEvents();
 

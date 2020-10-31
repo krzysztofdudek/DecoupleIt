@@ -6,13 +6,13 @@ using JetBrains.Annotations;
 namespace GS.DecoupleIt.Scheduling
 {
     /// <summary>
-    ///     Base job interface.
+    ///     Base interface of the job.
     /// </summary>
     [Singleton]
     public interface IJob
     {
         /// <summary>
-        ///     Executes job.
+        ///     Executes the job.
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Task.</returns>

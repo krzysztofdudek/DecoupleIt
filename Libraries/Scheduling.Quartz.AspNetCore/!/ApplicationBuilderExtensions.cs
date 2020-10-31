@@ -33,7 +33,7 @@ namespace GS.DecoupleIt.Scheduling.Quartz.AspNetCore
 
                        var token = builder.ApplicationServices.GetRequiredService<
 #if NETCOREAPP2_2
-                                       IApplicationLifetime
+                                              IApplicationLifetime
 #else
                                               IHostApplicationLifetime
 #endif

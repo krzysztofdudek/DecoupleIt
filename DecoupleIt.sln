@@ -95,17 +95,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Optionals", "Libraries\Opti
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{1CAFD848-C533-45FD-A3CD-1204F9181908}"
 ProjectSection(SolutionItems) = preProject
-	Libraries\netstandard.props = Libraries\netstandard.props
+	Libraries\libraries.core.props = Libraries\libraries.core.props
 EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AspNetCore", "AspNetCore", "{EF0CBA58-A0E1-412F-859A-E1B5083ADC12}"
 ProjectSection(SolutionItems) = preProject
-	Libraries\netcoreapp.props = Libraries\netcoreapp.props
+	Libraries\libraries.aspnetcore.props = Libraries\libraries.aspnetcore.props
 EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{713D630C-0C01-4A0B-B49D-752E17053559}"
 ProjectSection(SolutionItems) = preProject
-	Libraries\netcoreapp.tests.props = Libraries\netcoreapp.tests.props
+	Libraries\tests.props = Libraries\tests.props
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contextual.UnitOfWork", "Libraries\Contextual.UnitOfWork\Contextual.UnitOfWork.csproj", "{6978EB9E-9775-44AA-9005-218AC27922A8}"

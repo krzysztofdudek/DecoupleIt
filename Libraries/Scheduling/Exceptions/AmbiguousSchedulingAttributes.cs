@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 namespace GS.DecoupleIt.Scheduling.Exceptions
 {
     /// <summary>
-    ///     Exception is thrown when scan of the assembly founds jobs with more than one scheduling attribute.
+    ///     Exception is thrown when scan of the assembly founds jobs with more than one scheduling attribute. Class is not inheritable
     /// </summary>
     public sealed class AmbiguousSchedulingAttributes : Exception
     {

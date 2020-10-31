@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="../netcoreapp.tests.props" />
+    <Import Project="../tests.props" />
 
     <ItemGroup>
       <ProjectReference Include="..\Tracing\Tracing.csproj" />

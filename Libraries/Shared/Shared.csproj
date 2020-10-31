@@ -6,7 +6,7 @@
         <Description>A shared components for all DecoupleIt packages.</Description>
     </PropertyGroup>
 
-    <Import Project="../netstandard.props" />
+    <Import Project="../libraries.core.props" />
 
     <ItemGroup>
         <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />

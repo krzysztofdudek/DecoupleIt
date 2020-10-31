@@ -10,7 +10,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
     public interface IUnitOfWorkAccessor
     {
         /// <summary>
-        ///     Gets an instance of a unit of work. <typeparamref cref="TUnitOfWork" /> can be the unit of work class itself or any of base classes or implemented
+        ///     Gets an instance of a unit of work. Type can be the unit of work class itself or any of base classes or implemented
         ///     interfaces. The
         ///     only limitation here, is that type has to be registered in dependency inversion container. For ex. having PermissionsDataContext implementing
         ///     IPermissionsUnitOfWork, allows to resolve both type as the same instance of a class.

@@ -3,7 +3,7 @@ using JetBrains.Annotations;
 namespace GS.DecoupleIt.Scheduling
 {
     /// <summary>
-    ///     Base interface dedicated for identification of schedule attributes.
+    ///     Base interface of scheduling attributes.
     /// </summary>
     public interface IScheduleAttribute
     {

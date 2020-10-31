@@ -2,12 +2,11 @@
 
     <PropertyGroup>
         <VersionPrefix>3.0.0</VersionPrefix>
-        <VersionSuffix>alpha.1</VersionSuffix>
         <Title>DecoupleIt - ASP .NET Core integration for contextual unit of work</Title>
-        <Description>ASP .NET Core support for contextual unit of work.</Description>
+        <Description>ASP .NET Core support for GS.DecoupleIt.Contextual.UnitOfWork.</Description>
     </PropertyGroup>
 
-    <Import Project="../netcoreapp.props" />
+    <Import Project="../libraries.aspnetcore.props" />
 
     <ItemGroup>
         <ProjectReference Include="..\Contextual.UnitOfWork\Contextual.UnitOfWork.csproj" />
