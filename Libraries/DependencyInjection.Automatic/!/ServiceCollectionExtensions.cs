@@ -9,63 +9,39 @@ using Microsoft.Extensions.DependencyInjection;
 namespace GS.DecoupleIt.DependencyInjection.Automatic
 {
     /// <summary>
-    ///     Class contains extensions for <see cref="IServiceCollection" />.
+    ///     Extends <see cref="IServiceCollection" /> with methods automatically registering dependencies in it.
     /// </summary>
     [PublicAPI]
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        ///     Adds a new service descriptor if there is no other with the same <see cref="ServiceDescriptor.ServiceType" />. If
-        ///     such exists,
-        ///     all that entries are removed and replaced with passed service descriptor.
+        ///     <para>
+        ///         Method automatically registers all found services in the assembly if they're annotated with one of this three attributes: <br />
+        ///         - <see cref="SingletonAttribute" /><br />
+        ///         - <see cref="TransientAttribute" /><br />
+        ///         - <see cref="ScopedAttribute" /><br />
+        ///     </para>
+        ///     By marking a class with one of those attributes, we say that this class should be registered with all its base classes and implemented interfaces as
+        ///     service.
+        ///     By marking base class or interface with one of those attributes, we say that all implementors or derived classes will be registered implicitly.
+        ///     By default all services are registered only one time, which means that all implementations of a specific service will override the previous one registered.
+        ///     To make a service be registered many times if we need more than one implementation of it, the service can be annotated with
+        ///     <see cref="RegisterManyTimesAttribute" /> or passed to <paramref name="registerAsManyTypes" /> parameter.
+        ///     Additionally this method will register a factory for any service type.
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
-        /// <param name="serviceDescriptor">New service descriptor.</param>
-        public static void AddOrReplace([NotNull] this IServiceCollection serviceCollection, [NotNull] ServiceDescriptor serviceDescriptor)
-        {
-            foreach (var existingServiceDescriptor in serviceCollection.Where(x => x.AsNotNull()
-                                                                                    .ServiceType == serviceDescriptor.ServiceType)
-                                                                       .ToList())
-                serviceCollection.Remove(existingServiceDescriptor);
-
-            serviceCollection.Add(serviceDescriptor);
-        }
-
-        /// <summary>
-        ///     <para>
-        ///         Method scans the given assembly for classes marked to be registered automatically.
-        ///         Attributes searched for:
-        ///         <list type="bullet">
-        ///             <item>
-        ///                 <term>SingletonAttribute</term>
-        ///             </item>
-        ///             <item>
-        ///                 <term>TransientAttribute</term>
-        ///             </item>
-        ///             <item>
-        ///                 <term>ScopedAttribute</term>
-        ///             </item>
-        ///         </list>
-        ///         The method of registration of first three attributes is taken by looking at the nearest annotation of base
-        ///         class or implemented interface.
-        ///     </para>
-        ///     <para>
-        ///         Method scans given assembly for classes that can be registered and registers them according to default setting
-        ///         or attribute marker.
-        ///         By default all registrations made by this method are singletons unless class is marked with
-        ///         <see cref="SingletonAttribute" />, <see cref="ScopedAttribute" /> or <see cref="TransientAttribute" />.
-        ///     </para>
-        /// </summary>
-        /// <param name="serviceCollection">Service collection.</param>
-        /// <param name="assembly">Assembly containing types to register.</param>
-        /// <param name="namespace">Namespace that will be scanned within the assembly.</param>
+        /// <param name="assembly">Assembly to scan.</param>
+        /// <param name="namespace">Namespace filter for registered types. Only types being included in such namespace will be registered..</param>
         /// <param name="ignoredTypes">
-        ///     Types that will be ignored within scanning process. Class or interface type can be passed.
+        ///     Types that will be ignored in the process of scanning. Implementations of specific services can be passed.
         /// </param>
         /// <param name="ignoredBaseTypes">
-        ///     Types that will exclude any type from registration if inherits or implements it.
+        ///     Types that will exclude found type if it's derived from or is implementing it.
         /// </param>
-        /// <param name="registerAsManyTypes">Service types that can be registered many times instead of being overridden.</param>
+        /// <param name="registerAsManyTypes">
+        ///     Services that will be registered multiple times instead of being overriden. This parameter is usable for registering interfaces as a services when we don't
+        ///     have access to it's definition or we don't want to mark it with <see cref="RegisterManyTimesAttribute" />.
+        /// </param>
         public static void ScanAssemblyForImplementations(
             [NotNull] this IServiceCollection serviceCollection,
             [NotNull] Assembly assembly,
@@ -118,6 +94,16 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         {
             typeof(object)
         };
+
+        private static void AddOrReplace([NotNull] this IServiceCollection serviceCollection, [NotNull] ServiceDescriptor serviceDescriptor)
+        {
+            foreach (var existingServiceDescriptor in serviceCollection.Where(x => x.AsNotNull()
+                                                                                    .ServiceType == serviceDescriptor.ServiceType)
+                                                                       .ToList())
+                serviceCollection.Remove(existingServiceDescriptor);
+
+            serviceCollection.Add(serviceDescriptor);
+        }
 
         [NotNull]
         private static ServiceDescriptor CreateFactoryServiceDescriptor([NotNull] Type instanceType, [NotNull] Type serviceType)
