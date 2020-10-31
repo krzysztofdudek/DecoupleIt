@@ -4,7 +4,12 @@ using JetBrains.Annotations;
 namespace GS.DecoupleIt.Options.Automatic
 {
     /// <summary>
-    ///     Marks property of a options class to be configured automatically.
+    ///     <para>
+    ///         Marks a property of a options class to be configured automatically. It works if options class is already annotated with:<br />
+    ///         - <see cref="ConfigureAttribute" /><br />
+    ///         - <see cref="ConfigureAsNamespaceAttribute" />
+    ///     </para>
+    ///     It can be usable when remapping old configuration path to new ones. Class is not inheritable.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
     [MeansImplicitUse(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature, ImplicitUseTargetFlags.WithMembers)]
@@ -12,7 +17,7 @@ namespace GS.DecoupleIt.Options.Automatic
     public sealed class ConfigurePropertyAttribute : Attribute, IConfigureAttribute
     {
         /// <summary>
-        ///     Should null value
+        ///     Should null value be assigned. It may lead to an overwriting proper value by not existing section.
         /// </summary>
         public bool AssignNull { get; set; }
 
@@ -26,7 +31,12 @@ namespace GS.DecoupleIt.Options.Automatic
         public short Priority { get; set; }
 
         /// <summary>
-        ///     Marks property of a options class to be configured automatically from configuration path specified in <paramref name="configurationPath" />.
+        ///     <para>
+        ///         Marks a property of a options class to be configured automatically. It works if options class is already annotated with:<br />
+        ///         - <see cref="ConfigureAttribute" /><br />
+        ///         - <see cref="ConfigureAsNamespaceAttribute" />
+        ///     </para>
+        ///     It can be usable when remapping old configuration path to new ones.
         /// </summary>
         /// <param name="configurationPath">Configuration path.</param>
         public ConfigurePropertyAttribute([NotNull] string configurationPath)

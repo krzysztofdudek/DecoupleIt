@@ -4,9 +4,8 @@
 
     <PropertyGroup>
         <VersionPrefix>3.0.0</VersionPrefix>
-        <VersionSuffix>alpha.3</VersionSuffix>
-        <Title>DecoupleIt - Automatic Options</Title>
-        <Description>Implementation of automatic registration of options configuration.</Description>
+        <Title>DecoupleIt - Automatic configuration of Options for Microsoft.Extensions.Options</Title>
+        <Description>A proper segregation of configuration can lead to a headache. Maybe we can do it simpler. Let's namespaces and attributes do it for us.</Description>
     </PropertyGroup>
 
     <ItemGroup>

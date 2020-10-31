@@ -10,18 +10,20 @@ using Microsoft.Extensions.DependencyInjection;
 namespace GS.DecoupleIt.Options.Automatic
 {
     /// <summary>
-    ///     Extends <see cref="IServiceCollection" />
+    ///     Extends <see cref="IServiceCollection" /> with methods allowing to automatically configure options using attributes.
     /// </summary>
     [PublicAPI]
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        ///     Scans assembly for options marked with <see cref="ConfigureAttribute" />. Configuration section name is equal to
-        ///     namespace where options are located.
+        ///     Method automatically configures all options classes annotated with:<br />
+        ///     - <see cref="ConfigureAttribute" /><br />
+        ///     - <see cref="ConfigureAsNamespaceAttribute" /><br />
+        ///     , with adequate configuration path. Additionally <see cref="ConfigurePropertyAttribute" /> is taken into consideration of mapping properties.
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
-        /// <param name="assembly">Assembly.</param>
-        /// <param name="configuration">Configuration.</param>
+        /// <param name="assembly">Assembly to scan.</param>
+        /// <param name="configuration">Base configuration section to be a root of automapping.</param>
         /// <returns>Service collection.</returns>
         [NotNull]
         public static IServiceCollection ScanAssemblyForOptions(
