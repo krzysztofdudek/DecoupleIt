@@ -2,9 +2,8 @@
 
     <PropertyGroup>
         <VersionPrefix>3.0.0</VersionPrefix>
-        <VersionSuffix>alpha.0</VersionSuffix>
         <Title>DecoupleIt - Shared library</Title>
-        <Description>Library consists of shared elements used within DecoupleIt packages.</Description>
+        <Description>A shared components for all DecoupleIt packages.</Description>
     </PropertyGroup>
 
     <Import Project="../netstandard.props" />

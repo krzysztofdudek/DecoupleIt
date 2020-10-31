@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 namespace GS.DecoupleIt.Shared
 {
     /// <summary>
-    ///     Provides avoidance of contract violations.
+    ///     Provides methods simplifying validation of public contracts.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ParameterOnlyUsedForPreconditionCheck.Global")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ParameterOnlyUsedForPreconditionCheck.Local")]
@@ -31,7 +31,7 @@ namespace GS.DecoupleIt.Shared
         }
 
         /// <summary>
-        ///     Throws <see cref="ArgumentNullException" /> if <paramref name="object" /> is <see langword="null" />;
+        ///     Throws <see cref="ArgumentNullException" /> if <paramref name="object" /> is <see langword="null" />.
         /// </summary>
         /// <param name="argumentName">Argument name.</param>
         /// <param name="object">Object.</param>
@@ -50,7 +50,7 @@ namespace GS.DecoupleIt.Shared
         }
 
         /// <summary>
-        ///     Throws <see cref="ArgumentException" /> if <paramref name="string" /> is <see langword="null" /> or whitespace;
+        ///     Throws <see cref="ArgumentException" /> if <paramref name="string" /> is <see langword="null" /> or whitespace.
         /// </summary>
         /// <param name="argumentName">Argument name.</param>
         /// <param name="string">String.</param>
