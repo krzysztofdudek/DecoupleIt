@@ -7,7 +7,7 @@ using JetBrains.Annotations;
 namespace GS.DecoupleIt.Contextual.UnitOfWork
 {
     /// <summary>
-    ///     Representation of unit of work.
+    ///     Represents unit of work. It contains base methods that are used by <see cref="UnitOfWorkAccessor" />.
     /// </summary>
     [RegisterManyTimes]
     [PublicAPI]
@@ -23,15 +23,14 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         event Action<IUnitOfWork> Disposed;
 
         /// <summary>
-        ///     Saves changes within all operations done in the context of this unit of work.
+        ///     Saves all changes made in the context of this unit of work.
         /// </summary>
         void SaveChanges();
 
         /// <summary>
-        ///     Saves changes within all operations done in the context of this unit of work.
+        ///     Saves all changes made in the context of this unit of work.
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>Task.</returns>
         [NotNull]
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }

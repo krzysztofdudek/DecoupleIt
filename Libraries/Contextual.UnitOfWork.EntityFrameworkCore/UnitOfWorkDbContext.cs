@@ -38,14 +38,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
                                      .ContinueWith(x => Disposed?.Invoke(this)));
         }
 #endif
-        /// <inheritdoc />
-        protected UnitOfWorkDbContext() { }
 
         /// <inheritdoc />
-        protected UnitOfWorkDbContext([NotNull] DbContextOptions options) : base(options) { }
-
-        /// <inheritdoc />
-        void IUnitOfWork.SaveChanges()
+        public new void SaveChanges()
         {
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocation(this))
                 return;
@@ -54,7 +49,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
         }
 
         /// <inheritdoc />
-        Task IUnitOfWork.SaveChangesAsync(CancellationToken cancellationToken)
+        public new Task SaveChangesAsync(CancellationToken cancellationToken)
         {
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocation(this))
                 return Task.CompletedTask;
@@ -62,5 +57,11 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
             return base.SaveChangesAsync(cancellationToken)
                        .AsNotNull();
         }
+
+        /// <inheritdoc />
+        protected UnitOfWorkDbContext() { }
+
+        /// <inheritdoc />
+        protected UnitOfWorkDbContext([NotNull] DbContextOptions options) : base(options) { }
     }
 }

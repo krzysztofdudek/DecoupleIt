@@ -2,9 +2,8 @@
 
     <PropertyGroup>
         <VersionPrefix>3.0.0</VersionPrefix>
-        <VersionSuffix>alpha.1</VersionSuffix>
-        <Title>DecoupleIt - Contextual Unit of Work for Entity Framework core</Title>
-        <Description>Library providing support for contextual unit of work based on Entity Framework Core DbContext.</Description>
+        <Title>DecoupleIt - Contextual Unit of Work for Entity Framework Core</Title>
+        <Description>Package adds support of contextual unit of work for Entity Framework Core.</Description>
     </PropertyGroup>
 
     <ItemGroup>

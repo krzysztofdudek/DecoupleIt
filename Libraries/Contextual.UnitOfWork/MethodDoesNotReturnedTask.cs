@@ -3,7 +3,7 @@ using System;
 namespace GS.DecoupleIt.Contextual.UnitOfWork
 {
     /// <summary>
-    ///     Exception called when method had to return task but it didn't.
+    ///     Exception called when method had to return a task but it didn't.
     /// </summary>
     public sealed class MethodDoesNotReturnedTask : Exception
     {

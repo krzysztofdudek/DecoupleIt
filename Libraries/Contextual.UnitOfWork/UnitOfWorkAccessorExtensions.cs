@@ -8,6 +8,13 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
     [PublicAPI]
     public static class UnitOfWorkAccessorExtensions
     {
+        /// <summary>
+        ///     Invokes <paramref name="action" /> with <typeparamref name="TUnitOfWork" /> instance available. After it's invocation,
+        ///     <see cref="IUnitOfWork.SaveChanges" /> is called. Method maintains life time of unit of work instance.
+        /// </summary>
+        /// <param name="unitOfWorkAccessor">Unit of work accessor.</param>
+        /// <param name="action">Action.</param>
+        /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
         public static void Execute<TUnitOfWork>([NotNull] this IUnitOfWorkAccessor unitOfWorkAccessor, [NotNull] [InstantHandle] Action<TUnitOfWork> action)
             where TUnitOfWork : class, IUnitOfWork
         {
@@ -18,6 +25,14 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             unitOfWork.SaveChanges();
         }
 
+        /// <summary>
+        ///     Invokes <paramref name="action" /> with <typeparamref name="TUnitOfWork" /> instance available. After it's invocation,
+        ///     <see cref="IUnitOfWork.SaveChanges" /> is called. Method maintains life time of unit of work instance.
+        /// </summary>
+        /// <param name="unitOfWorkAccessor">Unit of work accessor.</param>
+        /// <param name="action">Action.</param>
+        /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
+        /// <typeparam name="TResult">Type of a result.</typeparam>
         public static TResult Execute<TUnitOfWork, TResult>(
             [NotNull] this IUnitOfWorkAccessor unitOfWorkAccessor,
             [NotNull] [InstantHandle] Func<TUnitOfWork, TResult> action)
@@ -32,6 +47,14 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             return result;
         }
 
+        /// <summary>
+        ///     Invokes <paramref name="action" /> with <typeparamref name="TUnitOfWork" /> instance available. After it's invocation,
+        ///     <see cref="IUnitOfWork.SaveChangesAsync" /> is called. Method maintains life time of unit of work instance.
+        /// </summary>
+        /// <param name="unitOfWorkAccessor">Unit of work accessor.</param>
+        /// <param name="action">Action.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
         public static async Task ExecuteAsync<TUnitOfWork>(
             [NotNull] this IUnitOfWorkAccessor unitOfWorkAccessor,
             [NotNull] [InstantHandle] Func<TUnitOfWork, Task> action,
@@ -53,6 +76,14 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
+        /// <summary>
+        ///     Invokes <paramref name="action" /> with <typeparamref name="TUnitOfWork" /> instance available. After it's invocation,
+        ///     <see cref="IUnitOfWork.SaveChangesAsync" /> is called. Method maintains life time of unit of work instance.
+        /// </summary>
+        /// <param name="unitOfWorkAccessor">Unit of work accessor.</param>
+        /// <param name="action">Action.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
         public static async Task ExecuteAsync<TUnitOfWork>(
             [NotNull] this IUnitOfWorkAccessor unitOfWorkAccessor,
             [NotNull] [InstantHandle] Action<TUnitOfWork> action,
@@ -69,6 +100,15 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             await unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
+        /// <summary>
+        ///     Invokes <paramref name="action" /> with <typeparamref name="TUnitOfWork" /> instance available. After it's invocation,
+        ///     <see cref="IUnitOfWork.SaveChangesAsync" /> is called. Method maintains life time of unit of work instance.
+        /// </summary>
+        /// <param name="unitOfWorkAccessor">Unit of work accessor.</param>
+        /// <param name="action">Action.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
+        /// <typeparam name="TResult">Type of a result.</typeparam>
         public static async Task<TResult> ExecuteAsync<TUnitOfWork, TResult>(
             [NotNull] this IUnitOfWorkAccessor unitOfWorkAccessor,
             [NotNull] [InstantHandle] Func<TUnitOfWork, Task<TResult>> action,
@@ -92,13 +132,25 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             return result;
         }
 
+        /// <summary>
+        ///     Invokes <paramref name="action" /> with <typeparamref name="TUnitOfWork" /> instance available. After it's invocation,
+        ///     <see cref="IUnitOfWork.SaveChangesAsync" /> is called. Method maintains life time of unit of work instance.
+        /// </summary>
+        /// <param name="unitOfWorkAccessor">Unit of work accessor.</param>
+        /// <param name="action">Action.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
+        /// <typeparam name="TResult">Type of a result.</typeparam>
         public static async Task<TResult> ExecuteAsync<TUnitOfWork, TResult>(
             [NotNull] this IUnitOfWorkAccessor unitOfWorkAccessor,
             [NotNull] [InstantHandle] Func<TUnitOfWork, TResult> action,
             CancellationToken cancellationToken = default)
             where TUnitOfWork : class, IUnitOfWork
         {
-            using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
+#if !(NETSTANDARD2_0 || NETCOREAPP2_2)
+            await
+#endif
+                using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
 
             var result = action(unitOfWork);
 

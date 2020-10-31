@@ -9,16 +9,17 @@ using Microsoft.Extensions.DependencyInjection;
 namespace GS.DecoupleIt.Contextual.UnitOfWork
 {
     /// <summary>
-    ///     Extends <see cref="IServiceCollection" />.
+    ///     Extends <see cref="IServiceCollection" /> with methods enabling contextual unit of work.
     /// </summary>
     [PublicAPI]
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        ///     Adds contextual unit of work.
+        ///     Adds contextual unit of work functionality and access to <see cref="IUnitOfWorkAccessor" />.
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
         /// <param name="configuration">Configuration.</param>
+        /// <returns>Service collection.</returns>
         [NotNull]
         public static IServiceCollection AddContextualUnitOfWork([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
         {
@@ -38,7 +39,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// <param name="serviceCollection">Service collection.</param>
         /// <param name="factory">Factory method.</param>
         /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
-        /// <returns></returns>
+        /// <returns>Service collection.</returns>
         [NotNull]
         public static IServiceCollection AddUnitOfWorkFactory<TUnitOfWork>(
             [NotNull] this IServiceCollection serviceCollection,

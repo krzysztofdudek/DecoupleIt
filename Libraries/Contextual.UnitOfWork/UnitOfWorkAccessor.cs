@@ -14,7 +14,8 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
     public sealed class UnitOfWorkAccessor : IUnitOfWorkAccessor
     {
         /// <summary>
-        ///     Clears async local storage.
+        ///     Clears storage. Do it after every end of operation processing to ensure that GC can release memory as soon as possible, when unit-of-works are not
+        ///     necessary. Also it ensures that mistakenly not disposed unit of works would not leak into the memory.
         /// </summary>
         public static void Clear()
         {
@@ -28,8 +29,8 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         }
 
         /// <summary>
-        ///     Initializes async local storage. The best way is to do this on the beginning of thread that will be using accessor.
-        ///     At the end of usage of accessor is recommended to call <see cref="Clear" /> to clear storage.
+        ///     Initializes storage. This method should be called at beginning of every operation that will use contextual unit of work. It ensures that storage is empty.
+        ///     For ex. this method should be called by middleware before any usage of this class.
         /// </summary>
         public static void Initialize()
         {
@@ -40,11 +41,10 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         }
 
         /// <summary>
-        ///     Checks whether <typeparamref name="TUnitOfWork" /> is currently available in async local storage. Method can be
-        ///     used to validate if unit of work was
+        ///     Checks whether <typeparamref name="TUnitOfWork" /> is currently available in async local storage. Method can be used to validate if unit of work was
         ///     properly disposed.
         /// </summary>
-        /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
+        /// <typeparam name="TUnitOfWork">Type of a unit of work.</typeparam>
         /// <returns>Is available in storage.</returns>
         public static bool IsAvailable<TUnitOfWork>()
             where TUnitOfWork : class, IUnitOfWork
@@ -53,7 +53,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         }
 
         /// <summary>
-        ///     Checks if unit of work is on last level.
+        ///     Checks if unit of work is on last level of usage.
         /// </summary>
         /// <param name="unitOfWork">Unit of work.</param>
         /// <returns>Is last level.</returns>
@@ -70,7 +70,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         }
 
         /// <summary>
-        ///     Checks if unit of work is on last level of invocation and decreases level.
+        ///     Checks if unit of work is on last level of usage and decreases level.
         /// </summary>
         /// <param name="unitOfWork">Unit of work.</param>
         /// <returns>Is last level.</returns>
