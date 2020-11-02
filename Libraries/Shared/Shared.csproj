@@ -1,9 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>3.0.0</VersionPrefix>
+        <VersionPrefix>3.0.1</VersionPrefix>
         <Title>DecoupleIt - Shared library</Title>
         <Description>A shared components for all DecoupleIt packages.</Description>
+        <PackageReleaseNotes>
+            - added extensions for Type class for internal purposes
+        </PackageReleaseNotes>
     </PropertyGroup>
 
     <Import Project="../libraries.core.props" />

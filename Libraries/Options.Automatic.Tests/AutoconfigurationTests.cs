@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
@@ -76,6 +77,73 @@ namespace GS.DecoupleIt.Options.Automatic.Tests
             public string Property { get; set; }
         }
 
+        [Configure("NewSection")]
+        internal sealed class ConfigureCollectionPropertyOptions
+        {
+            [NotNull]
+            [ConfigureProperty("OldSection:Property")]
+            public List<string> Property { get; set; } = new List<string>();
+        }
+
+        [Configure("NewSection")]
+        internal sealed class ConfigureObjectOptions
+        {
+            [NotNull]
+            [ConfigureProperty("OldSection:Object")]
+            public ConfigurationObject Object { get; set; } = new ConfigurationObject();
+
+            public sealed class ConfigurationObject
+            {
+                public string Property { get; [UsedImplicitly] set; }
+            }
+        }
+
+        [Fact]
+        public void ConfigureCollectionProperty()
+        {
+            var serviceProvider = GetServiceProvider(new Dictionary<string, string>
+            {
+                {
+                    "OldSection:Property:0", "1"
+                },
+                {
+                    "OldSection:Property:1", "2"
+                },
+                {
+                    "OldSection:Property:2", "3"
+                }
+            });
+
+            var options = serviceProvider.GetRequiredService<IOptions<ConfigureCollectionPropertyOptions>>()
+                                         .AsNotNull()
+                                         .Value.AsNotNull();
+
+            Assert.NotNull(options.Property);
+            Assert.Equal(3, options.Property.Count);
+            Assert.Equal("1", options.Property.First());
+
+            Assert.Equal("2",
+                         options.Property.Skip(1)
+                                .First());
+
+            Assert.Equal("3",
+                         options.Property.Skip(2)
+                                .First());
+        }
+
+        [Fact]
+        public void ConfigureCollectionPropertyForEmptyEntry()
+        {
+            var serviceProvider = GetServiceProvider(new Dictionary<string, string>());
+
+            var options = serviceProvider.GetRequiredService<IOptions<ConfigureCollectionPropertyOptions>>()
+                                         .AsNotNull()
+                                         .Value.AsNotNull();
+
+            Assert.NotNull(options.Property);
+            Assert.Equal(0, options.Property.Count);
+        }
+
         [Fact]
         public void ConfigureNullProperty()
         {
@@ -91,6 +159,23 @@ namespace GS.DecoupleIt.Options.Automatic.Tests
                                          .Value.AsNotNull();
 
             Assert.Null(options.Property);
+        }
+
+        [Fact]
+        public void ConfigureObject()
+        {
+            var serviceProvider = GetServiceProvider(new Dictionary<string, string>
+            {
+                {
+                    "OldSection:Object:Property", "1"
+                }
+            });
+
+            var options = serviceProvider.GetRequiredService<IOptions<ConfigureObjectOptions>>()
+                                         .AsNotNull()
+                                         .Value.AsNotNull();
+
+            Assert.Equal("1", options.Object.Property);
         }
 
         [Fact]

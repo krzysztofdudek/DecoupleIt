@@ -179,21 +179,69 @@ namespace GS.DecoupleIt.Options.Automatic
                 foreach (var attribute in attributes.OrderBy(x => x.Priority)
                                                     .AsCollectionWithNotNullItems())
                 {
-                    var value = configuration[attribute.ConfigurationPath];
+                    var configurationSection = configuration.GetSection(attribute.ConfigurationPath);
 
-                    if (value is null)
+                    if (property.PropertyType.GetTypeInfo()
+                                .AsNotNull()
+                                .IsSimple())
+                    {
+                        if (configurationSection?.Value is null)
+                        {
+                            if (!attribute.AssignNull)
+                                continue;
+
+                            property.SetValue(options, null);
+
+                            continue;
+                        }
+
+                        var propertyTypedValue = Convert.ChangeType(configurationSection.Value, property.PropertyType);
+
+                        property.SetValue(options, propertyTypedValue);
+
+                        continue;
+                    }
+
+                    if (configurationSection is null)
                     {
                         if (!attribute.AssignNull)
                             continue;
 
                         property.SetValue(options, null);
 
-                        return;
+                        continue;
                     }
 
-                    var propertyTypedValue = Convert.ChangeType(value, property.PropertyType);
+                    if (property.PropertyType.InheritsOrImplements(typeof(ICollection<>)))
+                    {
+                        var elements = configurationSection.GetChildren()
+                                                           .AsNotNull()
+                                                           .AsCollectionWithNotNullItems()
+                                                           .Select(x => (key: Convert.ToInt32(x.Key), value: x.Value))
+                                                           .OrderBy(x => x.key)
+                                                           .Select(x => x.value);
 
-                    property.SetValue(options, propertyTypedValue);
+                        var propertyValue = property.GetValue(options) ?? Activator.CreateInstance(property.PropertyType);
+
+                        foreach (var element in elements)
+                            property.PropertyType.GetMethod("Add")
+                                    .AsNotNull()
+                                    .Invoke(propertyValue,
+                                            new object[]
+                                            {
+                                                element
+                                            });
+
+                        property.SetValue(options, propertyValue);
+                    }
+                    else
+                    {
+                        var propertyValue = property.GetValue(options) ?? Activator.CreateInstance(property.PropertyType);
+
+                        configurationSection.Bind(propertyValue);
+
+                        property.SetValue(options, propertyValue);
+                    }
                 }
             });
         }
