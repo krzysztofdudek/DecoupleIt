@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Shared;
@@ -31,7 +32,7 @@ namespace GS.DecoupleIt.InternalEvents
         }
 
         [NotNull]
-        private static readonly Dictionary<(Type, Type), Type> Cache = new Dictionary<(Type, Type), Type>();
+        private static readonly ConcurrentDictionary<(Type, Type), Type> Cache = new ConcurrentDictionary<(Type, Type), Type>();
 
         [NotNull]
         private readonly IServiceProvider _serviceProvider;
@@ -46,7 +47,7 @@ namespace GS.DecoupleIt.InternalEvents
             {
                 serviceType = typeof(IEnumerable<>).MakeGenericType(eventHandlerType.MakeGenericType(eventType));
 
-                Cache.Add(cacheKey, serviceType);
+                Cache.TryAdd(cacheKey, serviceType);
             }
 
             var services = _serviceProvider.GetRequiredService(serviceType.AsNotNull())
