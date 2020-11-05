@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>3.0.1</VersionPrefix>
+        <VersionPrefix>3.0.2</VersionPrefix>
         <Title>DecoupleIt - Internal events</Title>
         <Description>Library implements the concept of internal events, that allows to decouple code in multidomain projects.</Description>
         <PackageReleaseNotes>
-            - fixed concurrent access to EventHandlerFactory (multiple adding of the same key do cache)
+            - removed on layer of async state machine
         </PackageReleaseNotes>
     </PropertyGroup>
 

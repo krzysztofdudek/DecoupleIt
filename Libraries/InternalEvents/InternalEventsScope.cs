@@ -173,9 +173,9 @@ namespace GS.DecoupleIt.InternalEvents
             ContractGuard.IfArgumentIsNull(nameof(internalEventDispatcher), internalEventDispatcher);
             ContractGuard.IfArgumentIsNull(nameof(invokeEvents), invokeEvents);
 
-            async Task ScopeLifetimeOnEventEmitted(IInternalEventsScope scope, Event @event, CancellationToken cancellationToken2)
+            Task ScopeLifetimeOnEventEmitted(IInternalEventsScope scope, Event @event, CancellationToken cancellationToken2)
             {
-                await internalEventDispatcher.DispatchOnEmissionAsync(@event.AsNotNull(), cancellationToken2);
+                return internalEventDispatcher.DispatchOnEmissionAsync(@event.AsNotNull(), cancellationToken2);
             }
 
             EventEmitted += ScopeLifetimeOnEventEmitted;
