@@ -141,7 +141,7 @@ namespace GS.DecoupleIt.Options.Automatic.Tests
                                          .Value.AsNotNull();
 
             Assert.NotNull(options.Property);
-            Assert.Equal(0, options.Property.Count);
+            Assert.Empty(options.Property);
         }
 
         [Fact]

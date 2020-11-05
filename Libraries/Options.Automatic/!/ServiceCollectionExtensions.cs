@@ -167,6 +167,7 @@ namespace GS.DecoupleIt.Options.Automatic
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CognitiveComplexity")]
         private static void RegisterPostConfigureForProperty<TOptions>(
             [NotNull] IServiceCollection serviceCollection,
             [NotNull] IConfiguration configuration,
