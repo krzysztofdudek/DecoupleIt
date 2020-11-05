@@ -99,7 +99,7 @@ namespace GS.DecoupleIt.Scheduling.Quartz
                         }
                         catch (Exception exception)
                         {
-                            logger.LogDebug("Job execution failed after {@Duration}.", tracerSpan.Duration.Milliseconds);
+                            logger.LogError(exception, "Job execution failed after {@Duration}.", tracerSpan.Duration.Milliseconds);
 
                             actionOnError?.Invoke(exception, serviceProvider);
                         }

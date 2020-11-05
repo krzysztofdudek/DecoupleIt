@@ -1,9 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>3.0.0</VersionPrefix>
+        <VersionPrefix>3.0.1</VersionPrefix>
         <Title>DecoupleIt - Scheduling using Quartz</Title>
         <Description>Library uses Quartz as a scheduler for registered jobs using attributes from GS.DecoupleIt.Scheduling.</Description>
+        <PackageReleaseNotes>
+            - logging exception on error level for job execution
+        </PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
