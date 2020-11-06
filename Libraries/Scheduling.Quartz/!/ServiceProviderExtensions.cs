@@ -95,11 +95,11 @@ namespace GS.DecoupleIt.Scheduling.Quartz
                                                                           () => job.ExecuteAsync(context.CancellationToken),
                                                                           context.CancellationToken);
 
-                            logger.LogDebug("Job executing finished after {@Duration}.", tracerSpan.Duration.Milliseconds);
+                            logger.LogDebug("Job executing finished after {@Duration}ms.", tracerSpan.Duration.Milliseconds);
                         }
                         catch (Exception exception)
                         {
-                            logger.LogError(exception, "Job execution failed after {@Duration}.", tracerSpan.Duration.Milliseconds);
+                            logger.LogError(exception, "Job execution failed after {@Duration}ms.", tracerSpan.Duration.Milliseconds);
 
                             actionOnError?.Invoke(exception, serviceProvider);
                         }
