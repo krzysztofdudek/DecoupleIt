@@ -30,8 +30,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Rewrite;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-
-#elif NETCOREAPP3_1
+#elif NETCOREAPP3_1 || NET5_0
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
@@ -93,14 +92,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
             return 0;
         }
 
-#if NETCOREAPP3_1
+#if NETCOREAPP3_1 || NET5_0
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         public override void ConfigureJson(WebHostBuilderContext context, JsonOptions options)
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.IgnoreReadOnlyProperties = false;
-            options.JsonSerializerOptions.IgnoreNullValues = true;
+            options.JsonSerializerOptions.IgnoreNullValues         = true;
         }
 #elif NETCOREAPP2_2
         /// <inheritdoc />
@@ -287,7 +286,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   options.HostVersion = Version;
                               });
 
-#if NETCOREAPP3_1
+#if NETCOREAPP3_1 || NET5_0
                               var mvcBuilder = collection.AddControllersWithViews()
                                                          .AddJsonOptions(options =>
                                                          {
@@ -369,17 +368,17 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               if (ValidateServices)
                                   ValidateServicesIfArePossibleToInstantiate(collection);
                           })
-#if NETCOREAPP3_1
+#if NETCOREAPP3_1 || NET5_0
                           .Configure((context, applicationBuilder) =>
                           {
-                              context = context.AsNotNull();
+                              context            = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
 #elif NETCOREAPP2_2
                           .Configure(applicationBuilder =>
                           {
                               var context = new WebHostBuilderContext
                               {
-                                  Configuration      = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
+                                  Configuration = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
                                   HostingEnvironment = applicationBuilder.ApplicationServices.GetRequiredService<IHostingEnvironment>()
                               };
 

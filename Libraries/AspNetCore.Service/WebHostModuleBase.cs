@@ -15,8 +15,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 #if NETCOREAPP2_2
 using Newtonsoft.Json;
-
-#elif NETCOREAPP3_1
+#elif NETCOREAPP3_1 || NET5_0
 using Microsoft.AspNetCore.Mvc;
 
 #endif
@@ -31,7 +30,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// <inheritdoc />
         public virtual void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder builder) { }
 
-#if NETCOREAPP3_1
+#if NETCOREAPP3_1 || NET5_0
         /// <inheritdoc />
         public virtual void ConfigureEndpoints(WebHostBuilderContext context, IEndpointRouteBuilder builder) { }
 

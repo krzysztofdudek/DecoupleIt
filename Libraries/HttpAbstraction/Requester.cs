@@ -4,6 +4,10 @@ using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using RestEase;
 
+#if NET5_0
+using System.Collections.Generic;
+#endif
+
 namespace GS.DecoupleIt.HttpAbstraction
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
@@ -29,16 +33,22 @@ namespace GS.DecoupleIt.HttpAbstraction
                 Method     = requestInfo.Method,
                 RequestUri = ConstructUri(basePath, path, requestInfo),
                 Content    = ConstructContent(requestInfo),
+#if !NET5_0
                 Properties =
                 {
                     {
                         RestClient.HttpRequestMessageRequestInfoPropertyKey, requestInfo
                     }
                 }
+#endif
             };
-
+#if NET5_0
+            foreach (var requestMessageProperty in requestInfo.HttpRequestMessageProperties)
+                message.Options.TryAdd(requestMessageProperty.Key, requestMessageProperty.Value);
+#else
             foreach (var requestMessageProperty in requestInfo.HttpRequestMessageProperties)
                 message.Properties.Add(requestMessageProperty.Key, requestMessageProperty.Value);
+#endif
 
             ApplyHeaders(requestInfo, message);
 

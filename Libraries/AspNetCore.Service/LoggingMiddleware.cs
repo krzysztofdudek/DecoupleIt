@@ -13,8 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 #if NETCOREAPP2_2
 using Microsoft.AspNetCore.Routing;
-
-#elif NETCOREAPP3_1
+#elif NETCOREAPP3_1 || NET5_0
 using Microsoft.AspNetCore.Mvc.Controllers;
 
 #endif
@@ -41,7 +40,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             context.Request.EnableBuffering();
 
-#if NETCOREAPP3_1
+#if NETCOREAPP3_1 || NET5_0
             var endpoint = context.GetEndpoint();
 
             if (endpoint is null)
@@ -55,7 +54,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                                      .Single();
 
             var controllerName = controllerActionDescriptor.ControllerTypeInfo.FullName;
-            var actionName = controllerActionDescriptor.ActionName;
+            var actionName     = controllerActionDescriptor.ActionName;
 #elif NETCOREAPP2_2
             var routeData = context.GetRouteData();
 
@@ -80,7 +79,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
 #if !(NETCOREAPP2_2 || NETSTANDARD2_0)
                 await
 #endif
-                using (var memoryStream = new MemoryStream())
+                    using (var memoryStream = new MemoryStream())
                 {
                     var responseBodyStream = context.Response.Body;
                     context.Response.Body = memoryStream;

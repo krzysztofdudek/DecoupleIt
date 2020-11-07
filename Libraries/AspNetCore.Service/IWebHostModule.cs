@@ -1,4 +1,4 @@
-#if NETCOREAPP3_1
+#if NETCOREAPP3_1 || NET5_0
 using Microsoft.AspNetCore.Mvc;
 #elif NETCOREAPP2_2
 using Newtonsoft.Json;
@@ -29,7 +29,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// <param name="builder">Application builder.</param>
         void ConfigureApplication([NotNull] WebHostBuilderContext context, [NotNull] IApplicationBuilder builder);
 
-#if NETCOREAPP3_1
+#if NETCOREAPP3_1 || NET5_0
         /// <summary>
         ///     Configures <see cref="IEndpointRouteBuilder" />.
         /// </summary>
