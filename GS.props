@@ -12,6 +12,7 @@
         <LangVersion>8</LangVersion>
         <OutputType>Library</OutputType>
         <PackageIcon>icon.png</PackageIcon>
+        <CheckEolTargetFramework>false</CheckEolTargetFramework>
     </PropertyGroup>
 
     <ItemGroup>

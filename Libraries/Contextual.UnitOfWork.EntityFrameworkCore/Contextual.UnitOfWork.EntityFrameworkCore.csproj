@@ -1,9 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>3.0.0</VersionPrefix>
+        <VersionPrefix>3.1.0</VersionPrefix>
         <Title>DecoupleIt - Contextual Unit of Work for Entity Framework Core</Title>
         <Description>Package adds support of contextual unit of work for Entity Framework Core.</Description>
+        <PackageReleaseNotes>
+            - upgrade packages to support stable .NET 5
+        </PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -27,7 +30,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.0-*" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.0" />
     </ItemGroup>
 
     <Import Project="../libraries.core.props" />

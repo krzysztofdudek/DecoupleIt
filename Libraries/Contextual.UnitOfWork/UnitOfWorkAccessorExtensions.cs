@@ -64,7 +64,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 #if !(NETSTANDARD2_0 || NETCOREAPP2_2)
             await
 #endif
-            using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
+                using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
 
             var task = action(unitOfWork);
 
@@ -93,7 +93,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 #if !(NETSTANDARD2_0 || NETCOREAPP2_2)
             await
 #endif
-            using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
+                using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
 
             action(unitOfWork);
 
@@ -118,7 +118,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 #if !(NETSTANDARD2_0 || NETCOREAPP2_2)
             await
 #endif
-            using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
+                using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
 
             var task = action(unitOfWork);
 
@@ -150,7 +150,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 #if !(NETSTANDARD2_0 || NETCOREAPP2_2)
             await
 #endif
-            using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
+                using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
 
             var result = action(unitOfWork);
 

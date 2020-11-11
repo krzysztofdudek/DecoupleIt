@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>3.0.1</VersionPrefix>
+        <VersionPrefix>3.1.0</VersionPrefix>
         <Title>DecoupleIt - Shared library</Title>
         <Description>A shared components for all DecoupleIt packages.</Description>
         <PackageReleaseNotes>
-            - added extensions for Type class for internal purposes
+            - upgrade packages to support stable .NET 5
         </PackageReleaseNotes>
     </PropertyGroup>
 
@@ -44,10 +44,10 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0-*" />
-        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0-*" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0-*" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0-*" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     </ItemGroup>
 
 </Project>

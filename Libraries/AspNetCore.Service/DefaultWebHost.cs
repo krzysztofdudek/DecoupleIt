@@ -392,42 +392,42 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   applicationBuilder.UseRewriter(new RewriteOptions().AddRedirectToHttps(StatusCodes.Status301MovedPermanently, 443));
 #endif
 
-                              applicationBuilder.Use(async (context2, next) =>
-                              {
-                                  var logger = context2.RequestServices.GetRequiredService<ILogger<DefaultWebHost>>();
-
-                                  var httpAbstractionOptions = context2.RequestServices.GetRequiredService<IOptions<HttpAbstractionOptions>>()
-                                                                       .Value;
-
-                                  var hostName = GetType()
-                                                 .Assembly.GetName()
-                                                 .Name;
-
-                                  context2.Response.OnStarting(() =>
+                                  applicationBuilder.Use(async (context2, next) =>
                                   {
-                                      context2.Response.Headers.Add(httpAbstractionOptions.HostIdentifierHeaderName, Identifier.ToString());
-                                      context2.Response.Headers.Add(httpAbstractionOptions.HostNameHeaderName, hostName);
-                                      context2.Response.Headers.Add(httpAbstractionOptions.HostVersionHeaderName, Version);
+                                      var logger = context2.RequestServices.GetRequiredService<ILogger<DefaultWebHost>>();
 
-                                      return Task.CompletedTask;
-                                  });
+                                      var httpAbstractionOptions = context2.RequestServices.GetRequiredService<IOptions<HttpAbstractionOptions>>()
+                                                                           .Value;
 
-                                  using (logger.BeginScope(new SelfDescribingDictionary<string, object>
-                                  {
+                                      var hostName = GetType()
+                                                     .Assembly.GetName()
+                                                     .Name;
+
+                                      context2.Response.OnStarting(() =>
                                       {
-                                          "HostIdentifier", Identifier
-                                      },
+                                          context2.Response.Headers.Add(httpAbstractionOptions.HostIdentifierHeaderName, Identifier.ToString());
+                                          context2.Response.Headers.Add(httpAbstractionOptions.HostNameHeaderName, hostName);
+                                          context2.Response.Headers.Add(httpAbstractionOptions.HostVersionHeaderName, Version);
+
+                                          return Task.CompletedTask;
+                                      });
+
+                                      using (logger.BeginScope(new SelfDescribingDictionary<string, object>
                                       {
-                                          "HostName", hostName
-                                      },
+                                          {
+                                              "HostIdentifier", Identifier
+                                          },
+                                          {
+                                              "HostName", hostName
+                                          },
+                                          {
+                                              "HostVersion", Version
+                                          }
+                                      }))
                                       {
-                                          "HostVersion", Version
+                                          await next();
                                       }
-                                  }))
-                                  {
-                                      await next();
-                                  }
-                              });
+                                  });
 
                               applicationBuilder.UseSwagger(options =>
                               {

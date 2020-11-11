@@ -352,4 +352,4 @@ MigrationBackup/
 # Mac os DS Store
 .DS_Store
 
-.idea/.idea.DecoupleIt/riderModule.iml
+riderModule.iml

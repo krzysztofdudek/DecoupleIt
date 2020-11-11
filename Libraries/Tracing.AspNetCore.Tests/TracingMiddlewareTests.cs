@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
-
 #if NETCOREAPP3_1 || NET5_0
 using Microsoft.Extensions.Hosting;
 
@@ -52,9 +51,9 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
                                              {
                                                  var tracer = context.RequestServices.GetService<ITracer>();
 
-                                                 traceId = tracer.CurrentSpan.Descriptor.TraceId;
-                                                 spanId = tracer.CurrentSpan.Descriptor.Id;
-                                                 spanName = tracer.CurrentSpan.Descriptor.Name;
+                                                 traceId      = tracer.CurrentSpan.Descriptor.TraceId;
+                                                 spanId       = tracer.CurrentSpan.Descriptor.Id;
+                                                 spanName     = tracer.CurrentSpan.Descriptor.Name;
                                                  parentSpanId = tracer.CurrentSpan.Descriptor.ParentId;
 
                                                  return Task.CompletedTask;
@@ -93,9 +92,9 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
                            {
                                var tracer = context.RequestServices.GetService<ITracer>();
 
-                               traceId      = tracer.CurrentSpan.Descriptor.TraceId;
-                               spanId       = tracer.CurrentSpan.Descriptor.Id;
-                               spanName     = tracer.CurrentSpan.Descriptor.Name;
+                               traceId = tracer.CurrentSpan.Descriptor.TraceId;
+                               spanId = tracer.CurrentSpan.Descriptor.Id;
+                               spanName = tracer.CurrentSpan.Descriptor.Name;
                                parentSpanId = tracer.CurrentSpan.Descriptor.ParentId;
 
                                return Task.CompletedTask;

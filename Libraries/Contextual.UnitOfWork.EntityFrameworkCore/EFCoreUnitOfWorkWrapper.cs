@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 #if NET5_0
 using Microsoft.EntityFrameworkCore.Query;
+
 #endif
 #if (NETCOREAPP3_1 || NETSTANDARD2_1 || NETCOREAPP2_2 || NETSTANDARD2_0) && !NET5_0
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -26,9 +27,10 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "RedundantExtendsListEntry")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
     [PublicAPI]
-    public class EFCoreUnitOfWorkWrapper : IDisposable, IInfrastructure<IServiceProvider>, IDbContextDependencies, IDbSetCache, IDbContextPoolable, IUnitOfWork
+    public class EFCoreUnitOfWorkWrapper
+        : IDisposable, IInfrastructure<IServiceProvider>, IDbContextDependencies, IDbSetCache, IDbContextPoolable, IUnitOfWork
 #if NET5_0 || NETCOREAPP3_1 || NETSTANDARD2_1
-, IAsyncDisposable
+        , IAsyncDisposable
 #endif
     {
         [NotNull]
