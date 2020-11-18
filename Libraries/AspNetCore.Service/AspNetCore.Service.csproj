@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>3.1.1</VersionPrefix>
+        <VersionPrefix>3.2.0</VersionPrefix>
         <Title>DecoupleIt - ASP .NET Core base service library</Title>
         <Description>Implements base web application host with extensible modules.</Description>
         <PackageReleaseNotes>
-            - upgrade packages to support stable .NET 5
+- added warning for closing span that is not current one
+- previous version made package unusable, fixed all conditionals blocks of code to be called within .NET 5
         </PackageReleaseNotes>
     </PropertyGroup>
 

@@ -248,7 +248,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               options.AsNotNull()
                                      .ValidateScopes = isDevelopment;
 
-#if NETCOREAPP3_1
+#if NETCOREAPP3_1 || NET5_0
                               options.AsNotNull()
                                      .ValidateOnBuild = isDevelopment;
 #endif
@@ -386,7 +386,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
 #endif
 
                               if (UseHttpsRedirection)
-#if NETCOREAPP3_1
+#if NETCOREAPP3_1 || NET5_0
                                   applicationBuilder.UseHttpsRedirection();
 #elif NETCOREAPP2_2
                                   applicationBuilder.UseRewriter(new RewriteOptions().AddRedirectToHttps(StatusCodes.Status301MovedPermanently, 443));
@@ -451,7 +451,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                       module.ConfigureSwaggerUI(context, options);
                               });
 
-#if NETCOREAPP3_1
+#if NETCOREAPP3_1 || NET5_0
                               applicationBuilder.UseRouting();
 #elif NETCOREAPP2_2
                               applicationBuilder.UseEndpointRouting();
@@ -477,7 +477,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               foreach (var module in modules)
                                   module.ConfigureApplication(context, applicationBuilder);
 
-#if NETCOREAPP3_1
+#if NETCOREAPP3_1 || NET5_0
                               applicationBuilder.UseEndpoints(builder =>
                               {
                                   builder = builder.AsNotNull();

@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>3.1.1</VersionPrefix>
+        <VersionPrefix>3.2.0</VersionPrefix>
         <Title>DecoupleIt - ASP .NET Core support for GS.DecoupleIt.Scheduling.Quartz</Title>
         <Description>ASP .NET Core support for GS.DecoupleIt.Scheduling.Quartz.</Description>
         <PackageReleaseNotes>
-            - upgrade packages to support stable .NET 5
+            - added warning for closing span that is not current one
         </PackageReleaseNotes>
     </PropertyGroup>
 

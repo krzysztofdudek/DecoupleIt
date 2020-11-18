@@ -231,6 +231,9 @@ namespace GS.DecoupleIt.Tracing
 
         private void SpanOnClosed([NotNull] TracerSpan span)
         {
+            if (CurrentSpan != span)
+                _logger.LogWarning("Tracer span that being closed is not the current one.");
+
             Trace.Remove(span);
 
             InvokeSpanClosed(span.Descriptor, span.Duration);

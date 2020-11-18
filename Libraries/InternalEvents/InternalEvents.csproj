@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>3.1.0</VersionPrefix>
+        <VersionPrefix>3.2.0</VersionPrefix>
         <Title>DecoupleIt - Internal events</Title>
         <Description>Library implements the concept of internal events, that allows to decouple code in multidomain projects.</Description>
         <PackageReleaseNotes>
-            - upgrade packages to support stable .NET 5
+            - added warning for closing span that is not current one
         </PackageReleaseNotes>
     </PropertyGroup>
 
