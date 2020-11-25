@@ -5,7 +5,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using NHibernate;
 using NHibernate.Engine;
@@ -286,7 +285,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         {
             Dispose();
 
-            return new ValueTask(Task.CompletedTask);
+            return new ValueTask();
         }
 #endif
 
@@ -833,10 +832,15 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        public
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            return FlushAsync(cancellationToken)
-                .AsNotNull();
+            return FlushAsync(cancellationToken)!.AsValueTask();
         }
 
         /// <inheritdoc />

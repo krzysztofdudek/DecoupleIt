@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Scheduling.Exceptions;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
@@ -36,6 +37,8 @@ namespace GS.DecoupleIt.Scheduling
             [NotNull] Assembly assembly,
             [NotNull] IConfiguration configuration)
         {
+            serviceCollection.ScanAssemblyForImplementations(typeof(ServiceCollectionExtensions).Assembly);
+
             var jobs = GetJobs(assembly);
 
             ValidateAmbiguousAttributes(jobs);

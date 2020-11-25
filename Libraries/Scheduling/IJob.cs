@@ -16,7 +16,12 @@ namespace GS.DecoupleIt.Scheduling
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Task.</returns>
+#if NETCOREAPP2_2 || NETSTANDARD2_0
         [NotNull]
-        Task ExecuteAsync([PublicAPI] CancellationToken cancellationToken = default);
+        Task
+#else
+        ValueTask
+#endif
+            ExecuteAsync([PublicAPI] CancellationToken cancellationToken = default);
     }
 }

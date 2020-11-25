@@ -8,6 +8,7 @@ namespace GS.DecoupleIt.Optionals
     ///     Extends all objects with optional extension methods.
     /// </summary>
     [PublicAPI]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     public static class ObjectExtensions
     {
         /// <summary>
@@ -75,7 +76,13 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
-        public static async Task<Optional<T>> WhenAsync<T>([CanBeNull] this Task<T> obj, bool condition)
+        public static async
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<Optional<T>>
+#else
+            ValueTask<Optional<T>>
+#endif
+            WhenAsync<T>([CanBeNull] this Task<T> obj, bool condition)
         {
             if (obj is null)
                 return None<T>.Value;
@@ -97,10 +104,13 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        public static async Task<Optional<T>> WhenAsync<T>(
-            [CanBeNull] this T obj,
-            [InstantHandle] [NotNull] WhenAsyncDelegate<T> predicate,
-            CancellationToken cancellationToken = default)
+        public static async
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<Optional<T>>
+#else
+            ValueTask<Optional<T>>
+#endif
+            WhenAsync<T>([CanBeNull] this T obj, [InstantHandle] [NotNull] WhenAsyncDelegate<T> predicate, CancellationToken cancellationToken = default)
         {
             return obj.When(await predicate(obj, cancellationToken));
         }
@@ -116,19 +126,34 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        public static async Task<Optional<T>> WhenAsync<T>(
-            [CanBeNull] this T obj,
-            [InstantHandle] [NotNull] WhenAsyncDelegate predicate,
-            CancellationToken cancellationToken = default)
+        public static async
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<Optional<T>>
+#else
+            ValueTask<Optional<T>>
+#endif
+            WhenAsync<T>([CanBeNull] this T obj, [InstantHandle] [NotNull] WhenAsyncDelegate predicate, CancellationToken cancellationToken = default)
         {
             return obj.When(await predicate(cancellationToken));
         }
 
         [NotNull]
-        public delegate Task<bool> WhenAsyncDelegate<in T>([CanBeNull] T obj, CancellationToken cancellationToken = default);
+        public delegate
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<bool>
+#else
+            ValueTask<bool>
+#endif
+            WhenAsyncDelegate<in T>([CanBeNull] T obj, CancellationToken cancellationToken = default);
 
         [NotNull]
-        public delegate Task<bool> WhenAsyncDelegate(CancellationToken cancellationToken = default);
+        public delegate
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<bool>
+#else
+            ValueTask<bool>
+#endif
+            WhenAsyncDelegate(CancellationToken cancellationToken = default);
 
         public delegate bool WhenDelegate<in T>([CanBeNull] T obj);
     }

@@ -33,11 +33,16 @@ namespace GS.DecoupleIt.InternalEvents
         /// <param name="invokeEvents">Delegate invoked to emit events.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Task.</returns>
+#if NETCOREAPP2_2 || NETSTANDARD2_0
         [NotNull]
-        Task DispatchEventsAsync(
-            [NotNull] IInternalEventDispatcher internalEventDispatcher,
-            [NotNull] InvokeEventsAsyncDelegate invokeEvents,
-            CancellationToken cancellationToken = default);
+        Task
+#else
+        ValueTask
+#endif
+            DispatchEventsAsync(
+                [NotNull] IInternalEventDispatcher internalEventDispatcher,
+                [NotNull] InvokeEventsAsyncDelegate invokeEvents,
+                CancellationToken cancellationToken = default);
 
         /// <summary>
         ///     Emits an event and attaches it to scope.
@@ -51,7 +56,12 @@ namespace GS.DecoupleIt.InternalEvents
         /// <param name="event">Event.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Task.</returns>
+#if NETCOREAPP2_2 || NETSTANDARD2_0
         [NotNull]
-        Task EmitEventAsync([NotNull] Event @event, CancellationToken cancellationToken = default);
+        Task
+#else
+        ValueTask
+#endif
+            EmitEventAsync([NotNull] Event @event, CancellationToken cancellationToken = default);
     }
 }

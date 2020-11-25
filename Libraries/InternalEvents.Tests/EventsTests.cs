@@ -160,7 +160,11 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                                        {
                                            emittedEvent = (ExampleEvent) @event;
 
-                                           return Task.CompletedTask.AsNotNull();
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+                                           return Task.CompletedTask!;
+#else
+                                           return new ValueTask();
+#endif
                                        };
 
                                        while (!emit)
@@ -207,11 +211,20 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
             var @event = new ExampleEvent();
 
-            Task TracerOnEventEmitted(IInternalEventsScope scope2, Event _1, CancellationToken _2)
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+                TracerOnEventEmitted(IInternalEventsScope scope2, Event _1, CancellationToken _2)
             {
                 wasEventEmitted = true;
 
-                return Task.CompletedTask;
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+                return Task.CompletedTask!;
+#else
+                return new ValueTask();
+#endif
             }
 
             IInternalEventsScope scope;

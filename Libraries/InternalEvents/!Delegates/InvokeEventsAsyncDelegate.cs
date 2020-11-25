@@ -7,5 +7,11 @@ namespace GS.DecoupleIt.InternalEvents
     ///     Delegate destined for emission of internal events.
     /// </summary>
     [NotNull]
-    public delegate Task InvokeEventsAsyncDelegate();
+    public delegate
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+        Task
+#else
+        ValueTask
+#endif
+        InvokeEventsAsyncDelegate();
 }

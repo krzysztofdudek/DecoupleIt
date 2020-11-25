@@ -9,6 +9,7 @@ using GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.HttpAbstraction;
 using GS.DecoupleIt.InternalEvents.AspNetCore;
+using GS.DecoupleIt.Scheduling.AspNetCore;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
 using GS.DecoupleIt.Tracing.AspNetCore;
@@ -30,6 +31,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Rewrite;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 #elif NETCOREAPP3_1 || NET5_0
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
@@ -99,7 +101,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             options.JsonSerializerOptions.IgnoreReadOnlyProperties = false;
-            options.JsonSerializerOptions.IgnoreNullValues         = true;
+            options.JsonSerializerOptions.IgnoreNullValues = true;
         }
 #elif NETCOREAPP2_2
         /// <inheritdoc />
@@ -371,14 +373,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
 #if NETCOREAPP3_1 || NET5_0
                           .Configure((context, applicationBuilder) =>
                           {
-                              context            = context.AsNotNull();
+                              context = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
 #elif NETCOREAPP2_2
                           .Configure(applicationBuilder =>
                           {
                               var context = new WebHostBuilderContext
                               {
-                                  Configuration = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
+                                  Configuration      = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
                                   HostingEnvironment = applicationBuilder.ApplicationServices.GetRequiredService<IHostingEnvironment>()
                               };
 
@@ -392,42 +394,42 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   applicationBuilder.UseRewriter(new RewriteOptions().AddRedirectToHttps(StatusCodes.Status301MovedPermanently, 443));
 #endif
 
-                                  applicationBuilder.Use(async (context2, next) =>
+                              applicationBuilder.Use(async (context2, next) =>
+                              {
+                                  var logger = context2.RequestServices.GetRequiredService<ILogger<DefaultWebHost>>();
+
+                                  var httpAbstractionOptions = context2.RequestServices.GetRequiredService<IOptions<HttpAbstractionOptions>>()
+                                                                       .Value;
+
+                                  var hostName = GetType()
+                                                 .Assembly.GetName()
+                                                 .Name;
+
+                                  context2.Response.OnStarting(() =>
                                   {
-                                      var logger = context2.RequestServices.GetRequiredService<ILogger<DefaultWebHost>>();
+                                      context2.Response.Headers.Add(httpAbstractionOptions.HostIdentifierHeaderName, Identifier.ToString());
+                                      context2.Response.Headers.Add(httpAbstractionOptions.HostNameHeaderName, hostName);
+                                      context2.Response.Headers.Add(httpAbstractionOptions.HostVersionHeaderName, Version);
 
-                                      var httpAbstractionOptions = context2.RequestServices.GetRequiredService<IOptions<HttpAbstractionOptions>>()
-                                                                           .Value;
-
-                                      var hostName = GetType()
-                                                     .Assembly.GetName()
-                                                     .Name;
-
-                                      context2.Response.OnStarting(() =>
-                                      {
-                                          context2.Response.Headers.Add(httpAbstractionOptions.HostIdentifierHeaderName, Identifier.ToString());
-                                          context2.Response.Headers.Add(httpAbstractionOptions.HostNameHeaderName, hostName);
-                                          context2.Response.Headers.Add(httpAbstractionOptions.HostVersionHeaderName, Version);
-
-                                          return Task.CompletedTask;
-                                      });
-
-                                      using (logger.BeginScope(new SelfDescribingDictionary<string, object>
-                                      {
-                                          {
-                                              "HostIdentifier", Identifier
-                                          },
-                                          {
-                                              "HostName", hostName
-                                          },
-                                          {
-                                              "HostVersion", Version
-                                          }
-                                      }))
-                                      {
-                                          await next();
-                                      }
+                                      return Task.CompletedTask;
                                   });
+
+                                  using (logger.BeginScope(new SelfDescribingDictionary<string, object>
+                                  {
+                                      {
+                                          "HostIdentifier", Identifier
+                                      },
+                                      {
+                                          "HostName", hostName
+                                      },
+                                      {
+                                          "HostVersion", Version
+                                      }
+                                  }))
+                                  {
+                                      await next();
+                                  }
+                              });
 
                               applicationBuilder.UseSwagger(options =>
                               {
@@ -500,6 +502,8 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                       module.ConfigureEndpoints(context, builder);
                               });
 #endif
+
+                              applicationBuilder.UseDefaultScheduling();
                           })
                           .UseSerilog((context, configuration) =>
                           {

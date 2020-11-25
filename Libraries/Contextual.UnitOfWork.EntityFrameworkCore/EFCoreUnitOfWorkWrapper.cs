@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 #if NET5_0
 using Microsoft.EntityFrameworkCore.Query;
-
 #endif
 #if (NETCOREAPP3_1 || NETSTANDARD2_1 || NETCOREAPP2_2 || NETSTANDARD2_0) && !NET5_0
 using Microsoft.EntityFrameworkCore.Query.Internal;
@@ -27,10 +26,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "RedundantExtendsListEntry")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
     [PublicAPI]
-    public class EFCoreUnitOfWorkWrapper
-        : IDisposable, IInfrastructure<IServiceProvider>, IDbContextDependencies, IDbSetCache, IDbContextPoolable, IUnitOfWork
+    public class EFCoreUnitOfWorkWrapper : IDisposable, IInfrastructure<IServiceProvider>, IDbContextDependencies, IDbSetCache, IDbContextPoolable, IUnitOfWork
 #if NET5_0 || NETCOREAPP3_1 || NETSTANDARD2_1
-        , IAsyncDisposable
+    , IAsyncDisposable
 #endif
     {
         [NotNull]
@@ -52,6 +50,8 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
                 return;
 
             _dbContext.Dispose();
+
+            GC.SuppressFinalize(this);
 
             Disposed?.Invoke(this);
         }
@@ -132,14 +132,16 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
         }
 
         /// <inheritdoc />
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))
-                return new ValueTask();
+                return;
 
-            return new ValueTask(_dbContext.DisposeAsync()
-                                           .AsTask()
-                                           .ContinueWith(x => Disposed?.Invoke(this)));
+            await _dbContext.DisposeAsync();
+
+            GC.SuppressFinalize(this);
+
+            Disposed?.Invoke(this);
         }
 #endif
 
@@ -179,12 +181,23 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
         }
 
         /// <inheritdoc />
-        public Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        public
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocation(this))
-                return Task.CompletedTask;
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+                return Task.CompletedTask!;
+#else
+                return new ValueTask();
+#endif
 
-            return _dbContext.SaveChangesAsync(cancellationToken);
+            return _dbContext.SaveChangesAsync(cancellationToken)
+                             .AsValueTask();
         }
     }
 }

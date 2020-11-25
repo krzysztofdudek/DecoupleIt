@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using Samples.Clients.Command.Contracts.Events;
 using Samples.Clients.Command.Contracts.Exceptions;
@@ -11,10 +12,10 @@ namespace Samples.Clients.Command.Model.Entities
     {
         public Guid Id { get; [UsedImplicitly] private set; }
 
-        [NotNull]
+        [JetBrains.Annotations.NotNull]
         public string Name { get; [UsedImplicitly] private set; }
 
-        public Client([NotNull] string name)
+        public Client([JetBrains.Annotations.NotNull] string name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new InvalidClientName();
@@ -25,7 +26,7 @@ namespace Samples.Clients.Command.Model.Entities
             new ClientCreated(Id, Name).Emit();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "NotNullMemberIsNotInitialized")]
+        [SuppressMessage("ReSharper", "NotNullMemberIsNotInitialized")]
         private Client() { }
     }
 }

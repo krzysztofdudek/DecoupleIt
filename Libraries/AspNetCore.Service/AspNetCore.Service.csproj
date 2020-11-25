@@ -1,13 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>3.2.0</VersionPrefix>
+        <VersionPrefix>4.0.0</VersionPrefix>
         <Title>DecoupleIt - ASP .NET Core base service library</Title>
         <Description>Implements base web application host with extensible modules.</Description>
-        <PackageReleaseNotes>
-- added warning for closing span that is not current one
-- previous version made package unusable, fixed all conditionals blocks of code to be called within .NET 5
-        </PackageReleaseNotes>
     </PropertyGroup>
 
     <Import Project="../libraries.aspnetcore.props" />
@@ -15,7 +11,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Contextual.UnitOfWork.AspNetCore\Contextual.UnitOfWork.AspNetCore.csproj" />
         <ProjectReference Include="..\InternalEvents.AspNetCore\InternalEvents.AspNetCore.csproj" />
-        <ProjectReference Include="..\Scheduling\Scheduling.csproj" />
+        <ProjectReference Include="..\Scheduling.AspNetCore\Scheduling.AspNetCore.csproj" />
         <ProjectReference Include="..\Tracing.AspNetCore\Tracing.AspNetCore.csproj" />
         <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
         <ProjectReference Include="..\HttpAbstraction\HttpAbstraction.csproj" />

@@ -51,7 +51,13 @@ namespace GS.DecoupleIt.Optionals
             doAction(Content);
         }
 
-        public override Task DoAsync(DoAsyncDelegate doAction, CancellationToken cancellationToken = default)
+        public override
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            DoAsync(DoAsyncDelegate doAction, CancellationToken cancellationToken = default)
         {
             return doAction(Content, cancellationToken)
                 .AsNotNull();
@@ -102,19 +108,37 @@ namespace GS.DecoupleIt.Optionals
                 .AsNotNull();
         }
 
-        public override async Task<Optional<TResult>> MapAsync<TResult>(MapAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
+        public override async
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<Optional<TResult>>
+#else
+            ValueTask<Optional<TResult>>
+#endif
+            MapAsync<TResult>(MapAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
         {
             return await map(Content, cancellationToken)
                 .AsNotNull();
         }
 
-        public override async Task<Optional<TResult>> MapAsync<TResult>(MapWithNoParamAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
+        public override async
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<Optional<TResult>>
+#else
+            ValueTask<Optional<TResult>>
+#endif
+            MapAsync<TResult>(MapWithNoParamAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
         {
             return await map(cancellationToken)
                 .AsNotNull();
         }
 
-        public override async Task<Optional<TResult>> MapAsync<TResult>(MapOptionalAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
+        public override async
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<Optional<TResult>>
+#else
+            ValueTask<Optional<TResult>>
+#endif
+            MapAsync<TResult>(MapOptionalAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
         {
             return (await map(Content, cancellationToken)
                 .AsNotNull()).AsNotNull();
@@ -130,9 +154,19 @@ namespace GS.DecoupleIt.Optionals
             return Content;
         }
 
-        public override Task<T> ReduceAsync(ReduceAsyncDelegate whenNone, CancellationToken cancellationToken = default)
+        public override
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<T>
+#else
+            ValueTask<T>
+#endif
+            ReduceAsync(ReduceAsyncDelegate whenNone, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(Content);
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            return Task.FromResult(Content)!;
+#else
+            return new ValueTask<T>(Content);
+#endif
         }
 
         public override Optional<T> ReduceToAlternate(T whenNone)
@@ -145,9 +179,19 @@ namespace GS.DecoupleIt.Optionals
             return Content;
         }
 
-        public override Task<Optional<T>> ReduceToAlternateAsync(AlternateAsyncDelegate alternateWay, CancellationToken cancellationToken = default)
+        public override
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<Optional<T>>
+#else
+            ValueTask<Optional<T>>
+#endif
+            ReduceToAlternateAsync(AlternateAsyncDelegate alternateWay, CancellationToken cancellationToken = default)
         {
+#if NETCOREAPP2_2 || NETSTANDARD2_0
             return Task.FromResult<Optional<T>>(Content);
+#else
+            return new ValueTask<Optional<T>>(Content);
+#endif
         }
 
         [NotNull]

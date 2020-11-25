@@ -12,5 +12,11 @@ namespace GS.DecoupleIt.InternalEvents
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Task.</returns>
     [NotNull]
-    public delegate Task EventEmittedAsyncDelegate([NotNull] IInternalEventsScope scope, [NotNull] Event @event, CancellationToken cancellationToken);
+    public delegate
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+        Task
+#else
+        ValueTask
+#endif
+        EventEmittedAsyncDelegate([NotNull] IInternalEventsScope scope, [NotNull] Event @event, CancellationToken cancellationToken);
 }

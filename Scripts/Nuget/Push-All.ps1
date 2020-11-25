@@ -13,5 +13,6 @@
 .\Push-Contextual.UnitOfWork.AspNetCore.ps1
 .\Push-Scheduling.ps1
 .\Push-Scheduling.Quartz.ps1
+.\Push-Scheduling.AspNetCore.ps1
 .\Push-Scheduling.Quartz.AspNetCore.ps1
 .\Push-AspNetCore.Service.ps1

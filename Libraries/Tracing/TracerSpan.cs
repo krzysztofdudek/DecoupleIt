@@ -10,35 +10,46 @@ namespace GS.DecoupleIt.Tracing
     ///     Span represents single tracing span.
     ///     Class is not inheritable.
     /// </summary>
-    internal sealed class TracerSpan : ITracerSpan
+    public readonly struct TracerSpan : IDisposable, IEquatable<TracerSpan>
     {
+        /// <summary>
+        ///     Description of span.
+        /// </summary>
         public SpanDescriptor Descriptor { get; }
 
-        /// <inheritdoc />
+        /// <summary>
+        ///     Gets the duration of scope.
+        /// </summary>
         public TimeSpan Duration => _stopwatch.Elapsed;
 
-        internal event Action<TracerSpan> Closed;
+        [NotNull]
+        private readonly Action<TracerSpan> _closed;
 
-        internal TracerSpan(SpanDescriptor span)
+        private readonly Guid _id;
+
+        internal TracerSpan(SpanDescriptor span, [NotNull] Action<TracerSpan> onCloseCallback)
         {
-            Descriptor = span;
-            _stopwatch = Stopwatch.StartNew();
+            Descriptor         = span;
+            _stopwatch         = Stopwatch.StartNew();
+            _attachedResources = new List<IDisposable>();
+            _closed            = onCloseCallback;
+            _id                = Guid.NewGuid();
         }
 
-        /// <inheritdoc />
-        public void AttachResource(IDisposable resource)
+        /// <summary>
+        ///     Attached disposable resource to this instance. It will be disposed on scope disposal.
+        /// </summary>
+        /// <param name="resource">Resource.</param>
+        /// <exception cref="ObjectDisposedException">Tracer has been disposed.</exception>
+        public void AttachResource([NotNull] IDisposable resource)
         {
             ContractGuard.IfArgumentIsNull(nameof(resource), resource);
-
-            CheckIfDisposed();
 
             _attachedResources.Add(resource);
         }
 
         internal void Close()
         {
-            CheckIfDisposed();
-
             foreach (var attachedResource in _attachedResources.ToNotNullList())
             {
                 attachedResource.Dispose();
@@ -48,32 +59,35 @@ namespace GS.DecoupleIt.Tracing
 
             _stopwatch.Stop();
 
-            _isDisposed = true;
-
-            Closed?.Invoke(this);
+            _closed.Invoke(this);
         }
 
         [NotNull]
         [ItemNotNull]
-        private readonly List<IDisposable> _attachedResources = new List<IDisposable>();
-
-        private bool _isDisposed;
+        private readonly List<IDisposable> _attachedResources;
 
         [NotNull]
         private readonly Stopwatch _stopwatch;
 
-        private void CheckIfDisposed()
+        /// <inheritdoc />
+        public void Dispose()
         {
-            if (_isDisposed)
-                throw new ObjectDisposedException("Tracer has been disposed.");
+            Close();
         }
 
-        void IDisposable.Dispose()
+        public bool Equals(TracerSpan other)
         {
-            if (_isDisposed)
-                return;
+            return _id.Equals(other._id);
+        }
 
-            Close();
+        public override bool Equals(object obj)
+        {
+            return obj is TracerSpan other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return _id.GetHashCode();
         }
     }
 }

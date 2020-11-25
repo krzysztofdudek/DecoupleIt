@@ -16,8 +16,13 @@ namespace GS.DecoupleIt.InternalEvents
         /// <param name="event">Event.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Task.</returns>
+#if NETCOREAPP2_2 || NETSTANDARD2_0
         [NotNull]
-        Task DispatchOnEmissionAsync([NotNull] Event @event, CancellationToken cancellationToken = default);
+        Task
+#else
+        ValueTask
+#endif
+            DispatchOnEmissionAsync([NotNull] Event @event, CancellationToken cancellationToken = default);
 
         /// <summary>
         ///     Dispatches event calling it's on failure handlers.
@@ -25,9 +30,14 @@ namespace GS.DecoupleIt.InternalEvents
         /// <param name="event">Event.</param>
         /// <param name="exception">Exception.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns></returns>
+        /// <returns>Task.</returns>
+#if NETCOREAPP2_2 || NETSTANDARD2_0
         [NotNull]
-        Task DispatchOnFailureAsync([NotNull] Event @event, [NotNull] Exception exception, CancellationToken cancellationToken = default);
+        Task
+#else
+        ValueTask
+#endif
+            DispatchOnFailureAsync([NotNull] Event @event, [NotNull] Exception exception, CancellationToken cancellationToken = default);
 
         /// <summary>
         ///     Dispatches event calling it's on success handlers.
@@ -35,7 +45,12 @@ namespace GS.DecoupleIt.InternalEvents
         /// <param name="event">Event.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Task.</returns>
+#if NETCOREAPP2_2 || NETSTANDARD2_0
         [NotNull]
-        Task DispatchOnSuccessAsync([NotNull] Event @event, CancellationToken cancellationToken = default);
+        Task
+#else
+        ValueTask
+#endif
+            DispatchOnSuccessAsync([NotNull] Event @event, CancellationToken cancellationToken = default);
     }
 }

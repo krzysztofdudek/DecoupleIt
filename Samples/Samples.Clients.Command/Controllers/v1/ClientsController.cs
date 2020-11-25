@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using GS.DecoupleIt.Contextual.UnitOfWork;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Samples.Clients.Command.Contracts.Services;
@@ -18,13 +18,15 @@ namespace Samples.Clients.Command.Controllers.v1
 {
     /// <inheritdoc cref="IClients" />
     [Route("api/v1/clients")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotateNotNullTypeMember")]
+    [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
+    [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
+    [SuppressMessage("ReSharper", "AnnotateNotNullTypeMember")]
     [ApiExplorerSettings(GroupName = "v1")]
     public sealed class ClientsController : ControllerBase, IClients
     {
-        public ClientsController([NotNull] IUnitOfWorkAccessor unitOfWorkAccessor, [NotNull] IClientRepository clientRepository)
+        public ClientsController(
+            [JetBrains.Annotations.NotNull] IUnitOfWorkAccessor unitOfWorkAccessor,
+            [JetBrains.Annotations.NotNull] IClientRepository clientRepository)
         {
             _unitOfWorkAccessor = unitOfWorkAccessor;
             _clientRepository   = clientRepository;
@@ -80,10 +82,10 @@ namespace Samples.Clients.Command.Controllers.v1
             });
         }
 
-        [NotNull]
+        [JetBrains.Annotations.NotNull]
         private readonly IClientRepository _clientRepository;
 
-        [NotNull]
+        [JetBrains.Annotations.NotNull]
         private readonly IUnitOfWorkAccessor _unitOfWorkAccessor;
     }
 }

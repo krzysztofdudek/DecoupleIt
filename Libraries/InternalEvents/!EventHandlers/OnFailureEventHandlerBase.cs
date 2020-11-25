@@ -12,10 +12,22 @@ namespace GS.DecoupleIt.InternalEvents
         where TEvent : Event
     {
         /// <inheritdoc />
-        public abstract Task HandleAsync(TEvent @event, Exception exception, CancellationToken cancellationToken = default);
+        public abstract
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            HandleAsync(TEvent @event, Exception exception, CancellationToken cancellationToken = default);
 
         /// <inheritdoc />
-        public Task HandleAsync(Event @event, Exception exception, CancellationToken cancellationToken = default)
+        public
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            HandleAsync(Event @event, Exception exception, CancellationToken cancellationToken = default)
         {
             if (@event.GetType() != typeof(TEvent))
                 throw new ArgumentException("Event is of invalid type.", nameof(@event));

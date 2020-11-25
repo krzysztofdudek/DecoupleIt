@@ -1,8 +1,8 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using GS.DecoupleIt.Contextual.UnitOfWork;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Samples.Clients.Command.Contracts.Services;
@@ -15,13 +15,13 @@ namespace Samples.Clients.Command.Controllers.v1
 {
     /// <inheritdoc cref="IClientsBaskets" />
     [Route("api/v1/clients-baskets")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotateNotNullTypeMember")]
+    [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
+    [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
+    [SuppressMessage("ReSharper", "AnnotateNotNullTypeMember")]
     [ApiExplorerSettings(GroupName = "v1")]
     public sealed class ClientsBasketsController : ControllerBase, IClientsBaskets
     {
-        public ClientsBasketsController([NotNull] IUnitOfWorkAccessor accessor)
+        public ClientsBasketsController([JetBrains.Annotations.NotNull] IUnitOfWorkAccessor accessor)
         {
             _accessor = accessor;
         }
@@ -40,7 +40,7 @@ namespace Samples.Clients.Command.Controllers.v1
             });
         }
 
-        [NotNull]
+        [JetBrains.Annotations.NotNull]
         private readonly IUnitOfWorkAccessor _accessor;
     }
 }

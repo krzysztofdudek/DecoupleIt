@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.InternalEvents.Tests
@@ -10,11 +9,21 @@ namespace GS.DecoupleIt.InternalEvents.Tests
         [PublicAPI]
         public static int HandlesCount { get; set; }
 
-        public override Task HandleAsync(ExampleEvent @event, CancellationToken cancellationToken = default)
+        public override
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            HandleAsync(ExampleEvent @event, CancellationToken cancellationToken = default)
         {
             HandlesCount++;
 
-            return Task.CompletedTask.AsNotNull();
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            return Task.CompletedTask!;
+#else
+            return new ValueTask();
+#endif
         }
     }
 }

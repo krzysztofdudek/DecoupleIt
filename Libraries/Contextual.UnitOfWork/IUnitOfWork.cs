@@ -11,10 +11,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
     /// </summary>
     [RegisterManyTimes]
     [PublicAPI]
-    public interface IUnitOfWork
-        : IDisposable
+    public interface IUnitOfWork : IDisposable
 #if !(NETCOREAPP2_2 || NETSTANDARD2_0)
-        , IAsyncDisposable
+    , IAsyncDisposable
 #endif
     {
         /// <summary>
@@ -31,7 +30,12 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         ///     Saves all changes made in the context of this unit of work.
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
+#if NETCOREAPP2_2 || NETSTANDARD2_0
         [NotNull]
-        Task SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task
+#else
+        ValueTask
+#endif
+            SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

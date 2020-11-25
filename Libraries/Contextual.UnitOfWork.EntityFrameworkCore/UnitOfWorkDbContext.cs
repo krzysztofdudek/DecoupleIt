@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,20 +21,23 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
 
             base.Dispose();
 
+            GC.SuppressFinalize(this);
+
             Disposed?.Invoke(this);
         }
 
 #if !(NETCOREAPP2_2 || NETSTANDARD2_0)
         /// <inheritdoc />
-        public override ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))
-                return new ValueTask();
+                return;
 
-            return new ValueTask(base.DisposeAsync()
-                                     .AsTask()
-                                     .AsNotNull()
-                                     .ContinueWith(x => Disposed?.Invoke(this)));
+            await base.DisposeAsync();
+
+            GC.SuppressFinalize(this);
+
+            Disposed?.Invoke(this);
         }
 #endif
 
@@ -49,13 +51,22 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
         }
 
         /// <inheritdoc />
-        public new Task SaveChangesAsync(CancellationToken cancellationToken)
+        public new
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            SaveChangesAsync(CancellationToken cancellationToken)
         {
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocation(this))
-                return Task.CompletedTask;
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+                return Task.CompletedTask!;
+#else
+                return new ValueTask();
+#endif
 
-            return base.SaveChangesAsync(cancellationToken)
-                       .AsNotNull();
+            return base.SaveChangesAsync(cancellationToken)!.AsValueTask();
         }
 
         /// <inheritdoc />

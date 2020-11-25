@@ -14,11 +14,11 @@ namespace Samples.Clients.Command.Model.InternalEventHandlers
             _logger = logger;
         }
 
-        public override Task HandleAsync(ClientCreated @event, CancellationToken cancellationToken = default)
+        public override ValueTask HandleAsync(ClientCreated @event, CancellationToken cancellationToken = default)
         {
             _logger.LogDebug(@event.ClientId.ToString());
 
-            return Task.CompletedTask;
+            return new ValueTask();
         }
 
         [NotNull]

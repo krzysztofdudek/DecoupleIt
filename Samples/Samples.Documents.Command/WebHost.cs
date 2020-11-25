@@ -11,7 +11,7 @@ namespace Samples.Documents.Command
     {
         public static int Main(string[] args)
         {
-            return DefaultWebHost.Main<WebHost>(args);
+            return Main<WebHost>(args);
         }
 
         public override void ConfigureServices(WebHostBuilderContext context, IServiceCollection serviceCollection)

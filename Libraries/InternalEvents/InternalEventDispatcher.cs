@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace GS.DecoupleIt.InternalEvents
 {
     [Singleton]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     internal sealed class InternalEventDispatcher : IInternalEventDispatcher
     {
         public InternalEventDispatcher(
@@ -23,7 +24,13 @@ namespace GS.DecoupleIt.InternalEvents
             _tracer              = tracer;
         }
 
-        public Task DispatchOnEmissionAsync(Event @event, CancellationToken cancellationToken = default)
+        public
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            DispatchOnEmissionAsync(Event @event, CancellationToken cancellationToken = default)
         {
             return DispatchAsync(@event,
                                  null,
@@ -31,7 +38,13 @@ namespace GS.DecoupleIt.InternalEvents
                                  cancellationToken);
         }
 
-        public Task DispatchOnFailureAsync(Event @event, Exception exception, CancellationToken cancellationToken = default)
+        public
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            DispatchOnFailureAsync(Event @event, Exception exception, CancellationToken cancellationToken = default)
         {
             return DispatchAsync(@event,
                                  exception,
@@ -39,7 +52,13 @@ namespace GS.DecoupleIt.InternalEvents
                                  cancellationToken);
         }
 
-        public Task DispatchOnSuccessAsync(Event @event, CancellationToken cancellationToken = default)
+        public
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            DispatchOnSuccessAsync(Event @event, CancellationToken cancellationToken = default)
         {
             return DispatchAsync(@event,
                                  null,
@@ -48,11 +67,17 @@ namespace GS.DecoupleIt.InternalEvents
         }
 
         [NotNull]
-        private static Task InvokeEventHandler(
-            [NotNull] Event @event,
-            [NotNull] object eventHandler,
-            [CanBeNull] Exception exception,
-            CancellationToken cancellationToken)
+        private static
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            InvokeEventHandler(
+                [NotNull] Event @event,
+                [NotNull] object eventHandler,
+                [CanBeNull] Exception exception,
+                CancellationToken cancellationToken)
         {
             return eventHandler switch
             {
@@ -73,11 +98,17 @@ namespace GS.DecoupleIt.InternalEvents
         private readonly ITracer _tracer;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AccessToDisposedClosure")]
-        private async Task DispatchAsync(
-            [NotNull] Event @event,
-            [CanBeNull] Exception exception,
-            bool onEmission,
-            CancellationToken cancellationToken = default)
+        private async
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            DispatchAsync(
+                [NotNull] Event @event,
+                [CanBeNull] Exception exception,
+                bool onEmission,
+                CancellationToken cancellationToken = default)
         {
             using var span = _tracer.OpenChildSpan(@event.GetType(), SpanType.InternalEvent);
 
@@ -109,6 +140,13 @@ namespace GS.DecoupleIt.InternalEvents
                 mode = "on failure";
             }
 
+            if (eventHandlers.Count == 0)
+            {
+                _logger.LogInformation("Event dispatching {@EventDispatchingMode} started, but no handlers found.", mode);
+
+                return;
+            }
+
             _logger.LogInformation("Event dispatching {@EventDispatchingMode} started, {@EventHandlersCount} will handle it.", mode, eventHandlers.Count);
 
             try
@@ -132,12 +170,18 @@ namespace GS.DecoupleIt.InternalEvents
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AccessToDisposedClosure")]
-        private async Task ProcessEventHandler(
-            [NotNull] Event @event,
-            [CanBeNull] Exception exception,
-            [NotNull] object eventHandler,
-            [NotNull] string mode,
-            CancellationToken cancellationToken)
+        private async
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            ProcessEventHandler(
+                [NotNull] Event @event,
+                [CanBeNull] Exception exception,
+                [NotNull] object eventHandler,
+                [NotNull] string mode,
+                CancellationToken cancellationToken)
         {
             using var span = _tracer.OpenChildSpan(eventHandler.GetType(), SpanType.InternalEventHandler);
 
@@ -169,12 +213,18 @@ namespace GS.DecoupleIt.InternalEvents
         }
 
         [NotNull]
-        private async Task ProcessEventHandlers(
-            [NotNull] Event @event,
-            [NotNull] [ItemNotNull] IEnumerable<object> eventHandlers,
-            [CanBeNull] Exception exception,
-            [NotNull] string mode,
-            CancellationToken cancellationToken)
+        private async
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            ProcessEventHandlers(
+                [NotNull] Event @event,
+                [NotNull] [ItemNotNull] IEnumerable<object> eventHandlers,
+                [CanBeNull] Exception exception,
+                [NotNull] string mode,
+                CancellationToken cancellationToken)
         {
             foreach (var eventHandler in eventHandlers)
                 await ProcessEventHandler(@event,

@@ -20,7 +20,7 @@ namespace GS.DecoupleIt.Tracing
     internal sealed class Tracer : ITracer
     {
         /// <inheritdoc />
-        public ITracerSpan CurrentSpan =>
+        public TracerSpan CurrentSpan =>
             Trace.Count > 0
                 ? Trace.Last()
                        .AsNotNull()
@@ -40,7 +40,6 @@ namespace GS.DecoupleIt.Tracing
         ///     of the thread.
         /// </exception>
         [NotNull]
-        [ItemNotNull]
         internal List<TracerSpan> Trace => _traceStorage.Value ?? throw new TraceIsNotInitialized();
 
         /// <inheritdoc />
@@ -74,7 +73,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public ITracerSpan OpenChildSpan(string name, SpanType type)
+        public TracerSpan OpenChildSpan(string name, SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(name), name);
             ContractGuard.IfEnumArgumentIsOutOfRange(nameof(type), type);
@@ -88,9 +87,7 @@ namespace GS.DecoupleIt.Tracing
                                                     CurrentSpan.Descriptor.Id,
                                                     type);
 
-            var span = new TracerSpan(spanDescriptor);
-
-            span.Closed += SpanOnClosed;
+            var span = new TracerSpan(spanDescriptor, SpanOnClosed);
 
             Trace.Add(span);
 
@@ -103,7 +100,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public ITracerSpan OpenChildSpan(Type creatorType, SpanType type)
+        public TracerSpan OpenChildSpan(Type creatorType, SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(creatorType), creatorType);
 
@@ -111,7 +108,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public ITracerSpan OpenRootSpan(
+        public TracerSpan OpenRootSpan(
             TracingId traceId,
             TracingId id,
             string name,
@@ -130,9 +127,7 @@ namespace GS.DecoupleIt.Tracing
                                                     parentId,
                                                     type);
 
-            var span = new TracerSpan(spanDescriptor);
-
-            span.Closed += SpanOnClosed;
+            var span = new TracerSpan(spanDescriptor, SpanOnClosed);
 
             Trace.Add(span);
 
@@ -145,7 +140,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public ITracerSpan OpenRootSpan(
+        public TracerSpan OpenRootSpan(
             TracingId traceId,
             TracingId id,
             Type creatorType,
@@ -162,7 +157,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public ITracerSpan OpenRootSpan(string name, SpanType type)
+        public TracerSpan OpenRootSpan(string name, SpanType type)
         {
             var newSpanIdentifier = NewTracingIdGenerator();
 
@@ -174,7 +169,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public ITracerSpan OpenRootSpan(Type creatorType, SpanType type)
+        public TracerSpan OpenRootSpan(Type creatorType, SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(creatorType), creatorType);
 
@@ -191,7 +186,7 @@ namespace GS.DecoupleIt.Tracing
         private readonly AsyncLocal<List<TracerSpan>> _traceStorage = new AsyncLocal<List<TracerSpan>>();
 
         [NotNull]
-        private Dictionary<string, object> GetLoggerProperties([NotNull] ITracerSpan span)
+        private Dictionary<string, object> GetLoggerProperties(TracerSpan span)
         {
             var dictionary = new SelfDescribingDictionary<string, object>();
 
@@ -229,16 +224,14 @@ namespace GS.DecoupleIt.Tracing
             SpanOpened?.Invoke(span);
         }
 
-        private void SpanOnClosed([NotNull] TracerSpan span)
+        private void SpanOnClosed(TracerSpan span)
         {
-            if (CurrentSpan != span)
+            if (!CurrentSpan.Equals(span))
                 _logger.LogWarning("Tracer span that being closed is not the current one.");
 
             Trace.Remove(span);
 
             InvokeSpanClosed(span.Descriptor, span.Duration);
-
-            span.Closed -= SpanOnClosed;
         }
     }
 }

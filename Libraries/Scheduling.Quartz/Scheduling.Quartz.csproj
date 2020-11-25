@@ -1,18 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>3.2.0</VersionPrefix>
+        <VersionPrefix>4.0.0</VersionPrefix>
         <Title>DecoupleIt - Scheduling using Quartz</Title>
         <Description>Library uses Quartz as a scheduler for registered jobs using attributes from GS.DecoupleIt.Scheduling.</Description>
-        <PackageReleaseNotes>
-            - added warning for closing span that is not current one
-        </PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\InternalEvents\InternalEvents.csproj" />
         <ProjectReference Include="..\Scheduling\Scheduling.csproj" />
-        <ProjectReference Include="..\Tracing\Tracing.csproj" />
     </ItemGroup>
 
     <ItemGroup>

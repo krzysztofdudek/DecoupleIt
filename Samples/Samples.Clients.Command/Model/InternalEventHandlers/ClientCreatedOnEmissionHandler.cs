@@ -15,7 +15,7 @@ namespace Samples.Clients.Command.Model.InternalEventHandlers
             _accessor = accessor;
         }
 
-        public override async Task HandleAsync(ClientCreated @event, CancellationToken cancellationToken = default)
+        public override async ValueTask HandleAsync(ClientCreated @event, CancellationToken cancellationToken = default)
         {
             await using var context = _accessor.Get<ClientsDbContext>();
 

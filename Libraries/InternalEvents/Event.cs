@@ -9,6 +9,7 @@ namespace GS.DecoupleIt.InternalEvents
     ///     Base class of an event.
     /// </summary>
     [PublicAPI]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     public abstract class Event
     {
         /// <summary>
@@ -29,7 +30,13 @@ namespace GS.DecoupleIt.InternalEvents
 
         /// <inheritdoc cref="IInternalEventsScope.EmitEventAsync" />
         [NotNull]
-        public Task EmitAsync(CancellationToken cancellationToken = default)
+        public
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            EmitAsync(CancellationToken cancellationToken = default)
         {
             return InternalEventsScope.EmitEventAsync(this, cancellationToken);
         }

@@ -5,7 +5,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Libraries\Contextual.UnitOfWork.EntityFrameworkCore\Contextual.UnitOfWork.EntityFrameworkCore.csproj" />
-      <ProjectReference Include="..\..\Libraries\Scheduling.Quartz.AspNetCore\Scheduling.Quartz.AspNetCore.csproj" />
       <ProjectReference Include="..\Samples.Clients.Command.Contracts\Samples.Clients.Command.Contracts.csproj" />
     </ItemGroup>
 

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <VersionPrefix>1.0.0</VersionPrefix>
+        <Title>DecoupleIt - ASP .NET Core support for GS.DecoupleIt.Scheduling</Title>
+        <Description>ASP .NET Core support for GS.DecoupleIt.Scheduling.</Description>
+    </PropertyGroup>
+
+    <Import Project="../libraries.aspnetcore.props" />
+
+    <ItemGroup>
+        <ProjectReference Include="..\Scheduling\Scheduling.csproj" />
+    </ItemGroup>
+
+</Project>

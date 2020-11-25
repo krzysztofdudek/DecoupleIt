@@ -46,6 +46,7 @@ namespace GS.DecoupleIt.Optionals
     }
 
     [PublicAPI]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     public sealed class None<T> : Optional<T>, IEquatable<None<T>>, IEquatable<None>
     {
         /// <summary>
@@ -60,9 +61,19 @@ namespace GS.DecoupleIt.Optionals
         }
 
         [NotNull]
-        public static implicit operator Task<Optional<T>>([NotNull] None<T> none)
+        public static implicit operator
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<Optional<T>>
+#else
+            ValueTask<Optional<T>>
+#endif
+            ([NotNull] None<T> none)
         {
-            return Task.FromResult((Optional<T>) none);
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            return Task.FromResult<Optional<T>>(none)!;
+#else
+            return new ValueTask<Optional<T>>(none);
+#endif
         }
 
         public static bool operator !=(None<T> a, None<T> b)
@@ -72,9 +83,19 @@ namespace GS.DecoupleIt.Optionals
 
         public override void Do(DoDelegate doAction) { }
 
-        public override Task DoAsync(DoAsyncDelegate doAction, CancellationToken cancellationToken = default)
+        public override
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            DoAsync(DoAsyncDelegate doAction, CancellationToken cancellationToken = default)
         {
-            return Task.CompletedTask;
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            return Task.CompletedTask!;
+#else
+            return new ValueTask();
+#endif
         }
 
         public override bool Equals(object obj)
@@ -112,17 +133,35 @@ namespace GS.DecoupleIt.Optionals
             return None.Value;
         }
 
-        public override Task<Optional<TResult>> MapAsync<TResult>(MapAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
+        public override
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<Optional<TResult>>
+#else
+            ValueTask<Optional<TResult>>
+#endif
+            MapAsync<TResult>(MapAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
         {
             return None<TResult>.Value;
         }
 
-        public override Task<Optional<TResult>> MapAsync<TResult>(MapWithNoParamAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
+        public override
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<Optional<TResult>>
+#else
+            ValueTask<Optional<TResult>>
+#endif
+            MapAsync<TResult>(MapWithNoParamAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
         {
             return None<TResult>.Value;
         }
 
-        public override Task<Optional<TResult>> MapAsync<TResult>(MapOptionalAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
+        public override
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<Optional<TResult>>
+#else
+            ValueTask<Optional<TResult>>
+#endif
+            MapAsync<TResult>(MapOptionalAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
         {
             return None<TResult>.Value;
         }
@@ -138,7 +177,13 @@ namespace GS.DecoupleIt.Optionals
                 .AsNotNull();
         }
 
-        public override Task<T> ReduceAsync(ReduceAsyncDelegate whenNone, CancellationToken cancellationToken = default)
+        public override
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<T>
+#else
+            ValueTask<T>
+#endif
+            ReduceAsync(ReduceAsyncDelegate whenNone, CancellationToken cancellationToken = default)
         {
             return whenNone(cancellationToken)
                 .AsNotNull();
@@ -155,7 +200,13 @@ namespace GS.DecoupleIt.Optionals
                 .AsNotNull();
         }
 
-        public override Task<Optional<T>> ReduceToAlternateAsync(AlternateAsyncDelegate alternateWay, CancellationToken cancellationToken = default)
+        public override
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task<Optional<T>>
+#else
+            ValueTask<Optional<T>>
+#endif
+            ReduceToAlternateAsync(AlternateAsyncDelegate alternateWay, CancellationToken cancellationToken = default)
         {
             return alternateWay(cancellationToken)
                 .AsNotNull();

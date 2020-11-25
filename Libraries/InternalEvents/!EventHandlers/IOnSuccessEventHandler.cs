@@ -18,8 +18,13 @@ namespace GS.DecoupleIt.InternalEvents
         /// <param name="event">Event.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Task.</returns>
+#if NETCOREAPP2_2 || NETSTANDARD2_0
         [NotNull]
-        Task HandleAsync([NotNull] Event @event, CancellationToken cancellationToken = default);
+        Task
+#else
+        ValueTask
+#endif
+            HandleAsync([NotNull] Event @event, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -37,7 +42,12 @@ namespace GS.DecoupleIt.InternalEvents
         /// <param name="event">Event.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Task.</returns>
+#if NETCOREAPP2_2 || NETSTANDARD2_0
         [NotNull]
-        Task HandleAsync([NotNull] TEvent @event, CancellationToken cancellationToken = default);
+        Task
+#else
+        ValueTask
+#endif
+            HandleAsync([NotNull] TEvent @event, CancellationToken cancellationToken = default);
     }
 }

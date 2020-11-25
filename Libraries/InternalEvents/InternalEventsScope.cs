@@ -12,6 +12,7 @@ namespace GS.DecoupleIt.InternalEvents
     ///     Manages internal event scopes.
     /// </summary>
     [PublicAPI]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     public sealed class InternalEventsScope : IInternalEventsScope
     {
         /// <summary>
@@ -32,18 +33,35 @@ namespace GS.DecoupleIt.InternalEvents
             var currentStack = Stack;
             var events       = new List<Event>();
 
-            Task OnEventEmitted(Stack<InternalEventsScope> stack, Event @event, CancellationToken cancellationToken)
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+                OnEventEmitted(Stack<InternalEventsScope> stack, Event @event, CancellationToken cancellationToken)
             {
                 if (currentStack != stack)
-                    return Task.CompletedTask;
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+                    return Task.CompletedTask!.AsValueTask();
+#else
+                    return new ValueTask();
+#endif
 
                 // ReSharper disable once PossibleNullReferenceException
                 if (!eventTypes.Contains(@event.GetType()))
-                    return Task.CompletedTask;
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+                    return Task.CompletedTask!.AsValueTask();
+#else
+                    return new ValueTask();
+#endif
 
                 events.Add(@event);
 
-                return Task.CompletedTask;
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+                return Task.CompletedTask!.AsValueTask();
+#else
+                return new ValueTask();
+#endif
             }
 
             StackEventEmitted += OnEventEmitted;
@@ -78,34 +96,49 @@ namespace GS.DecoupleIt.InternalEvents
             var currentStack = Stack;
             var events       = new List<Event>();
 
-            Task OnEventEmitted(Stack<InternalEventsScope> stack, Event @event, CancellationToken cancellationToken)
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+                OnEventEmitted(Stack<InternalEventsScope> stack, Event @event, CancellationToken cancellationToken)
             {
                 if (currentStack != stack)
-                    return Task.CompletedTask;
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+                    return Task.CompletedTask!.AsValueTask();
+#else
+                    return new ValueTask();
+#endif
 
                 // ReSharper disable once PossibleNullReferenceException
                 if (!eventTypes.Contains(@event.GetType()))
-                    return Task.CompletedTask;
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+                    return Task.CompletedTask!.AsValueTask();
+#else
+                    return new ValueTask();
+#endif
 
                 events.Add(@event);
 
-                return Task.CompletedTask;
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+                return Task.CompletedTask!.AsValueTask();
+#else
+                return new ValueTask();
+#endif
             }
 
             StackEventEmitted += OnEventEmitted;
 
             try
             {
-                await aggregateEventsMethod()
-                    .AsNotNull();
+                await aggregateEventsMethod();
             }
             finally
             {
                 StackEventEmitted -= OnEventEmitted;
             }
 
-            await processAggregateEventsMethod(events)
-                .AsNotNull();
+            await processAggregateEventsMethod(events);
         }
 
         /// <summary>
@@ -130,9 +163,22 @@ namespace GS.DecoupleIt.InternalEvents
 
         /// <inheritdoc cref="IInternalEventsScope.EmitEventAsync" />
         [NotNull]
-        internal static Task EmitEventAsync([NotNull] Event @event, CancellationToken cancellationToken = default)
+        internal static
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            EmitEventAsync([NotNull] Event @event, CancellationToken cancellationToken = default)
         {
-            return Stack.Count == 0 ? Task.CompletedTask : CurrentScope.EmitEventAsync(@event, cancellationToken);
+            return Stack.Count == 0
+                ?
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+                Task.CompletedTask
+#else
+                new ValueTask()
+#endif
+                : CurrentScope.EmitEventAsync(@event, cancellationToken);
         }
 
         /// <summary>
@@ -165,15 +211,26 @@ namespace GS.DecoupleIt.InternalEvents
         public event EventEmittedAsyncDelegate EventEmitted;
 
         /// <inheritdoc />
-        public async Task DispatchEventsAsync(
-            IInternalEventDispatcher internalEventDispatcher,
-            InvokeEventsAsyncDelegate invokeEvents,
-            CancellationToken cancellationToken = default)
+        public async
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            DispatchEventsAsync(
+                IInternalEventDispatcher internalEventDispatcher,
+                InvokeEventsAsyncDelegate invokeEvents,
+                CancellationToken cancellationToken = default)
         {
             ContractGuard.IfArgumentIsNull(nameof(internalEventDispatcher), internalEventDispatcher);
             ContractGuard.IfArgumentIsNull(nameof(invokeEvents), invokeEvents);
 
-            Task ScopeLifetimeOnEventEmitted(IInternalEventsScope scope, Event @event, CancellationToken cancellationToken2)
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+                ScopeLifetimeOnEventEmitted(IInternalEventsScope scope, Event @event, CancellationToken cancellationToken2)
             {
                 return internalEventDispatcher.DispatchOnEmissionAsync(@event.AsNotNull(), cancellationToken2);
             }
@@ -182,8 +239,7 @@ namespace GS.DecoupleIt.InternalEvents
 
             try
             {
-                await invokeEvents()
-                    .AsNotNull();
+                await invokeEvents();
 
                 foreach (var @event in Events)
                     await internalEventDispatcher.DispatchOnSuccessAsync(@event, cancellationToken);
@@ -253,7 +309,12 @@ namespace GS.DecoupleIt.InternalEvents
                 .GetResult();
         }
 
-        Task IInternalEventsScope.EmitEventAsync(Event @event, CancellationToken cancellationToken)
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+        Task
+#else
+        ValueTask
+#endif
+            IInternalEventsScope.EmitEventAsync(Event @event, CancellationToken cancellationToken)
         {
             ContractGuard.IfArgumentIsNull(nameof(@event), @event);
 
@@ -262,7 +323,9 @@ namespace GS.DecoupleIt.InternalEvents
             return InvokeEventEmitted(@event, cancellationToken);
         }
 
-        private async Task InvokeEventEmitted([NotNull] Event @event, CancellationToken cancellationToken)
+        private async
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task InvokeEventEmitted([NotNull] Event @event, CancellationToken cancellationToken)
         {
             var task = EventEmitted?.Invoke(this, @event, cancellationToken);
 
@@ -274,10 +337,28 @@ namespace GS.DecoupleIt.InternalEvents
             if (task != null)
                 await task;
         }
+#else
+            ValueTask InvokeEventEmitted([NotNull] Event @event, CancellationToken cancellationToken)
+        {
+            var task = EventEmitted?.Invoke(this, @event, cancellationToken);
 
-        private delegate Task StackEventEmittedAsyncDelegate(
-            [NotNull] Stack<InternalEventsScope> stack,
-            [NotNull] Event @event,
-            CancellationToken cancellationToken);
+            if (task != null)
+                await task.Value;
+
+            task = StackEventEmitted?.Invoke(_stack, @event, cancellationToken);
+
+            if (task != null)
+                await task.Value;
+        }
+#endif
+
+
+        private delegate
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            StackEventEmittedAsyncDelegate([NotNull] Stack<InternalEventsScope> stack, [NotNull] Event @event, CancellationToken cancellationToken);
     }
 }

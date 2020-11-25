@@ -10,7 +10,13 @@ namespace GS.DecoupleIt.InternalEvents.Tests
         [PublicAPI]
         public static int HandlesCount { get; set; }
 
-        public override Task HandleAsync(ExceptionCausingEvent @event, Exception exception, CancellationToken cancellationToken = default)
+        public override
+#if NETCOREAPP2_2 || NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+            HandleAsync(ExceptionCausingEvent @event, Exception exception, CancellationToken cancellationToken = default)
         {
             HandlesCount++;
 

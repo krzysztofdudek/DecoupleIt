@@ -16,11 +16,11 @@ namespace Samples.Clients.Command.Jobs
             _logger = logger;
         }
 
-        public Task ExecuteAsync(CancellationToken cancellationToken = default)
+        public ValueTask ExecuteAsync(CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Sample job log.");
+            _logger.LogInformation("Job");
 
-            return Task.CompletedTask;
+            return new ValueTask();
         }
 
         [NotNull]
