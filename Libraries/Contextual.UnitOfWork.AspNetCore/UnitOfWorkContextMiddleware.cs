@@ -20,7 +20,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore
 #if !(NETCOREAPP2_2 || NETSTANDARD2_0)
             await
 #endif
-            using (_unitOfWorkAccessor.Get<TUnitOfWork>())
+            using (_unitOfWorkAccessor.GetLazy<TUnitOfWork>())
             {
                 await next(context)
                     .AsNotNull();

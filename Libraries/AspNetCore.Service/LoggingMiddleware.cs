@@ -102,7 +102,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
             }
             catch (Exception exception)
             {
-                _logger.LogInformation(exception, "External request handling failure after {@Duration}ms.", scope.Duration.TotalMilliseconds);
+                _logger.LogInformation(exception, "External request handling failure after {@Duration}ms.", (int) scope.Duration.TotalMilliseconds);
             }
         }
 
