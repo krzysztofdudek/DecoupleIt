@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Shared;
-using GS.DecoupleIt.Tracing.Exceptions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,27 +19,14 @@ namespace GS.DecoupleIt.Tracing
     internal sealed class Tracer : ITracer
     {
         /// <inheritdoc />
-        public TracerSpan CurrentSpan =>
-            Trace.Count > 0
-                ? Trace.Last()
-                       .AsNotNull()
-                : throw new NotInTheContextOfSpan();
-
-        /// <inheritdoc />
-        public bool IsRootSpanOpened => Trace.Count > 0;
+        public TracerSpan? CurrentSpan
+        {
+            get => _spanStorage.Value;
+            private set => _spanStorage.Value = value;
+        }
 
         /// <inheritdoc />
         public Func<TracingId> NewTracingIdGenerator { get; set; } = () => (TracingId) Guid.NewGuid();
-
-        /// <summary>
-        ///     Contains stack of spans for current async flow.
-        /// </summary>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        [NotNull]
-        internal List<TracerSpan> Trace => _traceStorage.Value ?? throw new TraceIsNotInitialized();
 
         /// <inheritdoc />
         public event SpanClosedDelegate SpanClosed;
@@ -55,60 +41,32 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public void Clear()
-        {
-            if (_traceStorage.Value == null)
-                return;
-
-            foreach (var span in _traceStorage.Value.ToNotNullList())
-                span.Close();
-
-            _traceStorage.Value = null;
-        }
-
-        /// <inheritdoc />
-        public void Initialize()
-        {
-            _traceStorage.Value = new List<TracerSpan>();
-        }
-
-        /// <inheritdoc />
-        public TracerSpan OpenChildSpan(string name, SpanType type)
+        public TracerSpan OpenSpan(string name, SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(name), name);
             ContractGuard.IfEnumArgumentIsOutOfRange(nameof(type), type);
 
-            if (Trace.Count == 0)
-                throw new RootSpanIsNotOpened();
+            var spanId       = NewTracingIdGenerator();
+            var traceId      = CurrentSpan?.Descriptor.TraceId ?? spanId;
+            var parentSpanId = CurrentSpan?.Descriptor.Id;
 
-            var spanDescriptor = new SpanDescriptor(CurrentSpan.Descriptor.TraceId,
-                                                    NewTracingIdGenerator(),
-                                                    name,
-                                                    CurrentSpan.Descriptor.Id,
-                                                    type);
-
-            var span = new TracerSpan(spanDescriptor, SpanOnClosed);
-
-            Trace.Add(span);
-
-            span.AttachResource(_logger.BeginScope(GetLoggerProperties(span))
-                                       .AsNotNull());
-
-            InvokeSpanOpened(spanDescriptor);
-
-            return span;
+            return OpenSpan(traceId,
+                            spanId,
+                            name,
+                            parentSpanId,
+                            type);
         }
 
         /// <inheritdoc />
-        public TracerSpan OpenChildSpan(Type creatorType, SpanType type)
+        public TracerSpan OpenSpan(Type creatorType, SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(creatorType), creatorType);
 
-            return OpenChildSpan(creatorType.FullName.AsNotNull(), type);
+            return OpenSpan(creatorType.FullName.AsNotNull(), type);
         }
 
         /// <inheritdoc />
-        public TracerSpan OpenRootSpan(
+        public TracerSpan OpenSpan(
             TracingId traceId,
             TracingId id,
             string name,
@@ -118,21 +76,16 @@ namespace GS.DecoupleIt.Tracing
             ContractGuard.IfArgumentIsNull(nameof(name), name);
             ContractGuard.IfEnumArgumentIsOutOfRange(nameof(type), type);
 
-            if (Trace.Count > 0)
-                throw new RootSpanIsAlreadyOpened();
-
             var spanDescriptor = new SpanDescriptor(traceId,
                                                     id,
                                                     name,
                                                     parentId,
                                                     type);
 
-            var span = new TracerSpan(spanDescriptor, SpanOnClosed);
+            var span = new TracerSpan(spanDescriptor, CurrentSpan, SpanOnClosed, _logger.BeginScope(GetLoggerProperties(spanDescriptor))
+                                                                                        .AsNotNull());
 
-            Trace.Add(span);
-
-            span.AttachResource(_logger.BeginScope(GetLoggerProperties(span))
-                                       .AsNotNull());
+            CurrentSpan = span;
 
             InvokeSpanOpened(spanDescriptor);
 
@@ -140,7 +93,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public TracerSpan OpenRootSpan(
+        public TracerSpan OpenSpan(
             TracingId traceId,
             TracingId id,
             Type creatorType,
@@ -149,31 +102,11 @@ namespace GS.DecoupleIt.Tracing
         {
             ContractGuard.IfArgumentIsNull(nameof(creatorType), creatorType);
 
-            return OpenRootSpan(traceId,
-                                id,
-                                creatorType.FullName.AsNotNull(),
-                                parentId,
-                                type);
-        }
-
-        /// <inheritdoc />
-        public TracerSpan OpenRootSpan(string name, SpanType type)
-        {
-            var newSpanIdentifier = NewTracingIdGenerator();
-
-            return OpenRootSpan(newSpanIdentifier,
-                                newSpanIdentifier,
-                                name,
-                                null,
-                                type);
-        }
-
-        /// <inheritdoc />
-        public TracerSpan OpenRootSpan(Type creatorType, SpanType type)
-        {
-            ContractGuard.IfArgumentIsNull(nameof(creatorType), creatorType);
-
-            return OpenRootSpan(creatorType.FullName.AsNotNull(), type);
+            return OpenSpan(traceId,
+                            id,
+                            creatorType.FullName.AsNotNull(),
+                            parentId,
+                            type);
         }
 
         [NotNull]
@@ -183,33 +116,33 @@ namespace GS.DecoupleIt.Tracing
         private readonly LoggerPropertiesOptions _loggerPropertiesOptions;
 
         [NotNull]
-        private readonly AsyncLocal<List<TracerSpan>> _traceStorage = new AsyncLocal<List<TracerSpan>>();
+        private readonly AsyncLocal<TracerSpan?> _spanStorage = new AsyncLocal<TracerSpan?>();
 
         [NotNull]
-        private Dictionary<string, object> GetLoggerProperties(TracerSpan span)
+        private IReadOnlyDictionary<string, object> GetLoggerProperties(SpanDescriptor descriptor)
         {
             var dictionary = new SelfDescribingDictionary<string, object>();
 
             foreach (var property in _loggerPropertiesOptions.TraceId.Distinct()
                                                              .AsCollectionWithNotNullItems())
-                dictionary.Add(property, span.Descriptor.TraceId);
+                dictionary.Add(property, descriptor.TraceId);
 
             foreach (var property in _loggerPropertiesOptions.SpanId.Distinct()
                                                              .AsCollectionWithNotNullItems())
-                dictionary.Add(property, span.Descriptor.Id);
+                dictionary.Add(property, descriptor.Id);
 
-            if (span.Descriptor.ParentId != null)
+            if (descriptor.ParentId != null)
                 foreach (var property in _loggerPropertiesOptions.ParentSpanId.Distinct()
                                                                  .AsCollectionWithNotNullItems())
-                    dictionary.Add(property, span.Descriptor.ParentId);
+                    dictionary.Add(property, descriptor.ParentId);
 
             foreach (var property in _loggerPropertiesOptions.SpanName.Distinct()
                                                              .AsCollectionWithNotNullItems())
-                dictionary.Add(property, span.Descriptor.Name);
+                dictionary.Add(property, descriptor.Name);
 
             foreach (var property in _loggerPropertiesOptions.SpanType.Distinct()
                                                              .AsCollectionWithNotNullItems())
-                dictionary.Add(property, span.Descriptor.Type);
+                dictionary.Add(property, descriptor.Type);
 
             return dictionary;
         }

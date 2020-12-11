@@ -182,7 +182,7 @@ namespace GS.DecoupleIt.Tracing.Tests
 
             Assert.Throws<RootSpanIsNotOpened>(() =>
             {
-                using (var _ = tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequest)) { }
+                using (var _ = tracer.OpenSpan(CreatorType, SpanType.ExternalRequest)) { }
             });
 
             tracer.Clear();
@@ -197,7 +197,7 @@ namespace GS.DecoupleIt.Tracing.Tests
 
             Assert.Throws<RootSpanIsNotOpened>(() =>
             {
-                using (var _ = tracer.OpenChildSpan(SpanName, SpanType.ExternalRequest)) { }
+                using (var _ = tracer.OpenSpan(SpanName, SpanType.ExternalRequest)) { }
             });
 
             tracer.Clear();
@@ -212,7 +212,7 @@ namespace GS.DecoupleIt.Tracing.Tests
 
             Assert.Throws<RootSpanIsNotOpened>(() =>
             {
-                var _ = tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequest);
+                var _ = tracer.OpenSpan(CreatorType, SpanType.ExternalRequest);
             });
 
             tracer.Clear();
@@ -226,7 +226,7 @@ namespace GS.DecoupleIt.Tracing.Tests
             tracer.Initialize();
 
             var rootSpan  = tracer.OpenRootSpan(CreatorType, SpanType.ExternalRequest);
-            var childSpan = tracer.OpenChildSpan(CreatorType, SpanType.ExternalRequest);
+            var childSpan = tracer.OpenSpan(CreatorType, SpanType.ExternalRequest);
 
             tracer.Clear();
         }

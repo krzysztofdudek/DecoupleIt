@@ -65,7 +65,7 @@ namespace GS.DecoupleIt.Optionals
 #endif
             MapAsync<T, TResult>(
                 [NotNull] [ItemNotNull] this Task<Optional<T>> task,
-                [InstantHandle] [NotNull] Optional<T>.MapAsyncDelegate<TResult> map,
+                [InstantHandle] [NotNull] Delegates<T>.MapAsyncDelegate<TResult> map,
                 CancellationToken cancellationToken = default)
         {
             var optional = await task;
@@ -87,7 +87,7 @@ namespace GS.DecoupleIt.Optionals
         [ItemNotNull]
         public static async ValueTask<Optional<TResult>> MapAsync<T, TResult>(
             [NotNull] [ItemNotNull] this ValueTask<Optional<T>> task,
-            [InstantHandle] [NotNull] Optional<T>.MapAsyncDelegate<TResult> map,
+            [InstantHandle] [NotNull] Delegates<T>.MapAsyncDelegate<TResult> map,
             CancellationToken cancellationToken = default)
         {
             var optional = await task;
@@ -115,7 +115,7 @@ namespace GS.DecoupleIt.Optionals
 #endif
             MapAsync<T, TResult>(
                 [NotNull] [ItemNotNull] this Task<Optional<T>> task,
-                [InstantHandle] [NotNull] Optional<T>.MapWithNoParamAsyncDelegate<TResult> map,
+                [InstantHandle] [NotNull] Delegates<T>.MapWithNoParamAsyncDelegate<TResult> map,
                 CancellationToken cancellationToken = default)
         {
             var optional = await task;
@@ -137,7 +137,7 @@ namespace GS.DecoupleIt.Optionals
         [ItemNotNull]
         public static async ValueTask<Optional<TResult>> MapAsync<T, TResult>(
             [NotNull] [ItemNotNull] this ValueTask<Optional<T>> task,
-            [InstantHandle] [NotNull] Optional<T>.MapWithNoParamAsyncDelegate<TResult> map,
+            [InstantHandle] [NotNull] Delegates<T>.MapWithNoParamAsyncDelegate<TResult> map,
             CancellationToken cancellationToken = default)
         {
             var optional = await task;
@@ -165,7 +165,7 @@ namespace GS.DecoupleIt.Optionals
 #endif
             MapAsync<T, TResult>(
                 [NotNull] [ItemNotNull] this Task<Optional<T>> task,
-                [InstantHandle] [NotNull] Optional<T>.MapOptionalAsyncDelegate<TResult> map,
+                [InstantHandle] [NotNull] Delegates<T>.MapOptionalAsyncDelegate<TResult> map,
                 CancellationToken cancellationToken = default)
         {
             var optional = await task;
@@ -187,7 +187,7 @@ namespace GS.DecoupleIt.Optionals
         [ItemNotNull]
         public static async ValueTask<Optional<TResult>> MapAsync<T, TResult>(
             [NotNull] [ItemNotNull] this ValueTask<Optional<T>> task,
-            [InstantHandle] [NotNull] Optional<T>.MapOptionalAsyncDelegate<TResult> map,
+            [InstantHandle] [NotNull] Delegates<T>.MapOptionalAsyncDelegate<TResult> map,
             CancellationToken cancellationToken = default)
         {
             var optional = await task;
@@ -213,7 +213,7 @@ namespace GS.DecoupleIt.Optionals
 #endif
             ReduceAsync<T>(
                 [NotNull] [ItemNotNull] this Task<Optional<T>> task,
-                [InstantHandle] [NotNull] Optional<T>.ReduceAsyncDelegate whenNone,
+                [InstantHandle] [NotNull] Delegates<T>.ReduceAsyncDelegate whenNone,
                 CancellationToken cancellationToken = default)
         {
             var optional = await task;
@@ -233,7 +233,7 @@ namespace GS.DecoupleIt.Optionals
         [ItemNotNull]
         public static async ValueTask<T> ReduceAsync<T>(
             [NotNull] [ItemNotNull] this ValueTask<Optional<T>> task,
-            [InstantHandle] [NotNull] Optional<T>.ReduceAsyncDelegate whenNone,
+            [InstantHandle] [NotNull] Delegates<T>.ReduceAsyncDelegate whenNone,
             CancellationToken cancellationToken = default)
         {
             var optional = await task;
@@ -249,7 +249,6 @@ namespace GS.DecoupleIt.Optionals
         /// <param name="whenNone">Value used if optional is none.</param>
         /// <returns>Value.</returns>
         [NotNull]
-        [ItemNotNull]
         public static async
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<T>
@@ -271,7 +270,6 @@ namespace GS.DecoupleIt.Optionals
         /// <param name="whenNone">Value used if optional is none.</param>
         /// <returns>Value.</returns>
         [NotNull]
-        [ItemNotNull]
         public static async ValueTask<T> ReduceAsync<T>([NotNull] [ItemNotNull] this ValueTask<Optional<T>> task, [NotNull] T whenNone)
         {
             var optional = await task;
@@ -298,7 +296,7 @@ namespace GS.DecoupleIt.Optionals
 #endif
             ReduceToAlternateAsync<T>(
                 [NotNull] [ItemNotNull] this Task<Optional<T>> task,
-                [InstantHandle] [NotNull] Optional<T>.AlternateAsyncDelegate alternateWay,
+                [InstantHandle] [NotNull] Delegates<T>.AlternateAsyncDelegate alternateWay,
                 CancellationToken cancellationToken = default)
         {
             var optional = await task;
@@ -319,7 +317,7 @@ namespace GS.DecoupleIt.Optionals
         [ItemNotNull]
         public static async ValueTask<Optional<T>> ReduceToAlternateAsync<T>(
             [NotNull] [ItemNotNull] this ValueTask<Optional<T>> task,
-            [InstantHandle] [NotNull] Optional<T>.AlternateAsyncDelegate alternateWay,
+            [InstantHandle] [NotNull] Delegates<T>.AlternateAsyncDelegate alternateWay,
             CancellationToken cancellationToken = default)
         {
             var optional = await task;

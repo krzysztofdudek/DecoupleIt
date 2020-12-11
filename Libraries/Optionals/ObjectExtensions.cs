@@ -24,7 +24,7 @@ namespace GS.DecoupleIt.Optionals
         }
 
         /// <summary>
-        ///     Tries to cast <paramref name="obj" /> to <typeparamref name="T" />. If it does not succeed <see cref="None" /> is
+        ///     Tries to cast <paramref name="obj" /> to <typeparamref name="T" />. If it does not succeed <see cref="None{T}" /> is
         ///     returned.
         /// </summary>
         /// <param name="obj">Object.</param>
@@ -50,7 +50,7 @@ namespace GS.DecoupleIt.Optionals
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
         public static Optional<T> When<T>([CanBeNull] this T obj, bool condition)
         {
-            return condition ? (Optional<T>) new Some<T>(obj) : None.Value;
+            return condition ? (Optional<T>) new Some<T>(obj) : None<T>.Value;
         }
 
         /// <summary>

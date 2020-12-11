@@ -110,7 +110,7 @@ namespace GS.DecoupleIt.InternalEvents
                 bool onEmission,
                 CancellationToken cancellationToken = default)
         {
-            using var span = _tracer.OpenChildSpan(@event.GetType(), SpanType.InternalEvent);
+            using var span = _tracer.OpenSpan(@event.GetType(), SpanType.InternalEvent);
 
             using var internalEventsScope = InternalEventsScope.OpenScope();
 
@@ -183,7 +183,7 @@ namespace GS.DecoupleIt.InternalEvents
                 [NotNull] string mode,
                 CancellationToken cancellationToken)
         {
-            using var span = _tracer.OpenChildSpan(eventHandler.GetType(), SpanType.InternalEventHandler);
+            using var span = _tracer.OpenSpan(eventHandler.GetType(), SpanType.InternalEventHandler);
 
             using var internalEventsScope = InternalEventsScope.OpenScope();
 

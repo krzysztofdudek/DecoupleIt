@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.Tracing
@@ -22,40 +20,30 @@ namespace GS.DecoupleIt.Tracing
         /// </summary>
         public TimeSpan Duration => _stopwatch.Elapsed;
 
+        /// <summary>
+        ///     Parent span.
+        /// </summary>
+        [CanBeNull]
+        public TracerSpan? ParentSpan { get; }
+
         [NotNull]
         private readonly Action<TracerSpan> _closed;
 
         private readonly Guid _id;
 
-        internal TracerSpan(SpanDescriptor span, [NotNull] Action<TracerSpan> onCloseCallback)
+        internal TracerSpan(SpanDescriptor descriptor, [CanBeNull] TracerSpan? parentTracerSpan, [NotNull] Action<TracerSpan> onCloseCallback, [NotNull] IDisposable loggerScope)
         {
-            Descriptor         = span;
-            _stopwatch         = Stopwatch.StartNew();
-            _attachedResources = new List<IDisposable>();
-            _closed            = onCloseCallback;
-            _id                = Guid.NewGuid();
-        }
-
-        /// <summary>
-        ///     Attached disposable resource to this instance. It will be disposed on scope disposal.
-        /// </summary>
-        /// <param name="resource">Resource.</param>
-        /// <exception cref="ObjectDisposedException">Tracer has been disposed.</exception>
-        public void AttachResource([NotNull] IDisposable resource)
-        {
-            ContractGuard.IfArgumentIsNull(nameof(resource), resource);
-
-            _attachedResources.Add(resource);
+            Descriptor   = descriptor;
+            ParentSpan   = parentTracerSpan;
+            _stopwatch   = Stopwatch.StartNew();
+            _closed      = onCloseCallback;
+            _loggerScope = loggerScope;
+            _id          = Guid.NewGuid();
         }
 
         internal void Close()
         {
-            foreach (var attachedResource in _attachedResources.ToNotNullList())
-            {
-                attachedResource.Dispose();
-
-                _attachedResources.Remove(attachedResource);
-            }
+            _loggerScope.Dispose();
 
             _stopwatch.Stop();
 
@@ -63,8 +51,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         [NotNull]
-        [ItemNotNull]
-        private readonly List<IDisposable> _attachedResources;
+        private readonly IDisposable _loggerScope;
 
         [NotNull]
         private readonly Stopwatch _stopwatch;

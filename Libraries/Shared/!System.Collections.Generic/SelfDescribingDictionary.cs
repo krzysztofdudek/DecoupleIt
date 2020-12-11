@@ -4,8 +4,14 @@ using JetBrains.Annotations;
 // ReSharper disable once CheckNamespace
 namespace System.Collections.Generic
 {
-    internal sealed class SelfDescribingDictionary<TKey, TValue> : Dictionary<TKey, TValue>
+    internal readonly struct SelfDescribingDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>,
+                                                                          IEnumerable,
+                                                                          IReadOnlyCollection<KeyValuePair<TKey, TValue>>,
+                                                                          IReadOnlyDictionary<TKey, TValue>
     {
+        private readonly Memory<IEnumerable<KeyValuePair<TKey, TValue>>> _values;
+
+
         [NotNull]
         public override string ToString()
         {

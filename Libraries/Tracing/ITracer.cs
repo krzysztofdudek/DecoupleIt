@@ -1,5 +1,4 @@
 using System;
-using GS.DecoupleIt.Tracing.Exceptions;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.Tracing
@@ -14,13 +13,8 @@ namespace GS.DecoupleIt.Tracing
         /// <summary>
         ///     Gets span for current async flow.
         /// </summary>
-        /// <exception cref="NotInTheContextOfSpan">Current thread is not in the context of any span.</exception>
-        TracerSpan CurrentSpan { get; }
-
-        /// <summary>
-        ///     Indicates if there is root span opened.
-        /// </summary>
-        bool IsRootSpanOpened { get; }
+        [CanBeNull]
+        TracerSpan? CurrentSpan { get; }
 
         /// <summary>
         ///     Generator of new <see cref="TracingId" />.
@@ -41,30 +35,13 @@ namespace GS.DecoupleIt.Tracing
         event SpanOpenedDelegate SpanOpened;
 
         /// <summary>
-        ///     Clears storage for current thread. It is recommended to use this method at the end of thread that used tracer. It
-        ///     will provide an avoidance for potential memory leaks caused by missing disposals of spans.
-        /// </summary>
-        void Clear();
-
-        /// <summary>
-        ///     As tracer has to be initialized, the best way to do this is execute initialization at the beginning of thread,
-        ///     where tracer will be used.
-        /// </summary>
-        void Initialize();
-
-        /// <summary>
         ///     Opens child span.
         /// </summary>
         /// <param name="name">Name.</param>
         /// <param name="type">Type.</param>
         /// <returns>Span lifetime.</returns>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        /// <exception cref="RootSpanIsNotOpened">Root span is not opened.</exception>
         [MustUseReturnValue]
-        TracerSpan OpenChildSpan([NotNull] string name, SpanType type);
+        TracerSpan OpenSpan([NotNull] string name, SpanType type);
 
         /// <summary>
         ///     Opens child span.
@@ -72,13 +49,8 @@ namespace GS.DecoupleIt.Tracing
         /// <param name="creatorType">Type of span creator.</param>
         /// <param name="type">Type.</param>
         /// <returns>Span lifetime.</returns>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        /// <exception cref="RootSpanIsNotOpened">Root span is not opened.</exception>
         [MustUseReturnValue]
-        TracerSpan OpenChildSpan([NotNull] Type creatorType, SpanType type);
+        TracerSpan OpenSpan([NotNull] Type creatorType, SpanType type);
 
         /// <summary>
         ///     Opens root span.
@@ -89,13 +61,8 @@ namespace GS.DecoupleIt.Tracing
         /// <param name="parentId">Parent span id.</param>
         /// <param name="type">Type.</param>
         /// <returns>Span lifetime.</returns>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        /// <exception cref="RootSpanIsAlreadyOpened">Root span already opened.</exception>
         [MustUseReturnValue]
-        TracerSpan OpenRootSpan(
+        TracerSpan OpenSpan(
             TracingId traceId,
             TracingId id,
             [NotNull] string name,
@@ -111,45 +78,12 @@ namespace GS.DecoupleIt.Tracing
         /// <param name="parentId">Parent span id.</param>
         /// <param name="type">Type.</param>
         /// <returns>Span lifetime.</returns>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        /// <exception cref="RootSpanIsAlreadyOpened">Root span already opened.</exception>
         [MustUseReturnValue]
-        TracerSpan OpenRootSpan(
+        TracerSpan OpenSpan(
             TracingId traceId,
             TracingId id,
             [NotNull] Type creatorType,
             TracingId? parentId,
             SpanType type);
-
-        /// <summary>
-        ///     Opens root span.
-        /// </summary>
-        /// <param name="name">Name.</param>
-        /// <param name="type">Type.</param>
-        /// <returns>Span lifetime.</returns>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        /// <exception cref="RootSpanIsAlreadyOpened">Root span already opened.</exception>
-        [MustUseReturnValue]
-        TracerSpan OpenRootSpan([NotNull] string name, SpanType type);
-
-        /// <summary>
-        ///     Opens root span.
-        /// </summary>
-        /// <param name="creatorType">Type of span creator.</param>
-        /// <param name="type">Type.</param>
-        /// <returns>Span lifetime.</returns>
-        /// <exception cref="TraceIsNotInitialized">
-        ///     Trace was not initialized. The best option is to initialize it at the beginning
-        ///     of the thread.
-        /// </exception>
-        /// <exception cref="RootSpanIsAlreadyOpened">Root span already opened.</exception>
-        [MustUseReturnValue]
-        TracerSpan OpenRootSpan([NotNull] Type creatorType, SpanType type);
     }
 }
