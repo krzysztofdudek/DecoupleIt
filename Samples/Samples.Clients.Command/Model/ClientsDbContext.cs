@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+using System;
 using GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using JetBrains.Annotations;
@@ -9,22 +9,32 @@ namespace Samples.Clients.Command.Model
 {
     [Transient]
     [ProvidesContext]
-    [SuppressMessage("ReSharper", "NotNullMemberIsNotInitialized")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "NotNullMemberIsNotInitialized")]
     public sealed class ClientsDbContext : UnitOfWorkDbContext
     {
-        [JetBrains.Annotations.NotNull]
+        [NotNull]
         [ItemNotNull]
         public DbSet<Client> Clients { get; [UsedImplicitly] set; }
 
-        [JetBrains.Annotations.NotNull]
+        [NotNull]
         [ItemNotNull]
         public DbSet<ClientsBasket> ClientsBaskets { get; [UsedImplicitly] set; }
 
-        protected override void OnConfiguring([JetBrains.Annotations.NotNull] DbContextOptionsBuilder optionsBuilder)
+        public ClientsDbContext([NotNull] IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
+        protected override void OnConfiguring([NotNull] DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseInMemoryDatabase("sample");
 
+            optionsBuilder.UseApplicationServiceProvider(_serviceProvider);
+
             base.OnConfiguring(optionsBuilder);
         }
+
+        [NotNull]
+        private readonly IServiceProvider _serviceProvider;
     }
 }
