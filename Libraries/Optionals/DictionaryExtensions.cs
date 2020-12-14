@@ -10,7 +10,7 @@ namespace GS.DecoupleIt.Optionals
     public static class DictionaryExtensions
     {
         /// <summary>
-        ///     Tries to get value with given key. It value is not found or equals <see langword="null" />, <see cref="None" /> is
+        ///     Tries to get value with given key. It value is not found or equals <see langword="null" />, <see cref="None{T}" /> is
         ///     returned.
         /// </summary>
         /// <param name="dictionary">Dictionary.</param>
