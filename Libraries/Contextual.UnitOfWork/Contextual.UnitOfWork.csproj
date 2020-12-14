@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>4.0.0</VersionPrefix>
+        <VersionPrefix>5.0.0</VersionPrefix>
+        <VersionSuffix>prerelease</VersionSuffix>
         <Title>DecoupleIt - Contextual Unit of Work</Title>
         <Description>Do passing unit of work through multiple levels of service classes is fine? Probably not. Do we want to have more control of transactions? Sure we do! This package gives you a tool that attaches your unit-of-works classes to async flow, what gives you less problem with transaction management in multilayer applications. One point of access to any unit of work desired. Manage it's lifetime almost with no work!</Description>
     </PropertyGroup>
