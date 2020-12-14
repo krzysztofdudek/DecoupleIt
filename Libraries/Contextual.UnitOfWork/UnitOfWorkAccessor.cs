@@ -203,7 +203,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 {
                     var unitOfWorkType = x!.UnitOfWorkType;
 
-                    return unitOfWorkType == type || type.IsAssignableFrom(unitOfWorkType);
+                    return unitOfWorkType == type || type.IsAssignableFrom(unitOfWorkType) || unitOfWorkType.IsAssignableFrom(type);
                 });
             }
         }
