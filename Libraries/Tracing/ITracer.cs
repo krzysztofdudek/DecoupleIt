@@ -15,7 +15,8 @@ namespace GS.DecoupleIt.Tracing
         ///     Gets span for current async flow.
         /// </summary>
         /// <exception cref="NotInTheContextOfSpan">Current thread is not in the context of any span.</exception>
-        TracerSpan CurrentSpan { get; }
+        [NotNull]
+        ITracerSpan CurrentSpan { get; }
 
         /// <summary>
         ///     Indicates if there is root span opened.
@@ -64,7 +65,8 @@ namespace GS.DecoupleIt.Tracing
         /// </exception>
         /// <exception cref="RootSpanIsNotOpened">Root span is not opened.</exception>
         [MustUseReturnValue]
-        TracerSpan OpenChildSpan([NotNull] string name, SpanType type);
+        [NotNull]
+        ITracerSpan OpenChildSpan([NotNull] string name, SpanType type);
 
         /// <summary>
         ///     Opens child span.
@@ -78,7 +80,8 @@ namespace GS.DecoupleIt.Tracing
         /// </exception>
         /// <exception cref="RootSpanIsNotOpened">Root span is not opened.</exception>
         [MustUseReturnValue]
-        TracerSpan OpenChildSpan([NotNull] Type creatorType, SpanType type);
+        [NotNull]
+        ITracerSpan OpenChildSpan([NotNull] Type creatorType, SpanType type);
 
         /// <summary>
         ///     Opens root span.
@@ -95,7 +98,8 @@ namespace GS.DecoupleIt.Tracing
         /// </exception>
         /// <exception cref="RootSpanIsAlreadyOpened">Root span already opened.</exception>
         [MustUseReturnValue]
-        TracerSpan OpenRootSpan(
+        [NotNull]
+        ITracerSpan OpenRootSpan(
             TracingId traceId,
             TracingId id,
             [NotNull] string name,
@@ -117,7 +121,8 @@ namespace GS.DecoupleIt.Tracing
         /// </exception>
         /// <exception cref="RootSpanIsAlreadyOpened">Root span already opened.</exception>
         [MustUseReturnValue]
-        TracerSpan OpenRootSpan(
+        [NotNull]
+        ITracerSpan OpenRootSpan(
             TracingId traceId,
             TracingId id,
             [NotNull] Type creatorType,
@@ -136,7 +141,8 @@ namespace GS.DecoupleIt.Tracing
         /// </exception>
         /// <exception cref="RootSpanIsAlreadyOpened">Root span already opened.</exception>
         [MustUseReturnValue]
-        TracerSpan OpenRootSpan([NotNull] string name, SpanType type);
+        [NotNull]
+        ITracerSpan OpenRootSpan([NotNull] string name, SpanType type);
 
         /// <summary>
         ///     Opens root span.
@@ -150,6 +156,7 @@ namespace GS.DecoupleIt.Tracing
         /// </exception>
         /// <exception cref="RootSpanIsAlreadyOpened">Root span already opened.</exception>
         [MustUseReturnValue]
-        TracerSpan OpenRootSpan([NotNull] Type creatorType, SpanType type);
+        [NotNull]
+        ITracerSpan OpenRootSpan([NotNull] Type creatorType, SpanType type);
     }
 }

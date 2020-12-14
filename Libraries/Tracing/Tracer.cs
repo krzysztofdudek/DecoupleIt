@@ -20,7 +20,7 @@ namespace GS.DecoupleIt.Tracing
     internal sealed class Tracer : ITracer
     {
         /// <inheritdoc />
-        public TracerSpan CurrentSpan =>
+        public ITracerSpan CurrentSpan =>
             Trace.Count > 0
                 ? Trace.Last()
                        .AsNotNull()
@@ -73,7 +73,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public TracerSpan OpenChildSpan(string name, SpanType type)
+        public ITracerSpan OpenChildSpan(string name, SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(name), name);
             ContractGuard.IfEnumArgumentIsOutOfRange(nameof(type), type);
@@ -100,7 +100,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public TracerSpan OpenChildSpan(Type creatorType, SpanType type)
+        public ITracerSpan OpenChildSpan(Type creatorType, SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(creatorType), creatorType);
 
@@ -108,7 +108,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public TracerSpan OpenRootSpan(
+        public ITracerSpan OpenRootSpan(
             TracingId traceId,
             TracingId id,
             string name,
@@ -140,7 +140,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public TracerSpan OpenRootSpan(
+        public ITracerSpan OpenRootSpan(
             TracingId traceId,
             TracingId id,
             Type creatorType,
@@ -157,7 +157,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public TracerSpan OpenRootSpan(string name, SpanType type)
+        public ITracerSpan OpenRootSpan(string name, SpanType type)
         {
             var newSpanIdentifier = NewTracingIdGenerator();
 
@@ -169,7 +169,7 @@ namespace GS.DecoupleIt.Tracing
         }
 
         /// <inheritdoc />
-        public TracerSpan OpenRootSpan(Type creatorType, SpanType type)
+        public ITracerSpan OpenRootSpan(Type creatorType, SpanType type)
         {
             ContractGuard.IfArgumentIsNull(nameof(creatorType), creatorType);
 

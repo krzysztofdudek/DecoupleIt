@@ -8,9 +8,8 @@ namespace GS.DecoupleIt.Tracing
 {
     /// <summary>
     ///     Span represents single tracing span.
-    ///     Class is not inheritable.
     /// </summary>
-    public readonly struct TracerSpan : IDisposable, IEquatable<TracerSpan>
+    internal readonly struct TracerSpan : ITracerSpan, IEquatable<TracerSpan>
     {
         /// <summary>
         ///     Description of span.
@@ -36,12 +35,7 @@ namespace GS.DecoupleIt.Tracing
             _id                = Guid.NewGuid();
         }
 
-        /// <summary>
-        ///     Attached disposable resource to this instance. It will be disposed on scope disposal.
-        /// </summary>
-        /// <param name="resource">Resource.</param>
-        /// <exception cref="ObjectDisposedException">Tracer has been disposed.</exception>
-        public void AttachResource([NotNull] IDisposable resource)
+        public void AttachResource(IDisposable resource)
         {
             ContractGuard.IfArgumentIsNull(nameof(resource), resource);
 
