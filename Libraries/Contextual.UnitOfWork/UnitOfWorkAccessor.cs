@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace GS.DecoupleIt.Contextual.UnitOfWork
 {
     /// <inheritdoc />
+    [PublicAPI]
     [Singleton]
     public sealed class UnitOfWorkAccessor : IUnitOfWorkAccessor
     {
@@ -76,9 +77,19 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// <returns>Is last level.</returns>
         public static bool IsLastLevelOfInvocationWithDecrease([NotNull] IUnitOfWork unitOfWork)
         {
-            ContractGuard.IfArgumentIsNull(nameof(unitOfWork), unitOfWork);
+            return IsLastLevelOfInvocationWithDecrease(unitOfWork.GetType());
+        }
 
-            var entry = GetEntry(unitOfWork.GetType());
+        /// <summary>
+        ///     Checks if unit of work is on last level of usage and decreases level.
+        /// </summary>
+        /// <param name="unitOfWorkType">Unit of work type.</param>
+        /// <returns>Is last level.</returns>
+        public static bool IsLastLevelOfInvocationWithDecrease([NotNull] Type unitOfWorkType)
+        {
+            ContractGuard.IfArgumentIsNull(nameof(unitOfWorkType), unitOfWorkType);
+
+            var entry = GetEntry(unitOfWorkType);
 
             if (entry == null)
                 return true;
@@ -111,7 +122,8 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             {
                 storageEntry.Level++;
 
-                return (TUnitOfWork) storageEntry.UnitOfWork;
+                return (TUnitOfWork) (storageEntry.UnitOfWork ?? storageEntry.LazyUnitOfWorkAccessor?.Value) ??
+                       throw new InvalidOperationException("This should never happen. Unit of work accessor is broken in this thread.");
             }
 
             TUnitOfWork instance;
@@ -124,14 +136,59 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 instance = factory()
                     .AsNotNull();
 
-            lock (StorageEntries)
-            {
-                (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(instance));
-            }
-
             instance.Disposed += OnInstanceDisposed;
 
+            lock (StorageEntries)
+            {
+                (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(typeof(TUnitOfWork), instance, null));
+            }
+
             return instance;
+        }
+
+        /// <inheritdoc />
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ConstantConditionalAccessQualifier")]
+        public ILazyUnitOfWorkAccessor<TUnitOfWork> GetLazy<TUnitOfWork>()
+            where TUnitOfWork : class, IUnitOfWork
+        {
+            var storageEntry = GetEntry(typeof(TUnitOfWork));
+
+            if (storageEntry != null)
+            {
+                storageEntry.Level++;
+
+                return (ILazyUnitOfWorkAccessor<TUnitOfWork>) (storageEntry.LazyUnitOfWorkAccessor ??
+                                                               new LazyUnitOfWorkAccessor<IUnitOfWork>(
+                                                                   storageEntry.UnitOfWork ??
+                                                                   throw new InvalidOperationException(
+                                                                       "This should never happen. Unit of work accessor is broken in this thread.")));
+            }
+
+            var lazyUnitOfWorkAccessor = new LazyUnitOfWorkAccessor<TUnitOfWork>(() =>
+            {
+                TUnitOfWork instance;
+                var         factory = _serviceProvider.GetService<Func<TUnitOfWork>>();
+
+                if (factory is null)
+                    instance = _serviceProvider.GetRequiredService<TUnitOfWork>()
+                                               .AsNotNull();
+                else
+                    instance = factory()
+                        .AsNotNull();
+
+                instance.Disposed += OnInstanceDisposed;
+
+                return instance;
+            });
+
+            lazyUnitOfWorkAccessor.Disposed += OnInstanceDisposed;
+
+            lock (StorageEntries)
+            {
+                (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(typeof(TUnitOfWork), null, lazyUnitOfWorkAccessor));
+            }
+
+            return lazyUnitOfWorkAccessor;
         }
 
         [NotNull]
@@ -144,27 +201,15 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             {
                 return StorageEntries.Value?.SingleOrDefault(x =>
                 {
-                    var unitOfWorkType = x.AsNotNull()
-                                          .UnitOfWork.GetType();
+                    var unitOfWorkType = x!.UnitOfWorkType;
 
                     return unitOfWorkType == type || type.IsAssignableFrom(unitOfWorkType);
                 });
             }
         }
 
-        private static void OnInstanceDisposed([NotNull] IUnitOfWork source)
+        private static void ManageDisposalOfEntry(StorageEntry entry)
         {
-            ContractGuard.IfArgumentIsNull(nameof(source), source);
-
-            StorageEntry entry;
-
-            lock (StorageEntries)
-            {
-                entry = StorageEntries.Value?.SingleOrDefault(x => ReferenceEquals(x.AsNotNull()
-                                                                                    .UnitOfWork,
-                                                                                   source));
-            }
-
             if (entry == null)
                 return;
 
@@ -182,7 +227,44 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                     StorageEntries.Value = null;
             }
 
-            entry.UnitOfWork.Disposed -= OnInstanceDisposed;
+            if (entry.UnitOfWork != null)
+                entry.UnitOfWork.Disposed -= OnInstanceDisposed;
+
+            if (entry.LazyUnitOfWorkAccessor != null)
+                entry.LazyUnitOfWorkAccessor.Value.Disposed -= OnInstanceDisposed;
+        }
+
+        private static void OnInstanceDisposed([NotNull] IUnitOfWork source)
+        {
+            ContractGuard.IfArgumentIsNull(nameof(source), source);
+
+            StorageEntry entry;
+
+            lock (StorageEntries)
+            {
+                entry = StorageEntries.Value?.AsCollectionWithNotNullItems()
+                                      .SingleOrDefault(x => ReferenceEquals(
+                                                           x.LazyUnitOfWorkAccessor?.HasValueLoaded == true ? x.LazyUnitOfWorkAccessor.Value : x.UnitOfWork,
+                                                           source));
+            }
+
+            ManageDisposalOfEntry(entry);
+        }
+
+        private static void OnInstanceDisposed([NotNull] ILazyUnitOfWorkAccessor<IUnitOfWork> source)
+        {
+            ContractGuard.IfArgumentIsNull(nameof(source), source);
+
+            StorageEntry entry;
+
+            lock (StorageEntries)
+            {
+                entry = StorageEntries.Value?.SingleOrDefault(x => ReferenceEquals(x.AsNotNull()
+                                                                                    .LazyUnitOfWorkAccessor,
+                                                                                   source));
+            }
+
+            ManageDisposalOfEntry(entry);
         }
 
         [NotNull]
@@ -190,14 +272,25 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
         private sealed class StorageEntry
         {
+            [CanBeNull]
+            public readonly ILazyUnitOfWorkAccessor<IUnitOfWork> LazyUnitOfWorkAccessor;
+
             public long Level = 1;
 
-            [NotNull]
+            [CanBeNull]
             public readonly IUnitOfWork UnitOfWork;
 
-            public StorageEntry([NotNull] IUnitOfWork unitOfWork)
+            [NotNull]
+            public readonly Type UnitOfWorkType;
+
+            public StorageEntry(
+                [NotNull] Type unitOfWorkType,
+                [CanBeNull] IUnitOfWork unitOfWork,
+                [CanBeNull] ILazyUnitOfWorkAccessor<IUnitOfWork> lazyUnitOfWorkAccessor)
             {
-                UnitOfWork = unitOfWork;
+                UnitOfWorkType         = unitOfWorkType;
+                UnitOfWork             = unitOfWork;
+                LazyUnitOfWorkAccessor = lazyUnitOfWorkAccessor;
             }
         }
     }
