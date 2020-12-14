@@ -10,25 +10,48 @@ namespace GS.DecoupleIt.Optionals
     /// <typeparam name="T">Type of an optional value.</typeparam>
     [PublicAPI]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
-    public abstract class Optional<T>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CA2012")]
+    public readonly struct Optional<T>
     {
-        [NotNull]
-        public static implicit operator Optional<T>([NotNull] T value)
+        [CanBeNull]
+        private readonly Some<T>? _some;
+
+        [CanBeNull]
+        private readonly None<T>? _none;
+
+        public Optional(Some<T>? some, None<T>? none)
         {
-            return new Some<T>(value);
+            _some = some;
+            _none = none;
         }
 
         [NotNull]
-        public static implicit operator Optional<T>(None none)
+        public static implicit operator Optional<T>([NotNull] T value)
         {
-            return new None<T>();
+            return new Optional<T>(new Some<T>(value), null);
+        }
+
+        [NotNull]
+        public static implicit operator Optional<T>(Some<T> some)
+        {
+            return new Optional<T>(some, null);
+        }
+
+        [NotNull]
+        public static implicit operator Optional<T>(None<T> none)
+        {
+            return new Optional<T>(null, new None<T>());
         }
 
         /// <summary>
         ///     Does something if optional has value.
         /// </summary>
         /// <param name="doAction">Action.</param>
-        public abstract void Do([InstantHandle] [NotNull] DoDelegate doAction);
+        public void Do([InstantHandle] [NotNull] Delegates<T>.DoDelegate doAction)
+        {
+            _some?.Do(doAction);
+            _none?.Do(doAction);
+        }
 
         /// <summary>
         ///     Does something if optional has value.
@@ -37,13 +60,20 @@ namespace GS.DecoupleIt.Optionals
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Task.</returns>
         [NotNull]
-        public abstract
+        public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task
 #else
             ValueTask
 #endif
-            DoAsync([InstantHandle] [NotNull] DoAsyncDelegate doAction, CancellationToken cancellationToken = default);
+            DoAsync([InstantHandle] [NotNull] Delegates<T>.DoAsyncDelegate doAction, CancellationToken cancellationToken = default)
+        {
+            return (_some?.DoAsync(doAction, cancellationToken) ?? _none?.DoAsync(doAction, cancellationToken))!
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+                .Value
+#endif
+                ;
+        }
 
         /// <summary>
         ///     Maps value to another type.
@@ -52,7 +82,10 @@ namespace GS.DecoupleIt.Optionals
         /// <typeparam name="TResult">Mapping result type.</typeparam>
         /// <returns>Optional.</returns>
         [NotNull]
-        public abstract Optional<TResult> Map<TResult>([InstantHandle] [NotNull] MapDelegate<TResult> map);
+        public Optional<TResult> Map<TResult>([InstantHandle] [NotNull] Delegates<T>.MapDelegate<TResult> map)
+        {
+            return (_some?.Map(map) ?? _none?.Map(map))!.Value;
+        }
 
         /// <summary>
         ///     Maps value to another type.
@@ -61,7 +94,10 @@ namespace GS.DecoupleIt.Optionals
         /// <typeparam name="TResult">Mapping result type.</typeparam>
         /// <returns>Optional.</returns>
         [NotNull]
-        public abstract Optional<TResult> Map<TResult>([InstantHandle] [NotNull] MapWithNoParamDelegate<TResult> map);
+        public Optional<TResult> Map<TResult>([InstantHandle] [NotNull] Delegates<T>.MapWithNoParamDelegate<TResult> map)
+        {
+            return (_some?.Map(map) ?? _none?.Map(map))!.Value;
+        }
 
         /// <summary>
         ///     Maps value to another optional.
@@ -70,7 +106,10 @@ namespace GS.DecoupleIt.Optionals
         /// <typeparam name="TResult">Mapping result type.</typeparam>
         /// <returns>Optional.</returns>
         [NotNull]
-        public abstract Optional<TResult> Map<TResult>([InstantHandle] [NotNull] MapOptionalDelegate<TResult> map);
+        public Optional<TResult> Map<TResult>([InstantHandle] [NotNull] Delegates<T>.MapOptionalDelegate<TResult> map)
+        {
+            return (_some?.Map(map) ?? _none?.Map(map))!.Value;
+        }
 
         /// <summary>
         ///     Maps value to another type.
@@ -80,13 +119,20 @@ namespace GS.DecoupleIt.Optionals
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Optional.</returns>
         [NotNull]
-        public abstract
+        public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
 #endif
-            MapAsync<TResult>([InstantHandle] [NotNull] MapAsyncDelegate<TResult> map, CancellationToken cancellationToken = default);
+            MapAsync<TResult>([InstantHandle] [NotNull] Delegates<T>.MapAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
+        {
+            return (_some?.MapAsync(map, cancellationToken) ?? _none?.MapAsync(map, cancellationToken))!
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+                .Value
+#endif
+                ;
+        }
 
         /// <summary>
         ///     Maps value to another type.
@@ -96,13 +142,20 @@ namespace GS.DecoupleIt.Optionals
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Optional.</returns>
         [NotNull]
-        public abstract
+        public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
 #endif
-            MapAsync<TResult>([InstantHandle] [NotNull] MapWithNoParamAsyncDelegate<TResult> map, CancellationToken cancellationToken = default);
+            MapAsync<TResult>([InstantHandle] [NotNull] Delegates<T>.MapWithNoParamAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
+        {
+            return (_some?.MapAsync(map, cancellationToken) ?? _none?.MapAsync(map, cancellationToken))!
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+                .Value
+#endif
+                ;
+        }
 
         /// <summary>
         ///     Maps value to another optional.
@@ -113,13 +166,20 @@ namespace GS.DecoupleIt.Optionals
         /// <returns>Optional.</returns>
         [NotNull]
         [ItemNotNull]
-        public abstract
+        public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
 #endif
-            MapAsync<TResult>([InstantHandle] [NotNull] MapOptionalAsyncDelegate<TResult> map, CancellationToken cancellationToken = default);
+            MapAsync<TResult>([InstantHandle] [NotNull] Delegates<T>.MapOptionalAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
+        {
+            return (_some?.MapAsync(map, cancellationToken) ?? _none?.MapAsync(map, cancellationToken))!
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+                .Value
+#endif
+                ;
+        }
 
         /// <summary>
         ///     Optionally casts the value to specified type.
@@ -130,9 +190,10 @@ namespace GS.DecoupleIt.Optionals
         public Optional<TNew> OfType<TNew>()
             where TNew : class
         {
-            return this is Some<T> some && typeof(TNew).IsAssignableFrom(typeof(T))
-                ? (Optional<TNew>) new Some<TNew>((TNew) (object) some.Content)
-                : None.Value;
+            if (_some.HasValue && typeof(TNew).IsAssignableFrom(typeof(T)))
+                return new Optional<TNew>(new Some<TNew>((TNew) (object) _some.Value.Content), null);
+
+            return None<TNew>.Value;
         }
 
         /// <summary>
@@ -140,16 +201,22 @@ namespace GS.DecoupleIt.Optionals
         /// </summary>
         /// <param name="whenNone">Value used if optional is none.</param>
         /// <returns>Value.</returns>
-        [NotNull]
-        public abstract T Reduce([NotNull] T whenNone);
+        [CanBeNull]
+        public T Reduce([NotNull] T whenNone)
+        {
+            return _some.HasValue ? _some.Value.Reduce(whenNone) : _none!.Value.Reduce(whenNone);
+        }
 
         /// <summary>
         ///     Reduces value to value returned by the delegate.
         /// </summary>
         /// <param name="whenNone">Delegate returning value.</param>
         /// <returns>Value.</returns>
-        [NotNull]
-        public abstract T Reduce([InstantHandle] [NotNull] ReduceDelegate whenNone);
+        [CanBeNull]
+        public T Reduce([InstantHandle] [NotNull] Delegates<T>.ReduceDelegate whenNone)
+        {
+            return _some.HasValue ? _some.Value.Reduce(whenNone) : _none!.Value.Reduce(whenNone);
+        }
 
         /// <summary>
         ///     Reduces value to value returned by the delegate.
@@ -159,13 +226,16 @@ namespace GS.DecoupleIt.Optionals
         /// <returns>Value.</returns>
         [NotNull]
         [ItemNotNull]
-        public abstract
+        public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<T>
 #else
             ValueTask<T>
 #endif
-            ReduceAsync([InstantHandle] [NotNull] ReduceAsyncDelegate whenNone, CancellationToken cancellationToken = default);
+            ReduceAsync([InstantHandle] [NotNull] Delegates<T>.ReduceAsyncDelegate whenNone, CancellationToken cancellationToken = default)
+        {
+            return _some?.ReduceAsync(whenNone, cancellationToken) ?? _none!.Value.ReduceAsync(whenNone, cancellationToken);
+        }
 
         /// <summary>
         ///     Reduces to an alternate optional.
@@ -173,7 +243,10 @@ namespace GS.DecoupleIt.Optionals
         /// <param name="whenNone">Value given as alternate value.</param>
         /// <returns>Optional.</returns>
         [NotNull]
-        public abstract Optional<T> ReduceToAlternate([NotNull] T whenNone);
+        public Optional<T> ReduceToAlternate([NotNull] T whenNone)
+        {
+            return _some?.ReduceToAlternate(whenNone) ?? _none!.Value.ReduceToAlternate(whenNone);
+        }
 
         /// <summary>
         ///     Reduces to an alternate optional.
@@ -181,7 +254,10 @@ namespace GS.DecoupleIt.Optionals
         /// <param name="alternateWay">Delegate returning alternate value.</param>
         /// <returns>Optional.</returns>
         [NotNull]
-        public abstract Optional<T> ReduceToAlternate([InstantHandle] [NotNull] AlternateDelegate alternateWay);
+        public Optional<T> ReduceToAlternate([InstantHandle] [NotNull] Delegates<T>.AlternateDelegate alternateWay)
+        {
+            return _some?.ReduceToAlternate(alternateWay) ?? _none!.Value.ReduceToAlternate(alternateWay);
+        }
 
         /// <summary>
         ///     Reduces to an alternate optional.
@@ -191,93 +267,24 @@ namespace GS.DecoupleIt.Optionals
         /// <returns>Optional.</returns>
         [NotNull]
         [ItemNotNull]
-        public abstract
+        public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<Optional<T>>
 #else
             ValueTask<Optional<T>>
 #endif
-            ReduceToAlternateAsync([InstantHandle] [NotNull] AlternateAsyncDelegate alternateWay, CancellationToken cancellationToken = default);
+            ReduceToAlternateAsync([InstantHandle] [NotNull] Delegates<T>.AlternateAsyncDelegate alternateWay, CancellationToken cancellationToken = default)
+        {
+            return _some?.ReduceToAlternateAsync(alternateWay, cancellationToken) ?? _none!.Value.ReduceToAlternateAsync(alternateWay, cancellationToken);
+        }
 
         /// <summary>
         ///     Reduces value to default.
         /// </summary>
         /// <returns>Value.</returns>
-        public abstract T ReduceToDefault();
-
-        [NotNull]
-        [ItemNotNull]
-        public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
-            Task<Optional<T>>
-#else
-            ValueTask<Optional<T>>
-#endif
-            AlternateAsyncDelegate(CancellationToken cancellationToken);
-
-        [NotNull]
-        public delegate Optional<T> AlternateDelegate();
-
-        [NotNull]
-        public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
-            Task
-#else
-            ValueTask
-#endif
-            DoAsyncDelegate([NotNull] T obj, CancellationToken cancellationToken);
-
-        public delegate void DoDelegate([NotNull] T obj);
-
-        [NotNull]
-        [ItemNotNull]
-        public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
-            Task<TResult>
-#else
-            ValueTask<TResult>
-#endif
-            MapAsyncDelegate<TResult>([NotNull] T obj, CancellationToken cancellationToken);
-
-        [NotNull]
-        public delegate TResult MapDelegate<out TResult>([NotNull] T obj);
-
-        [NotNull]
-        public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
-            Task<Optional<TResult>>
-#else
-            ValueTask<Optional<TResult>>
-#endif
-            MapOptionalAsyncDelegate<TResult>([NotNull] T obj, CancellationToken cancellationToken);
-
-        [NotNull]
-        public delegate Optional<TResult> MapOptionalDelegate<TResult>([NotNull] T obj);
-
-        [NotNull]
-        [ItemNotNull]
-        public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
-            Task<TResult>
-#else
-            ValueTask<TResult>
-#endif
-            MapWithNoParamAsyncDelegate<TResult>(CancellationToken cancellationToken);
-
-        [NotNull]
-        public delegate TResult MapWithNoParamDelegate<out TResult>();
-
-        [NotNull]
-        [ItemNotNull]
-        public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
-            Task<T>
-#else
-            ValueTask<T>
-#endif
-            ReduceAsyncDelegate(CancellationToken cancellationToken);
-
-        [NotNull]
-        public delegate T ReduceDelegate();
+        public T ReduceToDefault()
+        {
+            return _some.HasValue ? _some.Value.ReduceToDefault() : _none!.Value.ReduceToDefault();
+        }
     }
 }

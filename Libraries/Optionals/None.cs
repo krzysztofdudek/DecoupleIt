@@ -7,47 +7,9 @@ using JetBrains.Annotations;
 namespace GS.DecoupleIt.Optionals
 {
     [PublicAPI]
-    public sealed class None : IEquatable<None>
-    {
-        /// <summary>
-        ///     Const value of nothing.
-        /// </summary>
-        [NotNull]
-        public static None Value { get; } = new None();
-
-        public override bool Equals(object obj)
-        {
-            return !(obj is null) && (obj is None || IsGenericNone(obj.GetType()));
-        }
-
-        public bool Equals(None other)
-        {
-            return true;
-        }
-
-        public override int GetHashCode()
-        {
-            return 0;
-        }
-
-        [NotNull]
-        public override string ToString()
-        {
-            return "None";
-        }
-
-        private None() { }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        private bool IsGenericNone([NotNull] Type type)
-        {
-            return type.GenericTypeArguments.Length == 1 && typeof(None<>).MakeGenericType(type.GenericTypeArguments[0]) == type;
-        }
-    }
-
-    [PublicAPI]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
-    public sealed class None<T> : Optional<T>, IEquatable<None<T>>, IEquatable<None>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
+    public readonly struct None<T> : IEquatable<None<T>>
     {
         /// <summary>
         ///     Const value of nothing.
@@ -57,7 +19,7 @@ namespace GS.DecoupleIt.Optionals
 
         public static bool operator ==(None<T> a, None<T> b)
         {
-            return a is null && b is null || !(a is null) && a.Equals(b);
+            return a.Equals(b);
         }
 
         [NotNull]
@@ -81,15 +43,16 @@ namespace GS.DecoupleIt.Optionals
             return !(a == b);
         }
 
-        public override void Do(DoDelegate doAction) { }
+        public void Do(Delegates<T>.DoDelegate doAction) { }
 
-        public override
+        [NotNull]
+        public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task
 #else
             ValueTask
 #endif
-            DoAsync(DoAsyncDelegate doAction, CancellationToken cancellationToken = default)
+            DoAsync(Delegates<T>.DoAsyncDelegate doAction, CancellationToken cancellationToken = default)
         {
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             return Task.CompletedTask!;
@@ -100,15 +63,10 @@ namespace GS.DecoupleIt.Optionals
 
         public override bool Equals(object obj)
         {
-            return !(obj is null) && (obj is None<T> || obj is None);
+            return obj is None<T>;
         }
 
         public bool Equals(None<T> other)
-        {
-            return true;
-        }
-
-        public bool Equals(None other)
         {
             return true;
         }
@@ -118,101 +76,107 @@ namespace GS.DecoupleIt.Optionals
             return 0;
         }
 
-        public override Optional<TResult> Map<TResult>(MapDelegate<TResult> map)
+        public Optional<TResult> Map<TResult>(Delegates<T>.MapDelegate<TResult> map)
         {
-            return None.Value;
+            return None<TResult>.Value;
         }
 
-        public override Optional<TResult> Map<TResult>(MapWithNoParamDelegate<TResult> map)
+        public Optional<TResult> Map<TResult>(Delegates<T>.MapWithNoParamDelegate<TResult> map)
         {
-            return None.Value;
+            return None<TResult>.Value;
         }
 
-        public override Optional<TResult> Map<TResult>(MapOptionalDelegate<TResult> map)
+        public Optional<TResult> Map<TResult>(Delegates<T>.MapOptionalDelegate<TResult> map)
         {
-            return None.Value;
+            return None<TResult>.Value;
         }
 
-        public override
+        [NotNull]
+        public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
 #endif
-            MapAsync<TResult>(MapAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
+            MapAsync<TResult>(Delegates<T>.MapAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
         {
             return None<TResult>.Value;
         }
 
-        public override
+        [NotNull]
+        public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
 #endif
-            MapAsync<TResult>(MapWithNoParamAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
+            MapAsync<TResult>(Delegates<T>.MapWithNoParamAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
         {
             return None<TResult>.Value;
         }
 
-        public override
+        [NotNull]
+        public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
 #endif
-            MapAsync<TResult>(MapOptionalAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
+            MapAsync<TResult>(Delegates<T>.MapOptionalAsyncDelegate<TResult> map, CancellationToken cancellationToken = default)
         {
             return None<TResult>.Value;
         }
 
-        public override T Reduce(T whenNone)
+        public T Reduce(T whenNone)
         {
             return whenNone;
         }
 
-        public override T Reduce(ReduceDelegate whenNone)
+        [NotNull]
+        public T Reduce([NotNull] Delegates<T>.ReduceDelegate whenNone)
         {
             return whenNone()
                 .AsNotNull();
         }
 
-        public override
+        [NotNull]
+        public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<T>
 #else
             ValueTask<T>
 #endif
-            ReduceAsync(ReduceAsyncDelegate whenNone, CancellationToken cancellationToken = default)
+            ReduceAsync([NotNull] Delegates<T>.ReduceAsyncDelegate whenNone, CancellationToken cancellationToken = default)
         {
             return whenNone(cancellationToken)
                 .AsNotNull();
         }
 
-        public override Optional<T> ReduceToAlternate(T whenNone)
+        public Optional<T> ReduceToAlternate(T whenNone)
         {
             return whenNone;
         }
 
-        public override Optional<T> ReduceToAlternate(AlternateDelegate alternateWay)
+        public Optional<T> ReduceToAlternate([NotNull] Delegates<T>.AlternateDelegate alternateWay)
         {
             return alternateWay()
                 .AsNotNull();
         }
 
-        public override
+        [NotNull]
+        public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<Optional<T>>
 #else
             ValueTask<Optional<T>>
 #endif
-            ReduceToAlternateAsync(AlternateAsyncDelegate alternateWay, CancellationToken cancellationToken = default)
+            ReduceToAlternateAsync([NotNull] Delegates<T>.AlternateAsyncDelegate alternateWay, CancellationToken cancellationToken = default)
         {
             return alternateWay(cancellationToken)
                 .AsNotNull();
         }
 
-        public override T ReduceToDefault()
+        public T ReduceToDefault()
         {
             return default;
         }

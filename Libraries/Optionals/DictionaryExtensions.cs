@@ -18,10 +18,11 @@ namespace GS.DecoupleIt.Optionals
         /// <typeparam name="TKey">Key type.</typeparam>
         /// <typeparam name="TValue">Value type.</typeparam>
         /// <returns>Optional.</returns>
-        [NotNull]
         public static Optional<TValue> TryGetValue<TKey, TValue>([NotNull] this IDictionary<TKey, TValue> dictionary, [NotNull] TKey key)
         {
-            return dictionary.TryGetValue(key, out var value) ? value != null ? (Optional<TValue>) new Some<TValue>(value) : None.Value : None.Value;
+            return dictionary.TryGetValue(key, out var value)
+                ? value != null ? (Optional<TValue>) new Some<TValue>(value) : None<TValue>.Value
+                : None<TValue>.Value;
         }
     }
 }
