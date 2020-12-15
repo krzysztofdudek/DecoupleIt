@@ -35,9 +35,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
             var tracer = CreateTracer();
 
-            tracer.Initialize();
-
-            using (tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
+            using (tracer.OpenSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
             using (InternalEventsScope.OpenScope())
             {
                 InternalEventsScope.EmitEvent(event1);
@@ -46,8 +44,6 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                                                     aggregatedEvents => { events = aggregatedEvents; },
                                                     typeof(ExampleEvent));
             }
-
-            tracer.Clear();
 
             Assert.DoesNotContain(event1, events);
             Assert.Contains(event2, events.ToList());
@@ -62,9 +58,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
             var tracer = CreateTracer();
 
-            tracer.Initialize();
-
-            using (tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
+            using (tracer.OpenSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
             using (InternalEventsScope.OpenScope())
             {
                 await InternalEventsScope.EmitEventAsync(event1);
@@ -73,8 +67,6 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                                                                async aggregatedEvents => { events = aggregatedEvents; },
                                                                typeof(ExampleEvent));
             }
-
-            tracer.Clear();
 
             Assert.DoesNotContain(event1, events);
             Assert.Contains(event2, events.ToList());
@@ -89,9 +81,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
             var tracer = CreateTracer();
 
-            tracer.Initialize();
-
-            using (tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
+            using (tracer.OpenSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
             using (InternalEventsScope.OpenScope())
             {
                 InternalEventsScope.AggregateEvents(() =>
@@ -104,8 +94,6 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                                                     aggregatedEvents => { events = aggregatedEvents; },
                                                     typeof(ExampleEvent));
             }
-
-            tracer.Clear();
 
             Assert.Contains(event1, events.ToList());
         }
@@ -120,9 +108,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
             var tracer = CreateTracer();
 
-            tracer.Initialize();
-
-            using (tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
+            using (tracer.OpenSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
             using (InternalEventsScope.OpenScope())
             {
                 InternalEventsScope.EmitEvent(event1);
@@ -131,8 +117,6 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                                                     aggregatedEvents => { events = aggregatedEvents; },
                                                     typeof(AnotherEvent));
             }
-
-            tracer.Clear();
 
             Assert.DoesNotContain(event1, events);
             Assert.Contains(event2, events.ToList());
@@ -151,9 +135,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
             var emitTask = Task.Run(async () =>
                                {
-                                   tracer.Initialize();
-
-                                   using (tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
+                                   using (tracer.OpenSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
                                    using (var scope = InternalEventsScope.OpenScope())
                                    {
                                        scope.EventEmitted += (eventsScope, @event, token) =>
@@ -173,16 +155,12 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
                                        await InternalEventsScope.EmitEventAsync(event1);
                                    }
-
-                                   tracer.Clear();
                                })
                                .AsNotNull();
 
             var aggregateTask = Task.Run(() =>
             {
-                tracer.Initialize();
-
-                using (tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
+                using (tracer.OpenSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
                 using (InternalEventsScope.OpenScope())
                 {
                     InternalEventsScope.AggregateEvents(() =>
@@ -194,8 +172,6 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                                                         aggregatedEvents => { events = aggregatedEvents; },
                                                         typeof(ExampleEvent));
                 }
-
-                tracer.Clear();
             });
 
             Task.WaitAll(emitTask, aggregateTask);
@@ -231,9 +207,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
             var tracer = CreateTracer();
 
-            tracer.Initialize();
-
-            using (tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
+            using (tracer.OpenSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
             using (scope = InternalEventsScope.OpenScope())
             {
                 scope.EventEmitted += TracerOnEventEmitted;
@@ -242,8 +216,6 @@ namespace GS.DecoupleIt.InternalEvents.Tests
 
                 scope.EventEmitted -= TracerOnEventEmitted;
             }
-
-            tracer.Clear();
 
             Assert.True(wasEventEmitted);
 

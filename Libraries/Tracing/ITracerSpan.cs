@@ -19,10 +19,9 @@ namespace GS.DecoupleIt.Tracing
         TimeSpan Duration { get; }
 
         /// <summary>
-        ///     Attached disposable resource to this instance. It will be disposed on span disposal.
+        ///     Parent tracer span.
         /// </summary>
-        /// <param name="resource">A resource.</param>
-        /// <exception cref="ObjectDisposedException">The tracer has been disposed.</exception>
-        void AttachResource([NotNull] IDisposable resource);
+        [CanBeNull]
+        ITracerSpan Parent { get; }
     }
 }

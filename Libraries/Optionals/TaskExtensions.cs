@@ -5,9 +5,15 @@ using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.Optionals
 {
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+    /// <summary>
+    ///     Extends <see cref="Task" /> and <see cref="ValueTask" /> with methods using optionals.
+    /// </summary>
+#else
     /// <summary>
     ///     Extends <see cref="Task" /> with methods using optionals.
     /// </summary>
+#endif
     [PublicAPI]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     public static class TaskExtensions
@@ -68,6 +74,8 @@ namespace GS.DecoupleIt.Optionals
                 [InstantHandle] [NotNull] Delegates<T>.MapAsyncDelegate<TResult> map,
                 CancellationToken cancellationToken = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(task), task);
+
             var optional = await task;
 
             return (await optional.MapAsync(map, cancellationToken)).AsNotNull();
@@ -118,6 +126,8 @@ namespace GS.DecoupleIt.Optionals
                 [InstantHandle] [NotNull] Delegates<T>.MapWithNoParamAsyncDelegate<TResult> map,
                 CancellationToken cancellationToken = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(task), task);
+
             var optional = await task;
 
             return (await optional.MapAsync(map, cancellationToken)).AsNotNull();
@@ -168,6 +178,8 @@ namespace GS.DecoupleIt.Optionals
                 [InstantHandle] [NotNull] Delegates<T>.MapOptionalAsyncDelegate<TResult> map,
                 CancellationToken cancellationToken = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(task), task);
+
             var optional = await task;
 
             return await optional.MapAsync(map, cancellationToken);
@@ -216,6 +228,8 @@ namespace GS.DecoupleIt.Optionals
                 [InstantHandle] [NotNull] Delegates<T>.ReduceAsyncDelegate whenNone,
                 CancellationToken cancellationToken = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(task), task);
+
             var optional = await task;
 
             return await optional.ReduceAsync(whenNone, cancellationToken);
@@ -249,6 +263,7 @@ namespace GS.DecoupleIt.Optionals
         /// <param name="whenNone">Value used if optional is none.</param>
         /// <returns>Value.</returns>
         [NotNull]
+        [ItemNotNull]
         public static async
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<T>
@@ -257,6 +272,8 @@ namespace GS.DecoupleIt.Optionals
 #endif
             ReduceAsync<T>([NotNull] [ItemNotNull] this Task<Optional<T>> task, [NotNull] T whenNone)
         {
+            ContractGuard.IfArgumentIsNull(nameof(task), task);
+
             var optional = await task;
 
             return optional.Reduce(whenNone);
@@ -270,6 +287,7 @@ namespace GS.DecoupleIt.Optionals
         /// <param name="whenNone">Value used if optional is none.</param>
         /// <returns>Value.</returns>
         [NotNull]
+        [ItemNotNull]
         public static async ValueTask<T> ReduceAsync<T>([NotNull] [ItemNotNull] this ValueTask<Optional<T>> task, [NotNull] T whenNone)
         {
             var optional = await task;
@@ -299,6 +317,8 @@ namespace GS.DecoupleIt.Optionals
                 [InstantHandle] [NotNull] Delegates<T>.AlternateAsyncDelegate alternateWay,
                 CancellationToken cancellationToken = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(task), task);
+
             var optional = await task;
 
             return await optional.ReduceToAlternateAsync(alternateWay, cancellationToken);
@@ -344,6 +364,8 @@ namespace GS.DecoupleIt.Optionals
 #endif
             ReduceToAlternateAsync<T>([NotNull] [ItemNotNull] this Task<Optional<T>> task, [NotNull] T whenNone, CancellationToken cancellationToken = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(task), task);
+
             var optional = await task;
 
             return optional.ReduceToAlternate(whenNone);
@@ -385,6 +407,8 @@ namespace GS.DecoupleIt.Optionals
 #endif
             ReduceToDefaultAsync<T>([NotNull] [ItemNotNull] this Task<Optional<T>> task)
         {
+            ContractGuard.IfArgumentIsNull(nameof(task), task);
+
             var optional = await task;
 
             return optional.ReduceToDefault();

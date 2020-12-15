@@ -6,6 +6,7 @@ using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace GS.DecoupleIt.Options.Automatic
 {
@@ -27,7 +28,7 @@ namespace GS.DecoupleIt.Options.Automatic
         /// <returns>Service collection.</returns>
         [NotNull]
         public static IServiceCollection ScanAssemblyForOptions(
-            [NotNull] this IServiceCollection serviceCollection,
+            [NotNull] [ItemNotNull] this IServiceCollection serviceCollection,
             [NotNull] Assembly assembly,
             [NotNull] IConfiguration configuration)
         {
@@ -61,6 +62,10 @@ namespace GS.DecoupleIt.Options.Automatic
                                                     .AsReadOnly();
 
                 var sectionNames = GetSectionNames(type, attributes);
+
+                // If options are already registered to be configured, skip it.
+                if (serviceCollection.Any(x => x.ServiceType == typeof(IConfigureOptions<>).MakeGenericType(type)))
+                    continue;
 
                 RegisterSections(serviceCollection,
                                  configuration,
@@ -101,11 +106,11 @@ namespace GS.DecoupleIt.Options.Automatic
             foreach (var attribute in configureAttributes)
                 switch (attribute)
                 {
-                    case ConfigureAttribute configureAttribute when configureAttribute.ConfigurationPath != null:
+                    case ConfigureAttribute {ConfigurationPath: { }} configureAttribute:
                         sectionNames.Add(TransformNameToPath(configureAttribute.ConfigurationPath));
 
                         break;
-                    case ConfigureAttribute configureAttribute when configureAttribute.ConfigurationPath == null:
+                    case ConfigureAttribute {ConfigurationPath: null}:
                         sectionNames.Add(TransformNameToPath(GetOptionsPath(type)));
 
                         break;

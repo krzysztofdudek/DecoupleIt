@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Options;
 using NHibernate;
 using NHibernate.Transaction;
 
@@ -40,15 +41,19 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         ///     Creates an instance of <see cref="NHibernateTransactionUnitOfWorkWrapper" />.
         /// </summary>
         /// <param name="unitOfWorkAccessor">Unit of work accessor.</param>
+        /// <param name="options">Options.</param>
         /// <param name="isolationLevel">Isolation level.</param>
         public NHibernateTransactionUnitOfWorkWrapper(
             [NotNull] IUnitOfWorkAccessor unitOfWorkAccessor,
+            [NotNull] IOptions<Options> options,
             IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             Session = unitOfWorkAccessor.Get<NHibernateSessionUnitOfWorkWrapper>();
 
             _transactionImplementation = Session.BeginTransaction(isolationLevel)
                                                 .AsNotNull();
+
+            _options = options.Value!;
         }
 
         /// <inheritdoc />
@@ -89,13 +94,20 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
                 return;
 
             if (!_transactionImplementation.WasCommitted)
+            {
                 _transactionImplementation.Rollback();
+
+                if (_options.Transaction.CleanupSessionOnDisposalOfUncommittedTransaction)
+                    Session.Clear();
+            }
 
             _transactionImplementation.Dispose();
 
             Session.Dispose();
 
             Disposed?.Invoke(this);
+
+            GC.SuppressFinalize(this);
         }
 
 #if !(NETSTANDARD2_0 || NETCOREAPP2_2)
@@ -149,6 +161,11 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         {
             return CommitAsync(cancellationToken)!.AsValueTask();
         }
+
+        protected bool CleanupSessionOnDisposalOfUncommittedTransaction { get; set; }
+
+        [NotNull]
+        private readonly Options _options;
 
         [NotNull]
         private readonly ITransaction _transactionImplementation;

@@ -43,7 +43,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         ///     have access to it's definition or we don't want to mark it with <see cref="RegisterManyTimesAttribute" />.
         /// </param>
         public static void ScanAssemblyForImplementations(
-            [NotNull] this IServiceCollection serviceCollection,
+            [NotNull] [ItemNotNull] this IServiceCollection serviceCollection,
             [NotNull] Assembly assembly,
             [CanBeNull] string @namespace = default,
             [CanBeNull] [ItemNotNull] Type[] ignoredTypes = default,
@@ -60,23 +60,10 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
                                            ignoredBaseTypes);
 
             foreach (var implementationType in types)
-            {
-                RegisterImplementation(serviceCollection, implementationType);
-
-                var serviceDescriptors = GetImplementationServices(implementationType, ignoredTypes);
-
-                foreach (var entry in serviceDescriptors)
-                    if (entry.RegisterManyTimes || registerAsManyTypes.Contains(entry.ServiceDescriptor.ServiceType))
-                    {
-                        serviceCollection.Add(entry.ServiceDescriptor);
-                        serviceCollection.Add(entry.FactoryServiceDescriptor);
-                    }
-                    else
-                    {
-                        serviceCollection.AddOrReplace(entry.ServiceDescriptor);
-                        serviceCollection.AddOrReplace(entry.FactoryServiceDescriptor);
-                    }
-            }
+                ProcessSingleImplementationType(serviceCollection,
+                                                ignoredTypes,
+                                                registerAsManyTypes,
+                                                implementationType);
         }
 
         [NotNull]
@@ -197,6 +184,33 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
 
             return types.Where(x => ValidateType(x, ignoredTypes, ignoredBaseTypes))
                         .ToArray();
+        }
+
+        private static void ProcessSingleImplementationType(
+            [NotNull] [ItemNotNull] IServiceCollection serviceCollection,
+            [NotNull] [ItemNotNull] Type[] ignoredTypes,
+            [NotNull] [ItemNotNull] Type[] registerAsManyTypes,
+            [NotNull] Type implementationType)
+        {
+            // Do not register the same services again.
+            if (serviceCollection.Any(x => x.ServiceType == implementationType && x.ImplementationType == implementationType))
+                return;
+
+            RegisterImplementation(serviceCollection, implementationType);
+
+            var serviceDescriptors = GetImplementationServices(implementationType, ignoredTypes);
+
+            foreach (var entry in serviceDescriptors)
+                if (entry.RegisterManyTimes || registerAsManyTypes.Contains(entry.ServiceDescriptor.ServiceType))
+                {
+                    serviceCollection.Add(entry.ServiceDescriptor);
+                    serviceCollection.Add(entry.FactoryServiceDescriptor);
+                }
+                else
+                {
+                    serviceCollection.AddOrReplace(entry.ServiceDescriptor);
+                    serviceCollection.AddOrReplace(entry.FactoryServiceDescriptor);
+                }
         }
 
         private static void RegisterImplementation([NotNull] IServiceCollection serviceCollection, [NotNull] Type type)

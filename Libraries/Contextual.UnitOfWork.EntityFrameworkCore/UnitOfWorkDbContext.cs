@@ -28,6 +28,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
 
 #if !(NETCOREAPP2_2 || NETSTANDARD2_0)
         /// <inheritdoc />
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CA1816")]
         public override async ValueTask DisposeAsync()
         {
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))

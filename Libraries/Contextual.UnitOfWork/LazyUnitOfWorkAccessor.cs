@@ -57,8 +57,10 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         }
 #endif
 
+        [CanBeNull]
         private readonly UnitOfWorkFactoryDelegate<TUnitOfWork> _factory;
 
+        [CanBeNull]
         private TUnitOfWork _value;
     }
 }

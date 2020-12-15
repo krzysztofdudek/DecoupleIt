@@ -88,7 +88,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic.Tests
             var instances = _serviceProvider.GetServices<IBaseInterface>()
                                             .ToList();
 
-            Assert.True(3 == instances.Count);
+            Assert.Equal(3, instances.Count);
 
             Assert.True(1 == instances.OfType<SingletonObject>()
                                       .Count());

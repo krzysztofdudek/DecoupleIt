@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <VersionPrefix>5.0.0</VersionPrefix>
-        <VersionSuffix>prerelease</VersionSuffix>
+        <VersionSuffix>prerelease.1</VersionSuffix>
         <Title>DecoupleIt - ASP .NET Core integration for contextual unit of work</Title>
         <Description>ASP .NET Core support for GS.DecoupleIt.Contextual.UnitOfWork.</Description>
     </PropertyGroup>

@@ -21,55 +21,46 @@ namespace GS.DecoupleIt.Tracing.AspNetCore
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
         public async Task InvokeAsync([NotNull] HttpContext context, [NotNull] RequestDelegate next)
         {
-            _tracer.Initialize();
+            var request        = context.Request.AsNotNull();
+            var requestHeaders = request.Headers.AsNotNull();
+            var traceIds       = requestHeaders.TryGetValue(_options.TraceIdHeaderName);
+            var traceId        = traceIds.Count == 1 ? traceIds[0] : null;
+            var spanIds        = requestHeaders.TryGetValue(_options.SpanIdHeaderName);
+            var spanId         = spanIds.Count == 1 ? spanIds[0] : null;
+            var spanNames      = requestHeaders.TryGetValue(_options.SpanNameHeaderName);
+            var spanName       = spanNames.Count == 1 ? spanNames[0] : null;
+            var parentSpanIds  = requestHeaders.TryGetValue(_options.ParentSpanIdHeaderName);
+            var parentSpanId   = parentSpanIds.Count == 1 ? parentSpanIds[0] : null;
 
-            try
-            {
-                var request        = context.Request.AsNotNull();
-                var requestHeaders = request.Headers.AsNotNull();
-                var traceIds       = requestHeaders.TryGetValue(_options.TraceIdHeaderName);
-                var traceId        = traceIds.Count == 1 ? traceIds[0] : null;
-                var spanIds        = requestHeaders.TryGetValue(_options.SpanIdHeaderName);
-                var spanId         = spanIds.Count == 1 ? spanIds[0] : null;
-                var spanNames      = requestHeaders.TryGetValue(_options.SpanNameHeaderName);
-                var spanName       = spanNames.Count == 1 ? spanNames[0] : null;
-                var parentSpanIds  = requestHeaders.TryGetValue(_options.ParentSpanIdHeaderName);
-                var parentSpanId   = parentSpanIds.Count == 1 ? parentSpanIds[0] : null;
+            if (traceId is null || spanId is null)
+                traceId = spanId = _tracer.NewTracingIdGenerator();
 
-                if (traceId is null || spanId is null)
-                    traceId = spanId = _tracer.NewTracingIdGenerator();
+            context.Response.AsNotNull()
+                   .OnStarting(httpContextObject =>
+                               {
+                                   var httpContext = (HttpContext) httpContextObject;
 
-                context.Response.AsNotNull()
-                       .OnStarting(httpContextObject =>
-                                   {
-                                       var httpContext = (HttpContext) httpContextObject;
+                                   var responseHeaders = httpContext.AsNotNull()
+                                                                    .Response.AsNotNull()
+                                                                    .Headers.AsNotNull();
 
-                                       var responseHeaders = httpContext.AsNotNull()
-                                                                        .Response.AsNotNull()
-                                                                        .Headers.AsNotNull();
+                                   AddOrReplace(responseHeaders, _options.TraceIdHeaderName, traceId);
+                                   AddOrReplace(responseHeaders, _options.SpanIdHeaderName, spanId);
+                                   AddOrReplace(responseHeaders, _options.SpanNameHeaderName, spanName);
+                                   AddOrReplace(responseHeaders, _options.ParentSpanIdHeaderName, parentSpanId);
 
-                                       AddOrReplace(responseHeaders, _options.TraceIdHeaderName, traceId);
-                                       AddOrReplace(responseHeaders, _options.SpanIdHeaderName, spanId);
-                                       AddOrReplace(responseHeaders, _options.SpanNameHeaderName, spanName);
-                                       AddOrReplace(responseHeaders, _options.ParentSpanIdHeaderName, parentSpanId);
+                                   return Task.CompletedTask;
+                               },
+                               context);
 
-                                       return Task.CompletedTask;
-                                   },
-                                   context);
+            using var scope = _tracer.OpenSpan(traceId,
+                                               spanId,
+                                               spanName ?? "unknown",
+                                               parentSpanId,
+                                               SpanType.ExternalRequest);
 
-                using var scope = _tracer.OpenRootSpan(traceId,
-                                                       spanId,
-                                                       spanName ?? "unknown",
-                                                       parentSpanId,
-                                                       SpanType.ExternalRequest);
-
-                await next(context)
-                    .AsNotNull();
-            }
-            finally
-            {
-                _tracer.Clear();
-            }
+            await next(context)
+                .AsNotNull();
         }
 
         private static void AddOrReplace([NotNull] IHeaderDictionary headerDictionary, [NotNull] string key, StringValues stringValues)

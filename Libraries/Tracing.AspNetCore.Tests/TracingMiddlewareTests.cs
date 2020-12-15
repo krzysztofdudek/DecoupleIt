@@ -52,10 +52,10 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
                                              {
                                                  var tracer = context.RequestServices.GetService<ITracer>();
 
-                                                 traceId = tracer.CurrentSpan.Descriptor.TraceId;
-                                                 spanId = tracer.CurrentSpan.Descriptor.Id;
-                                                 spanName = tracer.CurrentSpan.Descriptor.Name;
-                                                 parentSpanId = tracer.CurrentSpan.Descriptor.ParentId;
+                                                 traceId = tracer.CurrentSpan!.Descriptor.TraceId;
+                                                 spanId = tracer.CurrentSpan!.Descriptor.Id;
+                                                 spanName = tracer.CurrentSpan!.Descriptor.Name;
+                                                 parentSpanId = tracer.CurrentSpan!.Descriptor.ParentId;
 
                                                  return Task.CompletedTask;
                                              });
@@ -93,10 +93,10 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
                            {
                                var tracer = context.RequestServices.GetService<ITracer>();
 
-                               traceId      = tracer.CurrentSpan.Descriptor.TraceId;
-                               spanId       = tracer.CurrentSpan.Descriptor.Id;
-                               spanName     = tracer.CurrentSpan.Descriptor.Name;
-                               parentSpanId = tracer.CurrentSpan.Descriptor.ParentId;
+                               traceId      = tracer.CurrentSpan!.Descriptor.TraceId;
+                               spanId       = tracer.CurrentSpan!.Descriptor.Id;
+                               spanName     = tracer.CurrentSpan!.Descriptor.Name;
+                               parentSpanId = tracer.CurrentSpan!.Descriptor.ParentId;
 
                                return Task.CompletedTask;
                            });

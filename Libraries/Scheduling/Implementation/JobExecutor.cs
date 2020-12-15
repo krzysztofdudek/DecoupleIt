@@ -95,16 +95,15 @@ namespace GS.DecoupleIt.Scheduling.Implementation
 
                 try
                 {
-                    _tracer.Initialize();
                     InternalEventsScope.Initialize();
 
-                    using (var tracerSpan = _tracer.OpenRootSpan(jobEntry.JobType.FullName!, SpanType.Job))
+                    using (var tracerSpan = _tracer.OpenSpan(jobEntry.JobType.FullName!, SpanType.Job))
                     {
                         using (var internalEventsScope = InternalEventsScope.OpenScope())
                         {
                             try
                             {
-                                _logger.LogDebug("Job executing started.");
+                                _logger.LogDebug("Job executing {@OperationAction}.", "started");
 
                                 var job = (IJob) _serviceProvider.GetRequiredService(jobEntry.JobType)
                                                                  .AsNotNull();
@@ -115,19 +114,23 @@ namespace GS.DecoupleIt.Scheduling.Implementation
 
                                 lastIterationDuration = tracerSpan.Duration;
 
-                                _logger.LogDebug("Job executing finished after {@Duration}ms.", lastIterationDuration.Milliseconds);
+                                _logger.LogDebug("Job executing {@OperationAction} after {@OperationDuration}ms.",
+                                                 "finished",
+                                                 lastIterationDuration.Milliseconds);
                             }
                             catch (Exception exception)
                             {
                                 lastIterationDuration = tracerSpan.Duration;
 
-                                _logger.LogError(exception, "Job execution failed after {@Duration}ms.", lastIterationDuration.Milliseconds);
+                                _logger.LogError(exception,
+                                                 "Job execution {@OperationAction} after {@OperationDuration}ms.",
+                                                 "failed",
+                                                 lastIterationDuration.Milliseconds);
                             }
                         }
                     }
 
                     InternalEventsScope.Clear();
-                    _tracer.Clear();
                 }
                 catch (Exception exception)
                 {

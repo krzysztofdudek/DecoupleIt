@@ -55,7 +55,7 @@ namespace GS.DecoupleIt.HttpAbstraction
 
             var completionOption = readBody ? HttpCompletionOption.ResponseContentRead : HttpCompletionOption.ResponseHeadersRead;
 
-            using var span = _tracer.OpenChildSpan($"{message.Method} {message.RequestUri}", SpanType.OutgoingRequest);
+            using var span = _tracer.OpenSpan($"{message.Method} {message.RequestUri}", SpanType.OutgoingRequest);
 
             message.Headers.Add(_options.TraceIdHeaderName, span.Descriptor.TraceId.ToString());
             message.Headers.Add(_options.SpanIdHeaderName, span.Descriptor.Id.ToString());

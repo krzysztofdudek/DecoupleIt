@@ -208,7 +208,11 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             }
         }
 
-        private static void ManageDisposalOfEntry(StorageEntry entry)
+        [NotNull]
+        private readonly IServiceProvider _serviceProvider;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "InvertIf")]
+        private void ManageDisposalOfEntry(StorageEntry entry)
         {
             if (entry == null)
                 return;
@@ -234,7 +238,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 entry.LazyUnitOfWorkAccessor.Value.Disposed -= OnInstanceDisposed;
         }
 
-        private static void OnInstanceDisposed([NotNull] IUnitOfWork source)
+        private void OnInstanceDisposed([NotNull] IUnitOfWork source)
         {
             ContractGuard.IfArgumentIsNull(nameof(source), source);
 
@@ -251,7 +255,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             ManageDisposalOfEntry(entry);
         }
 
-        private static void OnInstanceDisposed([NotNull] ILazyUnitOfWorkAccessor<IUnitOfWork> source)
+        private void OnInstanceDisposed([NotNull] ILazyUnitOfWorkAccessor<IUnitOfWork> source)
         {
             ContractGuard.IfArgumentIsNull(nameof(source), source);
 
@@ -266,9 +270,6 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
             ManageDisposalOfEntry(entry);
         }
-
-        [NotNull]
-        private readonly IServiceProvider _serviceProvider;
 
         private sealed class StorageEntry
         {

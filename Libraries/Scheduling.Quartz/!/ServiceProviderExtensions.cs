@@ -80,26 +80,28 @@ namespace GS.DecoupleIt.Scheduling.Quartz
                 var logger = serviceProvider.GetRequiredService<ILogger<BaseQuartzJob>>()
                                             .AsNotNull();
 
-                tracer.Initialize();
                 InternalEventsScope.Initialize();
 
-                using (var tracerSpan = tracer.OpenRootSpan(jobType, SpanType.Job))
+                using (var tracerSpan = tracer.OpenSpan(jobType, SpanType.Job))
                 {
                     using (var internalEventsScope = InternalEventsScope.OpenScope())
                     {
                         try
                         {
-                            logger.LogDebug("Job executing started.");
+                            logger.LogDebug("Job executing {@OperationAction}.", "started");
 
                             await internalEventsScope.DispatchEventsAsync(internalEventDispatcher,
                                                                           () => job.ExecuteAsync(context.CancellationToken),
                                                                           context.CancellationToken);
 
-                            logger.LogDebug("Job executing finished after {@Duration}ms.", tracerSpan.Duration.Milliseconds);
+                            logger.LogDebug("Job executing {@OperationAction} after {@OperationDuration}ms.", "finished", tracerSpan.Duration.Milliseconds);
                         }
                         catch (Exception exception)
                         {
-                            logger.LogError(exception, "Job execution failed after {@Duration}ms.", tracerSpan.Duration.Milliseconds);
+                            logger.LogError(exception,
+                                            "Job execution {@OperationAction} after {@OperationDuration}ms.",
+                                            "failed",
+                                            tracerSpan.Duration.Milliseconds);
 
                             actionOnError?.Invoke(exception, serviceProvider);
                         }
@@ -107,7 +109,6 @@ namespace GS.DecoupleIt.Scheduling.Quartz
                 }
 
                 InternalEventsScope.Clear();
-                tracer.Clear();
 
                 _jobIsExecuting = false;
             }

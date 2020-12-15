@@ -1,4 +1,5 @@
 using System.Reflection;
+using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Options.Automatic;
 using GS.DecoupleIt.Scheduling;
@@ -79,6 +80,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
         /// <inheritdoc />
         public virtual void ConfigureLogging(WebHostBuilderContext context, LoggerConfiguration configuration) { }
+
+        /// <inheritdoc />
+        public virtual void ConfigureUnitOfWork(WebHostBuilderContext context, Builder builder) { }
 
         /// <summary>
         ///     Assembly that contains this module.

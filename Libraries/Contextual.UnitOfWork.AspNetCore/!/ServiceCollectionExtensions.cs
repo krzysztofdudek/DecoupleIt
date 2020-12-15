@@ -1,6 +1,5 @@
 ﻿using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore
@@ -14,24 +13,18 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore
         /// <summary>
         ///     Adds support of contextual unit of work for ASP .NET Core.
         /// </summary>
-        /// <param name="serviceCollection">Service collection.</param>
-        /// <param name="configuration">Configuration.</param>
-        /// <returns>Service collection.</returns>
+        /// <param name="builder">Builder.</param>
+        /// <returns>Builder.</returns>
         /// <typeparam name="TUnitOfWork">Unit of work type.</typeparam>
         [NotNull]
-        public static IServiceCollection AddContextualUnitOfWorkForAspNetCore<TUnitOfWork>(
-            [NotNull] this IServiceCollection serviceCollection,
-            [NotNull] IConfiguration configuration)
+        public static Builder AddContextMiddlewareFor<TUnitOfWork>([NotNull] this Builder builder)
             where TUnitOfWork : class, IUnitOfWork
         {
-            ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
-            ContractGuard.IfArgumentIsNull(nameof(configuration), configuration);
+            ContractGuard.IfArgumentIsNull(nameof(builder), builder);
 
-            serviceCollection.AddContextualUnitOfWork(configuration);
+            builder.ServiceCollection.AddSingleton<UnitOfWorkContextMiddleware<TUnitOfWork>>();
 
-            serviceCollection.AddSingleton<UnitOfWorkContextMiddleware<TUnitOfWork>>();
-
-            return serviceCollection;
+            return builder;
         }
     }
 }

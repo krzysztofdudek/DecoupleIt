@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <VersionPrefix>5.0.0</VersionPrefix>
-        <VersionSuffix>prerelease</VersionSuffix>
+        <VersionSuffix>prerelease.2</VersionSuffix>
         <Title>DecoupleIt - Contextual Unit of Work for Entity Framework Core</Title>
         <Description>Package adds support of contextual unit of work for Entity Framework Core.</Description>
     </PropertyGroup>

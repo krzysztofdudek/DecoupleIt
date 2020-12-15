@@ -19,7 +19,7 @@ namespace GS.DecoupleIt.Shared
         /// <param name="argumentName">Argument name.</param>
         /// <param name="enumerable">Enumerable.</param>
         /// <exception cref="ArgumentException">Argument "<paramref name="argumentName" />" contains <see langword="null" /> items.</exception>
-        public static void IfArgumentContainsNullItems([NotNull] string argumentName, [NotNull] [InstantHandle] IEnumerable enumerable)
+        public static void IfArgumentContainsNullItems([NotNull] [InvokerParameterName] string argumentName, [NotNull] [InstantHandle] IEnumerable enumerable)
         {
             RequiresArgumentName(argumentName);
 
@@ -38,10 +38,10 @@ namespace GS.DecoupleIt.Shared
         /// <exception cref="ArgumentNullException">Argument "<paramref name="argumentName" />" is <see langword="null" />.</exception>
         [AssertionMethod]
         [ContractAnnotation("object:null=>halt")]
-        public static void IfArgumentIsNull(
-            [NotNull] string argumentName,
-            [CanBeNull] [AssertionCondition(AssertionConditionType.IS_NOT_NULL)]
-            object @object)
+        public static void IfArgumentIsNull<T>(
+            [NotNull] [InvokerParameterName] string argumentName,
+            [CanBeNull] [AssertionCondition(AssertionConditionType.IS_NOT_NULL)] [NoEnumeration]
+            T @object)
         {
             RequiresArgumentName(argumentName);
 
@@ -61,7 +61,7 @@ namespace GS.DecoupleIt.Shared
         [AssertionMethod]
         [ContractAnnotation("string:null=>halt")]
         public static void IfArgumentIsNullOrWhitespace(
-            [NotNull] string argumentName,
+            [NotNull] [InvokerParameterName] string argumentName,
             [CanBeNull] [AssertionCondition(AssertionConditionType.IS_NOT_NULL)]
             string @string)
         {
@@ -81,7 +81,7 @@ namespace GS.DecoupleIt.Shared
         [AssertionMethod]
         [ContractAnnotation("enumerable:null=>halt")]
         public static void IfArgumentNullOrContainsNullItems(
-            [NotNull] string argumentName,
+            [NotNull] [InvokerParameterName] string argumentName,
             [CanBeNull] [ItemCanBeNull] [AssertionCondition(AssertionConditionType.IS_NOT_NULL)]
             IEnumerable enumerable)
         {
@@ -98,7 +98,7 @@ namespace GS.DecoupleIt.Shared
         ///     Argument "<paramref name="argumentName" />" is out of range of defining
         ///     enum.
         /// </exception>
-        public static void IfEnumArgumentIsOutOfRange([NotNull] string argumentName, [NotNull] Enum @enum)
+        public static void IfEnumArgumentIsOutOfRange([NotNull] [InvokerParameterName] string argumentName, [NotNull] Enum @enum)
         {
             RequiresArgumentName(argumentName);
 

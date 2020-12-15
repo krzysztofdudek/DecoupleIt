@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.Optionals
@@ -9,6 +10,7 @@ namespace GS.DecoupleIt.Optionals
     /// </summary>
     [PublicAPI]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
     public static class ObjectExtensions
     {
         /// <summary>
@@ -46,7 +48,6 @@ namespace GS.DecoupleIt.Optionals
         /// <typeparam name="T">Type of the object.</typeparam>
         /// <returns>Conditional.</returns>
         [NotNull]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
         public static Optional<T> When<T>([CanBeNull] this T obj, bool condition)
         {
             return condition ? new Optional<T>(obj) : new Optional<T>();
@@ -74,7 +75,6 @@ namespace GS.DecoupleIt.Optionals
         /// <returns>Conditional.</returns>
         [NotNull]
         [ItemNotNull]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
         public static async
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<Optional<T>>
@@ -102,7 +102,6 @@ namespace GS.DecoupleIt.Optionals
         /// <returns>Conditional.</returns>
         [NotNull]
         [ItemNotNull]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         public static async
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<Optional<T>>
@@ -111,6 +110,8 @@ namespace GS.DecoupleIt.Optionals
 #endif
             WhenAsync<T>([CanBeNull] this T obj, [InstantHandle] [NotNull] WhenAsyncDelegate<T> predicate, CancellationToken cancellationToken = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(predicate), predicate);
+
             return obj.When(await predicate(obj, cancellationToken));
         }
 
@@ -124,7 +125,6 @@ namespace GS.DecoupleIt.Optionals
         /// <returns>Conditional.</returns>
         [NotNull]
         [ItemNotNull]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         public static async
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<Optional<T>>
@@ -133,6 +133,8 @@ namespace GS.DecoupleIt.Optionals
 #endif
             WhenAsync<T>([CanBeNull] this T obj, [InstantHandle] [NotNull] WhenAsyncDelegate predicate, CancellationToken cancellationToken = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(predicate), predicate);
+
             return obj.When(await predicate(cancellationToken));
         }
 

@@ -69,7 +69,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
             var requestBody = await ReadStream(context.Request.Body);
 
-            using var scope = _tracer.OpenChildSpan($"{controllerName}.{actionName}", SpanType.ExternalRequestHandler);
+            using var scope = _tracer.OpenSpan($"{controllerName}.{actionName}", SpanType.ExternalRequestHandler);
 
             if (_serviceOptions.LogRequests)
                 LogStart(context, requestBody);
@@ -102,7 +102,10 @@ namespace GS.DecoupleIt.AspNetCore.Service
             }
             catch (Exception exception)
             {
-                _logger.LogInformation(exception, "External request handling failure after {@Duration}ms.", (int) scope.Duration.TotalMilliseconds);
+                _logger.LogInformation(exception,
+                                       "External request handling {@OperationAction} after {@OperationDuration}ms.",
+                                       "failure",
+                                       (int) scope.Duration.TotalMilliseconds);
             }
         }
 
@@ -136,10 +139,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
         private void LogFinish([NotNull] HttpContext context, [CanBeNull] string responseBody, TimeSpan duration)
         {
-            var message = new StringBuilder("External request handling finished after {@Duration}ms.\nHeaders: {@Headers}");
+            var message = new StringBuilder("External request handling {@OperationAction} after {@OperationDuration}ms.\nHeaders: {@Headers}");
 
             var args = new List<object>
             {
+                "finished",
                 (int) duration.TotalMilliseconds,
                 context.Request.Headers.ToDictionary(x => x.Key, x => x.Value)
             };
@@ -156,10 +160,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
         private void LogStart([NotNull] HttpContext context, [CanBeNull] string requestBody)
         {
             var message = new StringBuilder(
-                "External request handling started.\nMethod: {@Method}\nPath: {@Path}\nQuery string: {@Query}\nHeaders: {@Headers}");
+                "External request handling {@OperationAction}.\nMethod: {@Method}\nPath: {@Path}\nQuery string: {@Query}\nHeaders: {@Headers}");
 
             var args = new List<object>
             {
+                "started",
                 context.Request.Method,
                 context.Request.Path.Value,
                 context.Request.QueryString.Value,

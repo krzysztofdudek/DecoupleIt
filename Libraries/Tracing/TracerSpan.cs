@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.Tracing
@@ -21,44 +19,44 @@ namespace GS.DecoupleIt.Tracing
         /// </summary>
         public TimeSpan Duration => _stopwatch.Elapsed;
 
+        /// <summary>
+        ///     Parent span.
+        /// </summary>
+        public ITracerSpan Parent { get; }
+
         [NotNull]
         private readonly Action<TracerSpan> _closed;
 
         private readonly Guid _id;
 
-        internal TracerSpan(SpanDescriptor span, [NotNull] Action<TracerSpan> onCloseCallback)
+        internal TracerSpan(
+            SpanDescriptor descriptor,
+            [CanBeNull] ITracerSpan parent,
+            [NotNull] Action<TracerSpan> onCloseCallback,
+            [CanBeNull] IDisposable loggerScope)
         {
-            Descriptor         = span;
-            _stopwatch         = Stopwatch.StartNew();
-            _attachedResources = new List<IDisposable>();
-            _closed            = onCloseCallback;
-            _id                = Guid.NewGuid();
+            Descriptor   = descriptor;
+            Parent       = parent;
+            _stopwatch   = Stopwatch.StartNew();
+            _closed      = onCloseCallback;
+            _loggerScope = loggerScope;
+            _id          = Guid.NewGuid();
         }
 
-        public void AttachResource(IDisposable resource)
+        private void Close()
         {
-            ContractGuard.IfArgumentIsNull(nameof(resource), resource);
-
-            _attachedResources.Add(resource);
-        }
-
-        internal void Close()
-        {
-            foreach (var attachedResource in _attachedResources.ToNotNullList())
-            {
-                attachedResource.Dispose();
-
-                _attachedResources.Remove(attachedResource);
-            }
+            if (!_stopwatch.IsRunning)
+                return;
 
             _stopwatch.Stop();
+
+            _loggerScope?.Dispose();
 
             _closed.Invoke(this);
         }
 
-        [NotNull]
-        [ItemNotNull]
-        private readonly List<IDisposable> _attachedResources;
+        [CanBeNull]
+        private readonly IDisposable _loggerScope;
 
         [NotNull]
         private readonly Stopwatch _stopwatch;

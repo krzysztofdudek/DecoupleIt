@@ -1,9 +1,9 @@
 using GS.DecoupleIt.AspNetCore.Service;
+using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore;
-using GS.DecoupleIt.Shared;
+using GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Samples.Clients.Command.Model;
 
 #pragma warning disable 1591
@@ -24,11 +24,12 @@ namespace Samples.Clients.Command
             builder.UseContextualUnitOfWork<ClientsDbContext>();
         }
 
-        public override void ConfigureServices(WebHostBuilderContext context, IServiceCollection serviceCollection)
+        public override void ConfigureUnitOfWork(WebHostBuilderContext context, Builder builder)
         {
-            base.ConfigureServices(context, serviceCollection);
+            base.ConfigureUnitOfWork(context, builder);
 
-            serviceCollection.AddContextualUnitOfWorkForAspNetCore<ClientsDbContext>(context.Configuration.AsNotNull());
+            builder.AddEntityFrameworkCore()
+                   .AddContextMiddlewareFor<ClientsDbContext>();
         }
     }
 }

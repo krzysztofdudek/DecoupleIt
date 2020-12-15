@@ -270,11 +270,21 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               context    = context.AsNotNull();
                               collection = collection.AsNotNull();
 
-                              collection.AddContextualUnitOfWork(context.Configuration.AsNotNull());
+                              // Configure unit of work.
+                              var unitOfWorkBuilder = collection.AddContextualUnitOfWork(context.Configuration.AsNotNull());
 
+                              ConfigureUnitOfWork(context, unitOfWorkBuilder);
+
+                              foreach (var module in modules)
+                                  module.ConfigureUnitOfWork(context, unitOfWorkBuilder);
+
+                              // Configure tracing.
                               collection.AddTracingForAspNetCore(context.Configuration.AsNotNull());
+
+                              // Configure internal events.
                               collection.AddInternalEventsForAspNetCore();
 
+                              // Configure http clients.
                               collection.ConfigureHttpClients(context.Configuration.AsNotNull());
 
                               collection.PostConfigure<HttpAbstractionOptions>(options =>
@@ -288,6 +298,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   options.HostVersion = Version;
                               });
 
+                              // Configure MVC.
 #if NETCOREAPP3_1 || NET5_0
                               var mvcBuilder = collection.AddControllersWithViews()
                                                          .AddJsonOptions(options =>
@@ -321,6 +332,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               foreach (var module in modules)
                                   module.ConfigureMvcBuilder(context, mvcBuilder);
 
+                              // Configure swagger.
                               collection.AddSwaggerGen(options =>
                               {
                                   options = options.AsNotNull();
@@ -353,6 +365,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                       module.ConfigureSwaggerGen(context, options);
                               });
 
+                              // Configure cors.
                               collection.AddCors(options =>
                               {
                                   options = options.AsNotNull();
@@ -360,6 +373,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   ConfigureCors(context, options);
                               });
 
+                              // Configure services.
                               collection.ScanAssemblyForImplementations(typeof(DefaultWebHost).Assembly);
 
                               ConfigureServices(context, collection);
@@ -535,9 +549,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                 var tracer = serviceProvider.GetRequiredService<ITracer>()
                                             .AsNotNull();
 
-                tracer.Initialize();
-
-                using (tracer.OpenRootSpan(GetType(), SpanType.InternalProcess))
+                using (tracer.OpenSpan(GetType(), SpanType.InternalProcess))
                 {
                     foreach (var serviceType in collection.Where(x => x.ServiceType != null)
                                                           .Select(x => x.ServiceType)
@@ -557,8 +569,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                             Console.Error.WriteLine($"ERROR: {message} | StackTrace: {stackTrace}");
                         }
                 }
-
-                tracer.Clear();
             }
 
             var isTestRun = Environment.GetEnvironmentVariable("ASPNETCORE_TESTRUN")

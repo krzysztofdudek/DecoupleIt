@@ -19,9 +19,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
         /// <param name="configuration">Configuration.</param>
-        /// <returns>Service collection.</returns>
+        /// <returns>Builder.</returns>
         [NotNull]
-        public static IServiceCollection AddContextualUnitOfWork([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
+        public static Builder AddContextualUnitOfWork([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
         {
             ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
 
@@ -30,7 +30,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             serviceCollection.ScanAssemblyForImplementations(assembly);
             serviceCollection.ScanAssemblyForOptions(assembly, configuration);
 
-            return serviceCollection;
+            return new Builder(serviceCollection, configuration);
         }
 
         /// <summary>

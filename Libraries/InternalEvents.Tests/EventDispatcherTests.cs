@@ -43,9 +43,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
             var tracer = serviceProvider.GetRequiredService<ITracer>()
                                         .AsNotNull();
 
-            tracer.Initialize();
-
-            using (tracer.OpenRootSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
+            using (tracer.OpenSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
             {
                 using (var scope = InternalEventsScope.OpenScope())
                 {
@@ -53,8 +51,6 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                         .AsNotNull();
                 }
             }
-
-            tracer.Clear();
         }
 
         [Fact]
