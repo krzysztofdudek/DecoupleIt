@@ -28,7 +28,7 @@ namespace GS.DecoupleIt.Optionals
 #endif
             AsOptional<T>([CanBeNull] this Task<T> obj)
         {
-            return obj is null ? None<T>.Value : (await obj).AsOptional();
+            return obj is null ? new Optional<T>() : new Optional<T>(await obj);
         }
 
 #if !(NETCOREAPP2_2 || NETSTANDARD2_0)

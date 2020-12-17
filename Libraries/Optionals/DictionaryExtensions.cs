@@ -10,8 +10,7 @@ namespace GS.DecoupleIt.Optionals
     public static class DictionaryExtensions
     {
         /// <summary>
-        ///     Tries to get value with given key. It value is not found or equals <see langword="null" />, <see cref="None{T}" /> is
-        ///     returned.
+        ///     Tries to get value with given key.
         /// </summary>
         /// <param name="dictionary">Dictionary.</param>
         /// <param name="key">Key.</param>
@@ -20,9 +19,9 @@ namespace GS.DecoupleIt.Optionals
         /// <returns>Optional.</returns>
         public static Optional<TValue> TryGetValue<TKey, TValue>([NotNull] this IDictionary<TKey, TValue> dictionary, [NotNull] TKey key)
         {
-            return dictionary.TryGetValue(key, out var value)
-                ? value != null ? (Optional<TValue>) new Some<TValue>(value) : None<TValue>.Value
-                : None<TValue>.Value;
+            dictionary.TryGetValue(key, out var value);
+
+            return new Optional<TValue>(value);
         }
     }
 }

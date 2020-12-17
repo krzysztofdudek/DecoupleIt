@@ -20,8 +20,8 @@ namespace GS.DecoupleIt.Optionals
 
         public Either(object instance)
         {
-            First  = instance is T1 t1 ? (Optional<T1>) t1 : None<T1>.Value;
-            Second = instance is T2 t2 ? (Optional<T2>) t2 : None<T2>.Value;
+            First  = instance is T1 t1 ? t1 : new Optional<T1>();
+            Second = instance is T2 t2 ? t2 : new Optional<T2>();
         }
     }
 
@@ -48,9 +48,9 @@ namespace GS.DecoupleIt.Optionals
 
         public Either(object instance)
         {
-            First  = instance is T1 t1 ? (Optional<T1>) t1 : None<T1>.Value;
-            Second = instance is T2 t2 ? (Optional<T2>) t2 : None<T2>.Value;
-            Third  = instance is T3 t3 ? (Optional<T3>) t3 : None<T3>.Value;
+            First  = instance is T1 t1 ? t1 : new Optional<T1>();
+            Second = instance is T2 t2 ? t2 : new Optional<T2>();
+            Third  = instance is T3 t3 ? t3 : new Optional<T3>();
         }
     }
 
@@ -82,10 +82,10 @@ namespace GS.DecoupleIt.Optionals
 
         public Either(object instance)
         {
-            First  = instance is T1 t1 ? (Optional<T1>) t1 : None<T1>.Value;
-            Second = instance is T2 t2 ? (Optional<T2>) t2 : None<T2>.Value;
-            Third  = instance is T3 t3 ? (Optional<T3>) t3 : None<T3>.Value;
-            Fourth = instance is T4 t4 ? (Optional<T4>) t4 : None<T4>.Value;
+            First  = instance is T1 t1 ? t1 : new Optional<T1>();
+            Second = instance is T2 t2 ? t2 : new Optional<T2>();
+            Third  = instance is T3 t3 ? t3 : new Optional<T3>();
+            Fourth = instance is T4 t4 ? t4 : new Optional<T4>();
         }
     }
 
@@ -122,11 +122,11 @@ namespace GS.DecoupleIt.Optionals
 
         public Either(object instance)
         {
-            First  = instance is T1 t1 ? (Optional<T1>) t1 : None<T1>.Value;
-            Second = instance is T2 t2 ? (Optional<T2>) t2 : None<T2>.Value;
-            Third  = instance is T3 t3 ? (Optional<T3>) t3 : None<T3>.Value;
-            Fourth = instance is T4 t4 ? (Optional<T4>) t4 : None<T4>.Value;
-            Fifth  = instance is T5 t5 ? (Optional<T5>) t5 : None<T5>.Value;
+            First  = instance is T1 t1 ? t1 : new Optional<T1>();
+            Second = instance is T2 t2 ? t2 : new Optional<T2>();
+            Third  = instance is T3 t3 ? t3 : new Optional<T3>();
+            Fourth = instance is T4 t4 ? t4 : new Optional<T4>();
+            Fifth  = instance is T5 t5 ? t5 : new Optional<T5>();
         }
     }
 
@@ -168,12 +168,12 @@ namespace GS.DecoupleIt.Optionals
 
         public Either(object instance)
         {
-            First  = instance is T1 t1 ? (Optional<T1>) t1 : None<T1>.Value;
-            Second = instance is T2 t2 ? (Optional<T2>) t2 : None<T2>.Value;
-            Third  = instance is T3 t3 ? (Optional<T3>) t3 : None<T3>.Value;
-            Fourth = instance is T4 t4 ? (Optional<T4>) t4 : None<T4>.Value;
-            Fifth  = instance is T5 t5 ? (Optional<T5>) t5 : None<T5>.Value;
-            Sixth  = instance is T6 t6 ? (Optional<T6>) t6 : None<T6>.Value;
+            First  = instance is T1 t1 ? t1 : new Optional<T1>();
+            Second = instance is T2 t2 ? t2 : new Optional<T2>();
+            Third  = instance is T3 t3 ? t3 : new Optional<T3>();
+            Fourth = instance is T4 t4 ? t4 : new Optional<T4>();
+            Fifth  = instance is T5 t5 ? t5 : new Optional<T5>();
+            Sixth  = instance is T6 t6 ? t6 : new Optional<T6>();
         }
     }
 
@@ -220,13 +220,13 @@ namespace GS.DecoupleIt.Optionals
 
         public Either(object instance)
         {
-            First   = instance is T1 t1 ? (Optional<T1>) t1 : None<T1>.Value;
-            Second  = instance is T2 t2 ? (Optional<T2>) t2 : None<T2>.Value;
-            Third   = instance is T3 t3 ? (Optional<T3>) t3 : None<T3>.Value;
-            Fourth  = instance is T4 t4 ? (Optional<T4>) t4 : None<T4>.Value;
-            Fifth   = instance is T5 t5 ? (Optional<T5>) t5 : None<T5>.Value;
-            Sixth   = instance is T6 t6 ? (Optional<T6>) t6 : None<T6>.Value;
-            Seventh = instance is T7 t7 ? (Optional<T7>) t7 : None<T7>.Value;
+            First   = instance is T1 t1 ? t1 : new Optional<T1>();
+            Second  = instance is T2 t2 ? t2 : new Optional<T2>();
+            Third   = instance is T3 t3 ? t3 : new Optional<T3>();
+            Fourth  = instance is T4 t4 ? t4 : new Optional<T4>();
+            Fifth   = instance is T5 t5 ? t5 : new Optional<T5>();
+            Sixth   = instance is T6 t6 ? t6 : new Optional<T6>();
+            Seventh = instance is T7 t7 ? t7 : new Optional<T7>();
         }
     }
 }
