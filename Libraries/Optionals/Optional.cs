@@ -18,9 +18,12 @@ namespace GS.DecoupleIt.Optionals
         [CanBeNull]
         private readonly T _value;
 
+        private readonly bool _hasValue;
+
         public Optional([CanBeNull] T value) : this()
         {
-            _value = value;
+            _value    = value;
+            _hasValue = value != null;
         }
 
         [NotNull]
@@ -37,8 +40,8 @@ namespace GS.DecoupleIt.Optionals
         {
             ContractGuard.IfArgumentIsNull(nameof(doAction), doAction);
 
-            if (_value != null)
-                doAction(_value);
+            if (_hasValue)
+                doAction(_value!);
         }
 
         /// <summary>
@@ -58,15 +61,14 @@ namespace GS.DecoupleIt.Optionals
         {
             ContractGuard.IfArgumentIsNull(nameof(doAction), doAction);
 
-            if (_value != null)
-                return doAction(_value, cancellationToken)!;
+            if (_hasValue)
+                return doAction(_value!, cancellationToken)!;
             else
 #if NETCOREAPP2_2 || NETSTANDARD2_0
                 return Task.CompletedTask;
 #else
                 return new ValueTask();
 #endif
-            ;
         }
 
         /// <summary>
@@ -80,7 +82,7 @@ namespace GS.DecoupleIt.Optionals
         {
             ContractGuard.IfArgumentIsNull(nameof(map), map);
 
-            return _value != null ? new Optional<TResult>(map(_value)) : new Optional<TResult>();
+            return _hasValue ? new Optional<TResult>(map(_value!)) : new Optional<TResult>();
         }
 
         /// <summary>
@@ -94,7 +96,7 @@ namespace GS.DecoupleIt.Optionals
         {
             ContractGuard.IfArgumentIsNull(nameof(map), map);
 
-            return _value != null ? new Optional<TResult>(map()) : new Optional<TResult>();
+            return _hasValue ? new Optional<TResult>(map()) : new Optional<TResult>();
         }
 
         /// <summary>
@@ -108,7 +110,7 @@ namespace GS.DecoupleIt.Optionals
         {
             ContractGuard.IfArgumentIsNull(nameof(map), map);
 
-            return _value != null ? map(_value) : new Optional<TResult>();
+            return _hasValue ? map(_value!) : new Optional<TResult>();
         }
 
         /// <summary>
@@ -129,7 +131,7 @@ namespace GS.DecoupleIt.Optionals
         {
             ContractGuard.IfArgumentIsNull(nameof(map), map);
 
-            return _value != null ? new Optional<TResult>(await map(_value, cancellationToken)!) : new Optional<TResult>();
+            return _hasValue ? new Optional<TResult>(await map(_value!, cancellationToken)!) : new Optional<TResult>();
         }
 
         /// <summary>
@@ -150,7 +152,7 @@ namespace GS.DecoupleIt.Optionals
         {
             ContractGuard.IfArgumentIsNull(nameof(map), map);
 
-            return _value != null ? new Optional<TResult>(await map(cancellationToken)!) : new Optional<TResult>();
+            return _hasValue ? new Optional<TResult>(await map(cancellationToken)!) : new Optional<TResult>();
         }
 
         /// <summary>
@@ -172,7 +174,7 @@ namespace GS.DecoupleIt.Optionals
         {
             ContractGuard.IfArgumentIsNull(nameof(map), map);
 
-            return _value != null ? await map(_value, cancellationToken)! : new Optional<TResult>();
+            return _hasValue ? await map(_value!, cancellationToken)! : new Optional<TResult>();
         }
 
         /// <summary>
@@ -232,7 +234,7 @@ namespace GS.DecoupleIt.Optionals
         {
             ContractGuard.IfArgumentIsNull(nameof(whenNone), whenNone);
 
-            if (_value == null)
+            if (!_hasValue)
                 return whenNone(cancellationToken);
 
 #if NETCOREAPP2_2 || NETSTANDARD2_0
@@ -252,7 +254,7 @@ namespace GS.DecoupleIt.Optionals
         {
             ContractGuard.IfArgumentIsNull(nameof(whenNone), whenNone);
 
-            if (_value == null)
+            if (!_hasValue)
                 return whenNone;
 
             return this;
@@ -268,7 +270,7 @@ namespace GS.DecoupleIt.Optionals
         {
             ContractGuard.IfArgumentIsNull(nameof(alternateWay), alternateWay);
 
-            if (_value == null)
+            if (!_hasValue)
                 return alternateWay();
 
             return this;
@@ -292,7 +294,7 @@ namespace GS.DecoupleIt.Optionals
         {
             ContractGuard.IfArgumentIsNull(nameof(alternateWay), alternateWay);
 
-            if (_value == null)
+            if (!_hasValue)
                 return alternateWay(cancellationToken);
 
 #if NETCOREAPP2_2 || NETSTANDARD2_0
