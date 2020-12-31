@@ -18,7 +18,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         /// <param name="builder">Builder.</param>
         /// <returns>Builder.</returns>
         [NotNull]
-        public static Builder ForNHibernate5([NotNull] this Builder builder)
+        public static Builder AddSupportForNHibernate5([NotNull] this Builder builder)
         {
             ContractGuard.IfArgumentIsNull(nameof(builder), builder);
 

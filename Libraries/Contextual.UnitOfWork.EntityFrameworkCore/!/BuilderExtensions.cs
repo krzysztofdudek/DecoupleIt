@@ -18,7 +18,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
         /// <param name="builder">Builder.</param>
         /// <returns>Builder.</returns>
         [NotNull]
-        public static Builder AddEntityFrameworkCore([NotNull] this Builder builder)
+        public static Builder AddSupportForEntityFrameworkCore([NotNull] this Builder builder)
         {
             ContractGuard.IfArgumentIsNull(nameof(builder), builder);
 

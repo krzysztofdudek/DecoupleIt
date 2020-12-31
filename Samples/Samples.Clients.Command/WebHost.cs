@@ -28,7 +28,7 @@ namespace Samples.Clients.Command
         {
             base.ConfigureUnitOfWork(context, builder);
 
-            builder.AddEntityFrameworkCore()
+            builder.AddSupportForEntityFrameworkCore()
                    .AddContextMiddlewareFor<ClientsDbContext>();
         }
     }
