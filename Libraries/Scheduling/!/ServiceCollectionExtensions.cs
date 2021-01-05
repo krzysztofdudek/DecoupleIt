@@ -19,7 +19,7 @@ namespace GS.DecoupleIt.Scheduling
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        ///     Registers all jobs that are annotated with <see cref="SimpleScheduleAttribute" />. They'll be run later by selected
+        ///     Registers all jobs that are annotated with <see cref="CyclicSchedule" />. They'll be run later by selected
         ///     implementation, for ex. Quartz.
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>

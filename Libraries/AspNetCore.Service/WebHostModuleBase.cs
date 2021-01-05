@@ -16,7 +16,6 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using GS.DecoupleIt.HttpAbstraction;
 #if NETCOREAPP2_2
 using Newtonsoft.Json;
-
 #elif NETCOREAPP3_1 || NET5_0
 using System.Text.Json;
 
@@ -84,6 +83,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
         /// <inheritdoc />
         public virtual void ConfigureUnitOfWork(WebHostBuilderContext context, Contextual.UnitOfWork.Builder builder) { }
+
+        /// <inheritdoc />
+        public virtual void ConfigureOperations(WebHostBuilderContext context, Operations.Builder builder) { }
 
         /// <summary>
         ///     Assembly that contains this module.

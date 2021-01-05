@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
-using GS.DecoupleIt.Contextual.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Samples.Clients.Command.Contracts.Services;
 using Samples.Clients.Command.Contracts.Services.Dtos;
-using Samples.Clients.Command.Model;
-using Samples.Clients.Command.Model.Entities;
-using Samples.Clients.Command.Model.Repositories;
+using Samples.Clients.Command.Queries;
 
 #pragma warning disable 1591
 
@@ -18,36 +14,22 @@ namespace Samples.Clients.Command.Controllers.v1
 {
     /// <inheritdoc cref="IClients" />
     [Route("api/v1/clients")]
-    [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
-    [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-    [SuppressMessage("ReSharper", "AnnotateNotNullTypeMember")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotateNotNullTypeMember")]
     [ApiExplorerSettings(GroupName = "v1")]
     public sealed class ClientsController : ControllerBase, IClients
     {
-        public ClientsController(
-            [JetBrains.Annotations.NotNull] IUnitOfWorkAccessor unitOfWorkAccessor,
-            [JetBrains.Annotations.NotNull] IClientRepository clientRepository)
-        {
-            _unitOfWorkAccessor = unitOfWorkAccessor;
-            _clientRepository   = clientRepository;
-        }
-
         /// <inheritdoc />
         [HttpPost]
         public async Task<CreatedClientDto> CreateClient([BindRequired] [FromBody] CreateClientDto dto)
         {
-            await using var unitOfWork = _unitOfWorkAccessor.Get<ClientsDbContext>();
-
-            var client = new Client(dto.Name);
-
-            await _clientRepository.AddAsync(client);
-
-            await unitOfWork.SaveChangesAsync();
+            var result = await new Commands.CreateClient(dto.Name).DispatchAsync(HttpContext.RequestAborted);
 
             return new CreatedClientDto
             {
-                Id   = client.Id,
-                Name = client.Name
+                Id   = result.Id,
+                Name = result.Name
             };
         }
 
@@ -55,37 +37,33 @@ namespace Samples.Clients.Command.Controllers.v1
         [HttpGet("{id}")]
         public async Task<ClientDto> Get(Guid id)
         {
-            await using var _ = _unitOfWorkAccessor.Get<ClientsDbContext>();
+            var result = await new GetClient(id).DispatchAsync(HttpContext.RequestAborted);
 
-            var client = await _clientRepository.GetAsync(id);
+            if (result is null)
+            {
+                HttpContext.Response.StatusCode = 404;
 
-            return client.Map(x => new ClientDto
-                         {
-                             Id   = x.Id,
-                             Name = x.Name
-                         })
-                         .Reduce(new ClientDto());
+                return null;
+            }
+
+            return new ClientDto
+            {
+                Id   = result.Id,
+                Name = result.Name
+            };
         }
 
         /// <inheritdoc />
         [HttpGet]
         public async Task<IEnumerable<ClientDto>> GetAll()
         {
-            await using var _ = _unitOfWorkAccessor.Get<ClientsDbContext>();
+            var result = await new GetAllClients().DispatchAsync(HttpContext.RequestAborted);
 
-            var clients = await _clientRepository.GetAllAsync();
-
-            return clients.Select(x => new ClientDto
+            return result.Clients.Select(x => new ClientDto
             {
                 Id   = x.Id,
                 Name = x.Name
             });
         }
-
-        [JetBrains.Annotations.NotNull]
-        private readonly IClientRepository _clientRepository;
-
-        [JetBrains.Annotations.NotNull]
-        private readonly IUnitOfWorkAccessor _unitOfWorkAccessor;
     }
 }

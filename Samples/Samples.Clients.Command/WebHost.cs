@@ -1,10 +1,10 @@
 using GS.DecoupleIt.AspNetCore.Service;
-using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore;
 using GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Samples.Clients.Command.Model;
+using Builder = GS.DecoupleIt.Contextual.UnitOfWork.Builder;
 
 #pragma warning disable 1591
 
@@ -29,7 +29,7 @@ namespace Samples.Clients.Command
             base.ConfigureUnitOfWork(context, builder);
 
             builder.AddSupportForEntityFrameworkCore()
-                   .AddContextMiddlewareFor<ClientsDbContext>();
+                   .WithContextMiddlewareFor<ClientsDbContext>();
         }
     }
 }

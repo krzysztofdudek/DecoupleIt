@@ -3,7 +3,7 @@
     <PropertyGroup>
         <AssemblyName>$(RootNamespace)</AssemblyName>
         <PackageId>$(RootNamespace)</PackageId>
-        <NoWarn>1591</NoWarn>
+        <NoWarn>1591,1573</NoWarn>
         <RepositoryUrl>https://github.com/krzysztofdudek/DecoupleIt</RepositoryUrl>
         <PackageProjectUrl>https://github.com/krzysztofdudek/DecoupleIt</PackageProjectUrl>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>

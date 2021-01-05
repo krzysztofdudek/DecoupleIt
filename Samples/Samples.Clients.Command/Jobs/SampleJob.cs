@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace Samples.Clients.Command.Jobs
 {
     [Singleton]
-    [SimpleSchedule(Seconds = 5)]
+    [CyclicSchedule(Seconds = 5)]
     internal sealed class SampleJob : IJob
     {
         public SampleJob([NotNull] ILogger<SampleJob> logger)

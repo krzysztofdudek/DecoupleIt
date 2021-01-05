@@ -16,7 +16,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\Libraries\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
       <ProjectReference Include="..\..\Libraries\HttpAbstraction\HttpAbstraction.csproj" />
-      <ProjectReference Include="..\..\Libraries\InternalEvents\InternalEvents.csproj" />
+      <ProjectReference Include="..\..\Libraries\Operations\Operations.csproj" />
       <ProjectReference Include="..\..\Libraries\Shared\Shared.csproj" />
     </ItemGroup>
 

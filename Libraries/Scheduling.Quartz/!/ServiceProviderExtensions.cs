@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using GS.DecoupleIt.InternalEvents;
+using GS.DecoupleIt.Operations;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
@@ -73,8 +73,8 @@ namespace GS.DecoupleIt.Scheduling.Quartz
                 var job = (IJob) serviceProvider.GetRequiredService(jobType)
                                                 .AsNotNull();
 
-                var internalEventDispatcher = serviceProvider.GetRequiredService<IInternalEventDispatcher>()
-                                                             .AsNotNull();
+                var operationContext = serviceProvider.GetRequiredService<IOperationContext>()
+                                                      .AsNotNull();
 
                 var tracer = serviceProvider.GetRequiredService<ITracer>()
                                             .AsNotNull();
@@ -82,35 +82,28 @@ namespace GS.DecoupleIt.Scheduling.Quartz
                 var logger = serviceProvider.GetRequiredService<ILogger<BaseQuartzJob>>()
                                             .AsNotNull();
 
-                InternalEventsScope.Initialize();
-
                 using (var tracerSpan = tracer.OpenSpan(jobType, SpanType.Job))
                 {
-                    using (var internalEventsScope = InternalEventsScope.OpenScope())
+                    using var operationContextScope = operationContext.OpenScope();
+
+                    try
                     {
-                        try
-                        {
-                            logger.LogDebug("Job executing {@OperationAction}.", "started");
+                        logger.LogDebug("Job executing {@OperationAction}.", "started");
 
-                            await internalEventsScope.DispatchEventsAsync(internalEventDispatcher,
-                                                                          () => job.ExecuteAsync(context.CancellationToken),
-                                                                          context.CancellationToken);
+                        await operationContextScope.DispatchOperationsAsync(() => job.ExecuteAsync(context.CancellationToken), context.CancellationToken);
 
-                            logger.LogDebug("Job executing {@OperationAction} after {@OperationDuration}ms.", "finished", tracerSpan.Duration.Milliseconds);
-                        }
-                        catch (Exception exception)
-                        {
-                            logger.LogError(exception,
-                                            "Job execution {@OperationAction} after {@OperationDuration}ms.",
-                                            "failed",
-                                            tracerSpan.Duration.Milliseconds);
+                        logger.LogDebug("Job executing {@OperationAction} after {@OperationDuration}ms.", "finished", tracerSpan.Duration.Milliseconds);
+                    }
+                    catch (Exception exception)
+                    {
+                        logger.LogError(exception,
+                                        "Job execution {@OperationAction} after {@OperationDuration}ms.",
+                                        "failed",
+                                        tracerSpan.Duration.Milliseconds);
 
-                            actionOnError?.Invoke(exception, serviceProvider);
-                        }
+                        actionOnError?.Invoke(exception, serviceProvider);
                     }
                 }
-
-                InternalEventsScope.Clear();
 
                 _jobIsExecuting = false;
             }
@@ -174,7 +167,7 @@ namespace GS.DecoupleIt.Scheduling.Quartz
                                                   {
                                                       simpleScheduleBuilder = simpleScheduleBuilder.AsNotNull();
 
-                                                      if (jobEntry.Attribute is SimpleScheduleAttribute attribute)
+                                                      if (jobEntry.Attribute is CyclicSchedule attribute)
                                                       {
                                                           simpleScheduleBuilder.WithInterval(new TimeSpan(attribute.Days,
                                                                                                  attribute.Hours,

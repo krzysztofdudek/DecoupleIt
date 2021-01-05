@@ -17,7 +17,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore
         /// <returns>Builder.</returns>
         /// <typeparam name="TUnitOfWork">Unit of work type.</typeparam>
         [NotNull]
-        public static Builder AddContextMiddlewareFor<TUnitOfWork>([NotNull] this Builder builder)
+        public static Builder WithContextMiddlewareFor<TUnitOfWork>([NotNull] this Builder builder)
             where TUnitOfWork : class, IUnitOfWork
         {
             ContractGuard.IfArgumentIsNull(nameof(builder), builder);

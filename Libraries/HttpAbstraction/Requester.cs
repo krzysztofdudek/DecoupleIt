@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using RestEase;
-
 #if NET5_0
 using System.Collections.Generic;
 

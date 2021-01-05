@@ -103,6 +103,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
                                        .AsNotNull();
         }
 
+        [NotNull]
         private static ServiceDescriptor CreateFactoryServiceDescriptorTyped<TInstanceType, TServiceType>()
         {
             var type = typeof(TInstanceType);
@@ -137,7 +138,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
 
                     return instance;
                 });
-            });
+            })!;
         }
 
         [NotNull]

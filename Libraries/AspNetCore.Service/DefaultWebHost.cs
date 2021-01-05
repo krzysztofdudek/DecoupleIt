@@ -9,7 +9,7 @@ using GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.HttpAbstraction;
 using GS.DecoupleIt.HttpAbstraction.AspNetCore;
-using GS.DecoupleIt.InternalEvents.AspNetCore;
+using GS.DecoupleIt.Operations.AspNetCore;
 using GS.DecoupleIt.Scheduling.AspNetCore;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
@@ -32,7 +32,6 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Rewrite;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-
 #elif !(NETCOREAPP2_2 || NETSTANDARD2_0)
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Hosting;
@@ -102,7 +101,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             options.Converters.Add(new JsonStringEnumConverter());
             options.IgnoreReadOnlyProperties = false;
-            options.IgnoreNullValues = true;
+            options.IgnoreNullValues         = true;
         }
 #elif NETCOREAPP2_2
         /// <inheritdoc />
@@ -282,8 +281,13 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               // Configure tracing.
                               collection.AddTracingForAspNetCore(context.Configuration.AsNotNull());
 
-                              // Configure internal events.
-                              collection.AddInternalEventsForAspNetCore();
+                              // Configure operations.
+                              var operationsBuilder = collection.AddOperationsForAspNetCore(context.Configuration.AsNotNull());
+
+                              ConfigureOperations(context, operationsBuilder);
+
+                              foreach (var module in modules)
+                                  module.ConfigureOperations(context, operationsBuilder);
 
                               // Configure http clients.
 #if !(NETCOREAPP2_2 || NETSTANDARD2_0)
@@ -406,14 +410,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
 #if NETCOREAPP3_1 || NET5_0
                           .Configure((context, applicationBuilder) =>
                           {
-                              context = context.AsNotNull();
+                              context            = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
 #elif NETCOREAPP2_2
                           .Configure(applicationBuilder =>
                           {
                               var context = new WebHostBuilderContext
                               {
-                                  Configuration      = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
+                                  Configuration = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
                                   HostingEnvironment = applicationBuilder.ApplicationServices.GetRequiredService<IHostingEnvironment>()
                               };
 
@@ -505,7 +509,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
                               applicationBuilder.MaintainStorageOfContextualUnitOfWork();
 
-                              applicationBuilder.UseInternalEvents();
+                              applicationBuilder.UseOperations();
 
                               ConfigureApplication(context, applicationBuilder);
 

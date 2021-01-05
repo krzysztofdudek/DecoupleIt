@@ -58,7 +58,7 @@ namespace GS.DecoupleIt.Tracing
         {
             ContractGuard.IfArgumentIsNull(nameof(creatorType), creatorType);
 
-            return OpenSpan(creatorType.FullName.AsNotNull(), type);
+            return OpenSpan(creatorType.FullName!, type);
         }
 
         public ITracerSpan OpenSpan(

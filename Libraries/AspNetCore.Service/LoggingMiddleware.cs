@@ -140,12 +140,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
         private void LogFinish([NotNull] HttpContext context, [CanBeNull] string responseBody, TimeSpan duration)
         {
-            var message = new StringBuilder("External request handling {@OperationAction} after {@OperationDuration}ms.\nHeaders: {@Headers}");
+            var message = new StringBuilder(
+                "External request handling {@OperationAction} after {@OperationDuration}ms.\nStatus code: {@StatusCode}\nHeaders: {@Headers}");
 
             var args = new List<object>
             {
                 "finished",
                 (int) duration.TotalMilliseconds,
+                context.Response.StatusCode,
                 context.Request.Headers.ToDictionary(x => x.Key, x => x.Value)
             };
 

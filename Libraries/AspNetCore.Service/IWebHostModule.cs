@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 #elif NETCOREAPP2_2
 using Newtonsoft.Json;
 #endif
-using GS.DecoupleIt.Contextual.UnitOfWork;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -124,10 +123,17 @@ namespace GS.DecoupleIt.AspNetCore.Service
         void ConfigureLogging([NotNull] WebHostBuilderContext context, [NotNull] LoggerConfiguration configuration);
 
         /// <summary>
-        ///     Configures unit of work <see cref="Builder" />.
+        ///     Configures unit of work <see cref="Contextual.UnitOfWork.Builder" />.
         /// </summary>
         /// <param name="context">Web host builder context.</param>
         /// <param name="builder">Unit of work builder.</param>
-        void ConfigureUnitOfWork([NotNull] WebHostBuilderContext context, [NotNull] Builder builder);
+        void ConfigureUnitOfWork([NotNull] WebHostBuilderContext context, [NotNull] Contextual.UnitOfWork.Builder builder);
+
+        /// <summary>
+        ///     Configures operations <see cref="Operations.Builder" />.
+        /// </summary>
+        /// <param name="context">Web host builder context.</param>
+        /// <param name="builder">Operations builder.</param>
+        void ConfigureOperations([NotNull] WebHostBuilderContext context, [NotNull] Operations.Builder builder);
     }
 }

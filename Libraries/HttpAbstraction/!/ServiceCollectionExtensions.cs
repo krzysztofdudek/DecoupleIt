@@ -9,6 +9,7 @@ using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestEase;
 using RestEase.Implementation;
@@ -83,6 +84,9 @@ namespace GS.DecoupleIt.HttpAbstraction
                 var tracer = serviceProvider.GetRequiredService<ITracer>()
                                             .AsNotNull();
 
+                var logger = serviceProvider.GetRequiredService<ILogger<Requester>>()
+                                            .AsNotNull();
+
                 var serviceName = serviceAssemblyName.EndsWith(".Contracts")
                     ? serviceAssemblyName.Substring(0, serviceAssemblyName.LastIndexOf(".", StringComparison.Ordinal))
                     : serviceAssemblyName;
@@ -108,7 +112,10 @@ namespace GS.DecoupleIt.HttpAbstraction
                     }
                 };
 
-                var requester = new Requester(httpClient, options, tracer);
+                var requester = new Requester(httpClient,
+                                              options,
+                                              tracer,
+                                              logger);
 
                 var requestBodySerializer = serviceProvider.GetService<RequestBodySerializer>();
                 var responseDeserializer  = serviceProvider.GetService<ResponseDeserializer>();

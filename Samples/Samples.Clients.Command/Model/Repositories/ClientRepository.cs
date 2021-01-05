@@ -15,14 +15,14 @@ namespace Samples.Clients.Command.Model.Repositories
     [Singleton]
     internal sealed class ClientRepository : IClientRepository
     {
-        public ClientRepository([NotNull] IUnitOfWorkAccessor accessor)
+        public ClientRepository([NotNull] IUnitOfWorkAccessor unitOfWorkAccessor)
         {
-            _accessor = accessor;
+            _unitOfWorkAccessor = unitOfWorkAccessor;
         }
 
         public async Task AddAsync(Client client, CancellationToken cancellationToken = default)
         {
-            await using var context = _accessor.Get<ClientsDbContext>();
+            await using var context = _unitOfWorkAccessor.Get<ClientsDbContext>();
 
             await context.AddAsync(client, cancellationToken);
 
@@ -31,7 +31,7 @@ namespace Samples.Clients.Command.Model.Repositories
 
         public async Task<IReadOnlyCollection<Client>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            await using var context = _accessor.Get<ClientsDbContext>();
+            await using var context = _unitOfWorkAccessor.Get<ClientsDbContext>();
 
             return await context.Clients.AsNoTracking()
                                 .AsNotNull()
@@ -42,7 +42,7 @@ namespace Samples.Clients.Command.Model.Repositories
 
         public async Task<Optional<Client>> GetAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            await using var context = _accessor.Get<ClientsDbContext>();
+            await using var context = _unitOfWorkAccessor.Get<ClientsDbContext>();
 
             return await context.Clients.AsNoTracking()
                                 .AsNotNull()
@@ -51,6 +51,6 @@ namespace Samples.Clients.Command.Model.Repositories
         }
 
         [NotNull]
-        private readonly IUnitOfWorkAccessor _accessor;
+        private readonly IUnitOfWorkAccessor _unitOfWorkAccessor;
     }
 }

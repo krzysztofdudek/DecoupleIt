@@ -11,8 +11,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Contextual.UnitOfWork.AspNetCore\Contextual.UnitOfWork.AspNetCore.csproj" />
+        <ProjectReference Include="..\Operations.AspNetCore\Operations.AspNetCore.csproj" />
         <ProjectReference Include="..\HttpAbstraction.AspNetCore\HttpAbstraction.AspNetCore.csproj" />
-        <ProjectReference Include="..\InternalEvents.AspNetCore\InternalEvents.AspNetCore.csproj" />
         <ProjectReference Include="..\Scheduling.AspNetCore\Scheduling.AspNetCore.csproj" />
         <ProjectReference Include="..\Tracing.AspNetCore\Tracing.AspNetCore.csproj" />
         <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
@@ -39,11 +39,11 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.9" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.9" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.9" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.9" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.9" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.11" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.11" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.11" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.11" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.11" />
     </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Samples.Clients.Command.Contracts.Events;
 using Samples.Clients.Command.Contracts.Exceptions;
@@ -10,23 +10,31 @@ namespace Samples.Clients.Command.Model.Entities
 {
     public sealed class Client
     {
+        [ItemNotNull]
+        public static async ValueTask<Client> CreateAsync([NotNull] string name)
+        {
+            var client = new Client(name);
+
+            await new ClientCreated(client.Id, client.Name).EmitAsync();
+
+            return client;
+        }
+
         public Guid Id { get; [UsedImplicitly] private set; }
 
-        [JetBrains.Annotations.NotNull]
+        [NotNull]
         public string Name { get; [UsedImplicitly] private set; }
 
-        public Client([JetBrains.Annotations.NotNull] string name)
+        private Client([NotNull] string name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new InvalidClientName();
 
             Id   = Guid.NewGuid();
             Name = name;
-
-            new ClientCreated(Id, Name).Emit();
         }
 
-        [SuppressMessage("ReSharper", "NotNullMemberIsNotInitialized")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "NotNullMemberIsNotInitialized")]
         private Client() { }
     }
 }

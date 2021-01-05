@@ -1,3 +1,4 @@
+using System.Reflection;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Options.Automatic;
 using GS.DecoupleIt.Shared;
@@ -18,17 +19,19 @@ namespace GS.DecoupleIt.Tracing
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
         /// <param name="configuration">Configuration.</param>
+        /// <returns>Builder.</returns>
         [NotNull]
-        public static IServiceCollection AddTracing([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
+        public static Builder AddTracing([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
         {
             ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
 
-            var assembly = typeof(ServiceCollectionExtensions).Assembly;
+            serviceCollection.ScanAssemblyForImplementations(ThisAssembly);
+            serviceCollection.ScanAssemblyForOptions(ThisAssembly, configuration);
 
-            serviceCollection.ScanAssemblyForImplementations(assembly);
-            serviceCollection.ScanAssemblyForOptions(assembly, configuration);
-
-            return serviceCollection;
+            return new Builder(serviceCollection, configuration);
         }
+
+        [NotNull]
+        private static readonly Assembly ThisAssembly = typeof(ServiceCollectionExtensions).Assembly;
     }
 }

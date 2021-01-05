@@ -1,5 +1,5 @@
 using System;
-using GS.DecoupleIt.InternalEvents;
+using GS.DecoupleIt.Operations;
 using JetBrains.Annotations;
 
 namespace Samples.Clients.Command.Contracts.Events
@@ -8,7 +8,7 @@ namespace Samples.Clients.Command.Contracts.Events
     ///     Event is emitted when client is created.
     /// </summary>
     [PublicAPI]
-    public sealed class ClientCreated : Event
+    public sealed class ClientCreated : InternalEvent
     {
         /// <summary>
         ///     Client's identifier.

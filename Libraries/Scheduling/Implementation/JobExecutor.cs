@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using GS.DecoupleIt.DependencyInjection.Automatic;
-using GS.DecoupleIt.InternalEvents;
+using GS.DecoupleIt.Operations;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
@@ -21,14 +21,14 @@ namespace GS.DecoupleIt.Scheduling.Implementation
             [NotNull] IRegisteredJobs registeredJobs,
             [NotNull] ILogger<JobExecutor> logger,
             [NotNull] ITracer tracer,
-            [NotNull] IInternalEventDispatcher internalEventDispatcher,
+            [NotNull] IOperationContext operationContext,
             [NotNull] IServiceProvider serviceProvider)
         {
-            _registeredJobs          = registeredJobs;
-            _logger                  = logger;
-            _tracer                  = tracer;
-            _internalEventDispatcher = internalEventDispatcher;
-            _serviceProvider         = serviceProvider;
+            _registeredJobs   = registeredJobs;
+            _logger           = logger;
+            _tracer           = tracer;
+            _operationContext = operationContext;
+            _serviceProvider  = serviceProvider;
         }
 
         public void Run(CancellationToken cancellationToken = default)
@@ -38,7 +38,7 @@ namespace GS.DecoupleIt.Scheduling.Implementation
 
             var threads = new List<Thread>();
 
-            foreach (var job in _registeredJobs.Where(x => x.Attribute is SimpleScheduleAttribute))
+            foreach (var job in _registeredJobs.Where(x => x.Attribute is CyclicSchedule))
             {
                 var thread = new Thread(() => ExecuteJobThread(job, cancellationToken));
 
@@ -51,10 +51,10 @@ namespace GS.DecoupleIt.Scheduling.Implementation
         }
 
         [NotNull]
-        private readonly IInternalEventDispatcher _internalEventDispatcher;
+        private readonly ILogger<JobExecutor> _logger;
 
         [NotNull]
-        private readonly ILogger<JobExecutor> _logger;
+        private readonly IOperationContext _operationContext;
 
         [NotNull]
         private readonly IRegisteredJobs _registeredJobs;
@@ -70,7 +70,7 @@ namespace GS.DecoupleIt.Scheduling.Implementation
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CognitiveComplexity")]
         private async void ExecuteJobThread(JobEntry jobEntry, CancellationToken cancellationToken)
         {
-            var attribute = (SimpleScheduleAttribute) jobEntry.Attribute;
+            var attribute = (CyclicSchedule) jobEntry.Attribute;
 
             long iteration     = 0;
             var  isForeverLoop = attribute.RepeatCount <= 0;
@@ -98,42 +98,32 @@ namespace GS.DecoupleIt.Scheduling.Implementation
 
                 try
                 {
-                    InternalEventsScope.Initialize();
+                    using var tracerSpan = _tracer.OpenSpan(jobEntry.JobType.FullName!, SpanType.Job);
 
-                    using (var tracerSpan = _tracer.OpenSpan(jobEntry.JobType.FullName!, SpanType.Job))
+                    using var operationsContextScope = _operationContext.OpenScope();
+
+                    try
                     {
-                        using (var internalEventsScope = InternalEventsScope.OpenScope())
-                        {
-                            try
-                            {
-                                _logger.LogDebug("Job executing {@OperationAction}.", "started");
+                        _logger.LogDebug("Job executing {@OperationAction}.", "started");
 
-                                var job = (IJob) _serviceProvider.GetRequiredService(jobEntry.JobType)
-                                                                 .AsNotNull();
+                        var job = (IJob) _serviceProvider.GetRequiredService(jobEntry.JobType)
+                                                         .AsNotNull();
 
-                                await internalEventsScope.DispatchEventsAsync(_internalEventDispatcher,
-                                                                              () => job.ExecuteAsync(cancellationToken),
-                                                                              cancellationToken);
+                        await operationsContextScope.DispatchOperationsAsync(() => job.ExecuteAsync(cancellationToken), cancellationToken);
 
-                                lastIterationDuration = tracerSpan.Duration;
+                        lastIterationDuration = tracerSpan.Duration;
 
-                                _logger.LogDebug("Job executing {@OperationAction} after {@OperationDuration}ms.",
-                                                 "finished",
-                                                 lastIterationDuration.Milliseconds);
-                            }
-                            catch (Exception exception)
-                            {
-                                lastIterationDuration = tracerSpan.Duration;
-
-                                _logger.LogError(exception,
-                                                 "Job execution {@OperationAction} after {@OperationDuration}ms.",
-                                                 "failed",
-                                                 lastIterationDuration.Milliseconds);
-                            }
-                        }
+                        _logger.LogDebug("Job executing {@OperationAction} after {@OperationDuration}ms.", "finished", lastIterationDuration.Milliseconds);
                     }
+                    catch (Exception exception)
+                    {
+                        lastIterationDuration = tracerSpan.Duration;
 
-                    InternalEventsScope.Clear();
+                        _logger.LogError(exception,
+                                         "Job execution {@OperationAction} after {@OperationDuration}ms.",
+                                         "failed",
+                                         lastIterationDuration.Milliseconds);
+                    }
                 }
                 catch (Exception exception)
                 {

@@ -3,8 +3,8 @@
 .\Push-Options.Automatic.ps1
 .\Push-Tracing.ps1
 .\Push-Tracing.AspNetCore.ps1
-.\Push-InternalEvents.ps1
-.\Push-InternalEvents.AspNetCore.ps1
+.\Push-Operations.ps1
+.\Push-Operations.AspNetCore.ps1
 .\Push-HttpAbstraction.ps1
 .\Push-HttpAbstraction.AspNetCore.ps1
 .\Push-Optionals.ps1

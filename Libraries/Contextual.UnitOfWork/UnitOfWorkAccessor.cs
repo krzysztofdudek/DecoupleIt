@@ -120,10 +120,22 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
             if (storageEntry != null)
             {
-                storageEntry.Level++;
+                if (storageEntry.UnitOfWork is not null)
+                {
+                    storageEntry.Level++;
 
-                return (TUnitOfWork) (storageEntry.UnitOfWork ?? storageEntry.LazyUnitOfWorkAccessor?.Value) ??
-                       throw new InvalidOperationException("This should never happen. Unit of work accessor is broken in this thread.");
+                    return (TUnitOfWork) storageEntry.UnitOfWork;
+                }
+
+                if (storageEntry.LazyUnitOfWorkAccessor is not null)
+                {
+                    if (storageEntry.LazyUnitOfWorkAccessor.HasValueLoaded)
+                        storageEntry.Level++;
+
+                    return (TUnitOfWork) storageEntry.LazyUnitOfWorkAccessor.Value;
+                }
+
+                throw new InvalidOperationException("This should never happen. Unit of work accessor is broken in this thread.");
             }
 
             TUnitOfWork instance;

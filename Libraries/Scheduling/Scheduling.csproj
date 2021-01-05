@@ -12,7 +12,7 @@
         <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
         <ProjectReference Include="..\Shared\Shared.csproj" />
         <ProjectReference Include="..\Tracing\Tracing.csproj" />
-        <ProjectReference Include="..\InternalEvents\InternalEvents.csproj" />
+        <ProjectReference Include="..\Operations\Operations.csproj" />
     </ItemGroup>
 
     <Import Project="../libraries.core.props" />

@@ -1,7 +1,6 @@
 using System;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
-
 #if !(NETCOREAPP2_2 || NETSTANDARD2_0)
 using System.Threading.Tasks;
 
