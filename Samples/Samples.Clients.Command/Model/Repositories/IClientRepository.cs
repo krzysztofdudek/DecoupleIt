@@ -19,7 +19,6 @@ namespace Samples.Clients.Command.Model.Repositories
         Task<IReadOnlyCollection<Client>> GetAllAsync(CancellationToken cancellationToken = default);
 
         [NotNull]
-        [ItemNotNull]
         Task<Optional<Client>> GetAsync(Guid id, CancellationToken cancellationToken = default);
     }
 }

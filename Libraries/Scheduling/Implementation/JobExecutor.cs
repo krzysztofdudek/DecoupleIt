@@ -65,6 +65,7 @@ namespace GS.DecoupleIt.Scheduling.Implementation
         [NotNull]
         private readonly ITracer _tracer;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CognitiveComplexity")]
         private async void ExecuteJobThread(JobEntry jobEntry, CancellationToken cancellationToken)
         {
             var attribute = (SimpleScheduleAttribute) jobEntry.Attribute;
