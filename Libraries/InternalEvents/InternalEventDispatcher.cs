@@ -81,9 +81,9 @@ namespace GS.DecoupleIt.InternalEvents
         {
             return eventHandler switch
             {
+                IOnFailureEventHandler onFailureEventHandler when exception != null => onFailureEventHandler.HandleAsync(@event, exception, cancellationToken),
                 IOnSuccessEventHandler onSuccessEventHandler => onSuccessEventHandler.HandleAsync(@event, cancellationToken),
                 IOnEmissionEventHandler onEmissionEventHandler => onEmissionEventHandler.HandleAsync(@event, cancellationToken),
-                IOnFailureEventHandler onFailureEventHandler when exception != null => onFailureEventHandler.HandleAsync(@event, exception, cancellationToken),
                 _ => throw new ArgumentOutOfRangeException(nameof(eventHandler), "Event handler is of invalid type.")
             };
         }
