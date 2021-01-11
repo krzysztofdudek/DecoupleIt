@@ -95,9 +95,12 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
 
             if (!_transactionImplementation.WasCommitted)
             {
+                if (_options.Transaction.SessionCleanupMode == SessionCleanupMode.FlushBeforeRollback)
+                    Session.Flush();
+
                 _transactionImplementation.Rollback();
 
-                if (_options.Transaction.CleanupSessionOnDisposalOfUncommittedTransaction)
+                if (_options.Transaction.SessionCleanupMode == SessionCleanupMode.Clear)
                     Session.Clear();
             }
 
