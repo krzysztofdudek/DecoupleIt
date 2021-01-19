@@ -1,4 +1,5 @@
 #if NETCOREAPP3_1 || NET5_0
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 #elif NETCOREAPP2_2
 using Newtonsoft.Json;
@@ -43,7 +44,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// </summary>
         /// <param name="context">Web host builder context.</param>
         /// <param name="options">Json options.</param>
-        void ConfigureJson([NotNull] WebHostBuilderContext context, [NotNull] JsonOptions options);
+        void ConfigureJson([NotNull] WebHostBuilderContext context, [NotNull] JsonSerializerOptions options);
 #elif NETCOREAPP2_2
         /// <summary>
         ///     Configures <see cref="IRouteBuilder" />.

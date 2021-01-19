@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 namespace GS.DecoupleIt.Scheduling.Implementation
 {
     [Singleton]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "LogMessageIsSentenceProblem")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "TemplateIsNotCompileTimeConstantProblem")]
     internal sealed class JobExecutor
     {
         public JobExecutor(

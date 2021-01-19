@@ -6,6 +6,7 @@
 .\Push-InternalEvents.ps1
 .\Push-InternalEvents.AspNetCore.ps1
 .\Push-HttpAbstraction.ps1
+.\Push-HttpAbstraction.AspNetCore.ps1
 .\Push-Optionals.ps1
 .\Push-Contextual.UnitOfWork.ps1
 .\Push-Contextual.UnitOfWork.EntityFrameworkCore.ps1

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <VersionPrefix>5.0.0</VersionPrefix>
+        <VersionSuffix>prerelease.0</VersionSuffix>
+        <Title>DecoupleIt - ASP .NET Core support for GS.DecoupleIt.HttpAbstraction</Title>
+        <Description>ASP .NET Core support for GS.DecoupleIt.HttpAbstraction.</Description>
+    </PropertyGroup>
+
+    <Import Project="../libraries.aspnetcore.props" />
+
+    <ItemGroup>
+        <ProjectReference Include="..\HttpAbstraction\HttpAbstraction.csproj" />
+    </ItemGroup>
+
+</Project>

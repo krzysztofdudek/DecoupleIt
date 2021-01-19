@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 #if NETCOREAPP2_2
 using Microsoft.AspNetCore.Routing;
-
 #elif NETCOREAPP3_1 || NET5_0
 using Microsoft.AspNetCore.Mvc.Controllers;
 
@@ -27,6 +26,8 @@ namespace GS.DecoupleIt.AspNetCore.Service
     [Transient]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "LogMessageIsSentenceProblem")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "TemplateIsNotCompileTimeConstantProblem")]
     public sealed class LoggingMiddleware : IMiddleware
     {
         public LoggingMiddleware([NotNull] ILogger<LoggingMiddleware> logger, [NotNull] IOptions<ServiceOptions> serviceOptions, [NotNull] ITracer tracer)
@@ -55,7 +56,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                                      .Single();
 
             var controllerName = controllerActionDescriptor.ControllerTypeInfo.FullName;
-            var actionName = controllerActionDescriptor.ActionName;
+            var actionName     = controllerActionDescriptor.ActionName;
 #elif NETCOREAPP2_2
             var routeData = context.GetRouteData();
 
@@ -80,7 +81,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
 #if !(NETCOREAPP2_2 || NETSTANDARD2_0)
                 await
 #endif
-                using (var memoryStream = new MemoryStream())
+                    using (var memoryStream = new MemoryStream())
                 {
                     var responseBodyStream = context.Response.Body;
                     context.Response.Body = memoryStream;

@@ -1,5 +1,4 @@
 using System.Reflection;
-using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Options.Automatic;
 using GS.DecoupleIt.Scheduling;
@@ -14,11 +13,11 @@ using Serilog;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
+using GS.DecoupleIt.HttpAbstraction;
 #if NETCOREAPP2_2
 using Newtonsoft.Json;
-
 #elif NETCOREAPP3_1 || NET5_0
-using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 #endif
 
@@ -37,7 +36,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         public virtual void ConfigureEndpoints(WebHostBuilderContext context, IEndpointRouteBuilder builder) { }
 
         /// <inheritdoc />
-        public virtual void ConfigureJson(WebHostBuilderContext context, JsonOptions options) { }
+        public virtual void ConfigureJson(WebHostBuilderContext context, JsonSerializerOptions options) { }
 #elif NETCOREAPP2_2
         /// <inheritdoc />
         public virtual void ConfigureEndpoints(WebHostBuilderContext context, IRouteBuilder builder) { }
@@ -58,6 +57,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
             serviceCollection.ScanAssemblyForImplementations(ThisAssembly);
             serviceCollection.ScanAssemblyForOptions(ThisAssembly, context.Configuration.AsNotNull());
             serviceCollection.ScanAssemblyForJobs(ThisAssembly, context.Configuration.AsNotNull());
+            serviceCollection.ScanAssemblyForHttpClients(ThisAssembly);
         }
 
         /// <inheritdoc />
@@ -82,7 +82,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         public virtual void ConfigureLogging(WebHostBuilderContext context, LoggerConfiguration configuration) { }
 
         /// <inheritdoc />
-        public virtual void ConfigureUnitOfWork(WebHostBuilderContext context, Builder builder) { }
+        public virtual void ConfigureUnitOfWork(WebHostBuilderContext context, Contextual.UnitOfWork.Builder builder) { }
 
         /// <summary>
         ///     Assembly that contains this module.

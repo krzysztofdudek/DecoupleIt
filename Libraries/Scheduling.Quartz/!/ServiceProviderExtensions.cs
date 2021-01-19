@@ -16,6 +16,8 @@ namespace GS.DecoupleIt.Scheduling.Quartz
     ///     Extends <see cref="IServiceProvider" /> with methods scheduling jobs.
     /// </summary>
     [PublicAPI]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "LogMessageIsSentenceProblem")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "TemplateIsNotCompileTimeConstantProblem")]
     public static class ServiceProviderExtensions
     {
         /// <summary>

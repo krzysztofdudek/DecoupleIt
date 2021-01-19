@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using GS.DecoupleIt.HttpAbstraction;
 using JetBrains.Annotations;
 using RestEase;
 using Samples.Clients.Command.Contracts.Services.Dtos;
@@ -12,6 +13,7 @@ namespace Samples.Clients.Command.Contracts.Services
     /// </summary>
     [PublicAPI]
     [BasePath("api/v1/clients")]
+    [HttpClient]
     public interface IClients
     {
         /// <summary>

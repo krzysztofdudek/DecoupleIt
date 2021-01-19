@@ -11,6 +11,8 @@ namespace GS.DecoupleIt.Tracing
 {
     [PublicAPI]
     [Singleton]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "LogMessageIsSentenceProblem")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "TemplateIsNotCompileTimeConstantProblem")]
     internal sealed class Tracer : ITracer
     {
         public ITracerSpan CurrentSpan => _spanStorage.Value;

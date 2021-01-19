@@ -1,7 +1,8 @@
+using System.Reflection;
 using GS.DecoupleIt.HttpAbstraction;
+using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
-using Samples.Clients.Command.Contracts.Services;
 
 namespace Samples.Clients.Command.Contracts
 {
@@ -19,10 +20,12 @@ namespace Samples.Clients.Command.Contracts
         [NotNull]
         public static IServiceCollection AddClientsCommandServices([NotNull] this IServiceCollection serviceCollection)
         {
-            serviceCollection.AddHttpClientService<IClients>();
-            serviceCollection.AddHttpClientService<IClientsBaskets>();
+            serviceCollection.ScanAssemblyForHttpClients(ThisAssembly);
 
             return serviceCollection;
         }
+
+        [NotNull]
+        private static Assembly ThisAssembly => typeof(ServiceCollectionExtensions).Assembly.AsNotNull();
     }
 }

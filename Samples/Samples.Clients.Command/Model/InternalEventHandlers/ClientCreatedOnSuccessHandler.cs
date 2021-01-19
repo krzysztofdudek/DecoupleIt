@@ -7,6 +7,8 @@ using Samples.Clients.Command.Contracts.Events;
 
 namespace Samples.Clients.Command.Model.InternalEventHandlers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "LogMessageIsSentenceProblem")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "TemplateIsNotCompileTimeConstantProblem")]
     internal sealed class ClientCreatedOnSuccessHandler : OnSuccessEventHandlerBase<ClientCreated>
     {
         public ClientCreatedOnSuccessHandler([NotNull] ILogger<ClientCreatedOnSuccessHandler> logger)

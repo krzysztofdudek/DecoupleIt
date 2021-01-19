@@ -8,6 +8,7 @@ using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.HttpAbstraction;
+using GS.DecoupleIt.HttpAbstraction.AspNetCore;
 using GS.DecoupleIt.InternalEvents.AspNetCore;
 using GS.DecoupleIt.Scheduling.AspNetCore;
 using GS.DecoupleIt.Shared;
@@ -31,11 +32,10 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Rewrite;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-
-#elif NETCOREAPP3_1 || NET5_0
+#elif !(NETCOREAPP2_2 || NETSTANDARD2_0)
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using System.Text.Json;
 
 #endif
 
@@ -97,11 +97,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
 #if NETCOREAPP3_1 || NET5_0
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        public override void ConfigureJson(WebHostBuilderContext context, JsonOptions options)
+        public override void ConfigureJson(WebHostBuilderContext context, JsonSerializerOptions options)
         {
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            options.JsonSerializerOptions.IgnoreReadOnlyProperties = false;
-            options.JsonSerializerOptions.IgnoreNullValues = true;
+            options.Converters.Add(new JsonStringEnumConverter());
+            options.IgnoreReadOnlyProperties = false;
+            options.IgnoreNullValues         = true;
         }
 #elif NETCOREAPP2_2
         /// <inheritdoc />
@@ -285,7 +285,25 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               collection.AddInternalEventsForAspNetCore();
 
                               // Configure http clients.
-                              collection.ConfigureHttpClients(context.Configuration.AsNotNull());
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+                              var jsonSerializerOptions = new JsonSerializerOptions();
+
+                              ConfigureJson(context, jsonSerializerOptions);
+#else
+                              var jsonSerializerSettings = new JsonSerializerSettings();
+
+                              ConfigureJson(context, jsonSerializerSettings);
+#endif
+
+                              collection.AddHttpClients(context.Configuration.AsNotNull())
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+                                        .UseSystemTextJsonResponseDeserializer(jsonSerializerOptions)
+                                        .UseSystemTextJsonRequestBodySerializer(jsonSerializerOptions)
+#else
+                                        .UseNewtonsoftJsonResponseDeserializer(jsonSerializerSettings)
+                                        .UseNewtonsoftJsonRequestBodySerializer(jsonSerializerSettings)
+#endif
+                                  ;
 
                               collection.PostConfigure<HttpAbstractionOptions>(options =>
                               {
@@ -305,10 +323,10 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                                          {
                                                              options = options.AsNotNull();
 
-                                                             ConfigureJson(context, options);
+                                                             ConfigureJson(context, options.JsonSerializerOptions);
 
                                                              foreach (var module in modules)
-                                                                 module.ConfigureJson(context, options);
+                                                                 module.ConfigureJson(context, options.JsonSerializerOptions);
                                                          })
                                                          .AsNotNull();
 #elif NETCOREAPP2_2
@@ -387,14 +405,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
 #if NETCOREAPP3_1 || NET5_0
                           .Configure((context, applicationBuilder) =>
                           {
-                              context = context.AsNotNull();
+                              context            = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
 #elif NETCOREAPP2_2
                           .Configure(applicationBuilder =>
                           {
                               var context = new WebHostBuilderContext
                               {
-                                  Configuration      = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
+                                  Configuration = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
                                   HostingEnvironment = applicationBuilder.ApplicationServices.GetRequiredService<IHostingEnvironment>()
                               };
 

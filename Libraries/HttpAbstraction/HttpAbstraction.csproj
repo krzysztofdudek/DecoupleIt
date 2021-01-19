@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <VersionPrefix>5.0.0</VersionPrefix>
-        <VersionSuffix>prerelease.1</VersionSuffix>
+        <VersionSuffix>prerelease.2</VersionSuffix>
         <Title>DecoupleIt - http abstraction</Title>
         <Description>Implements http abstraction for uniformity of interfaces between controllers and services used on client side.</Description>
     </PropertyGroup>

@@ -12,6 +12,8 @@ namespace GS.DecoupleIt.InternalEvents
 {
     [Singleton]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "LogMessageIsSentenceProblem")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "TemplateIsNotCompileTimeConstantProblem")]
     internal sealed class InternalEventDispatcher : IInternalEventDispatcher
     {
         public InternalEventDispatcher(
