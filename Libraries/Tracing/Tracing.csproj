@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <VersionPrefix>5.0.0</VersionPrefix>
-        <VersionSuffix>prerelease.1</VersionSuffix>
+        <VersionSuffix>prerelease.2</VersionSuffix>
         <Title>DecoupleIt - Tracing</Title>
         <Description>Implementation of tracing pattern allowing to define own scopes per case.</Description>
     </PropertyGroup>

@@ -20,7 +20,7 @@ namespace GS.DecoupleIt.Scheduling
         }
 
         [NotNull]
-        private readonly List<JobEntry> _jobs = new List<JobEntry>();
+        private readonly List<JobEntry> _jobs = new();
 
         IEnumerator IEnumerable.GetEnumerator()
         {

@@ -115,7 +115,7 @@ namespace GS.DecoupleIt.Tracing
         private Func<TracingId> _newTracingIdGenerator = () => (TracingId) Guid.NewGuid();
 
         [NotNull]
-        private readonly AsyncLocal<ITracerSpan> _spanStorage = new AsyncLocal<ITracerSpan>();
+        private readonly AsyncLocal<ITracerSpan> _spanStorage = new();
 
         private TracerSpan? CurrentSpanInternal
         {

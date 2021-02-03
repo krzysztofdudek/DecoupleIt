@@ -48,7 +48,7 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
 
                                              applicationBuilder.UseTracing();
 
-                                             applicationBuilder.Use((context, func) =>
+                                             applicationBuilder.Use((context, _) =>
                                              {
                                                  var tracer = context.RequestServices.GetService<ITracer>();
 
@@ -89,7 +89,7 @@ namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
 
                            applicationBuilder.UseTracing();
 
-                           applicationBuilder.Use((context, func) =>
+                           applicationBuilder.Use((context, _) =>
                            {
                                var tracer = context.RequestServices.GetService<ITracer>();
 

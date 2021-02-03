@@ -16,6 +16,7 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using GS.DecoupleIt.HttpAbstraction;
 #if NETCOREAPP2_2
 using Newtonsoft.Json;
+
 #elif NETCOREAPP3_1 || NET5_0
 using System.Text.Json;
 

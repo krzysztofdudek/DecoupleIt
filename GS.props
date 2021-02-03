@@ -9,7 +9,7 @@
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <RepositoryType>git</RepositoryType>
         <Authors>Krzysztof Dudek</Authors>
-        <LangVersion>8</LangVersion>
+        <LangVersion>9</LangVersion>
         <OutputType>Library</OutputType>
         <PackageIcon>icon.png</PackageIcon>
         <CheckEolTargetFramework>false</CheckEolTargetFramework>

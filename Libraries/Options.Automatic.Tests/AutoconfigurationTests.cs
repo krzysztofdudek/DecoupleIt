@@ -82,7 +82,7 @@ namespace GS.DecoupleIt.Options.Automatic.Tests
         {
             [NotNull]
             [ConfigureProperty("OldSection:Property")]
-            public List<string> Property { get; set; } = new List<string>();
+            public List<string> Property { get; set; } = new();
         }
 
         [Configure("NewSection")]
@@ -90,7 +90,7 @@ namespace GS.DecoupleIt.Options.Automatic.Tests
         {
             [NotNull]
             [ConfigureProperty("OldSection:Object")]
-            public ConfigurationObject Object { get; set; } = new ConfigurationObject();
+            public ConfigurationObject Object { get; set; } = new();
 
             public sealed class ConfigurationObject
             {

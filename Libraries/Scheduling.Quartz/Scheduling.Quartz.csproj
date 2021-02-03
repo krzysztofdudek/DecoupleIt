@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <VersionPrefix>5.0.0</VersionPrefix>
-        <VersionSuffix>prerelease.1</VersionSuffix>
+        <VersionSuffix>prerelease.2</VersionSuffix>
         <Title>DecoupleIt - Scheduling using Quartz</Title>
         <Description>Library uses Quartz as a scheduler for registered jobs using attributes from GS.DecoupleIt.Scheduling.</Description>
     </PropertyGroup>

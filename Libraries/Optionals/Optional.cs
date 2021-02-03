@@ -29,7 +29,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         public static implicit operator Optional<T>([CanBeNull] T value)
         {
-            return new Optional<T>(value);
+            return new(value);
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace GS.DecoupleIt.Optionals
         public Optional<TNew> OfType<TNew>()
             where TNew : class
         {
-            return new Optional<TNew>(_value as TNew);
+            return new(_value as TNew);
         }
 
         /// <summary>

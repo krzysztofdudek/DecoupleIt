@@ -41,12 +41,12 @@ namespace GS.DecoupleIt.Tracing
 
         public static implicit operator TracingId(Guid value)
         {
-            return new TracingId(value.ToString("D"));
+            return new(value.ToString("D"));
         }
 
         public static implicit operator TracingId([NotNull] string value)
         {
-            return new TracingId(value);
+            return new(value);
         }
 
         public static implicit operator Guid(TracingId tracingId)

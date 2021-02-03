@@ -21,7 +21,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore
         {
             ContractGuard.IfArgumentIsNull(nameof(builder), builder);
 
-            builder.Use(async (context, next) =>
+            builder.Use(async (_, next) =>
             {
                 UnitOfWorkAccessor.Initialize();
 

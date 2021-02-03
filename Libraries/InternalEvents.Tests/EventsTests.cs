@@ -138,7 +138,7 @@ namespace GS.DecoupleIt.InternalEvents.Tests
                                    using (tracer.OpenSpan(typeof(EventDispatcherTests), SpanType.ExternalRequest))
                                    using (var scope = InternalEventsScope.OpenScope())
                                    {
-                                       scope.EventEmitted += (eventsScope, @event, token) =>
+                                       scope.EventEmitted += (_, @event, _) =>
                                        {
                                            emittedEvent = (ExampleEvent) @event;
 

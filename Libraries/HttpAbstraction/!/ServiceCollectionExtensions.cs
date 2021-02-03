@@ -121,10 +121,10 @@ namespace GS.DecoupleIt.HttpAbstraction
             {
                 if (settings.SkipSSLCertificateValidation)
                     ServerCertificateCustomValidationCallback = (
-                        message,
-                        certificate2,
-                        arg3,
-                        arg4) => true;
+                        _,
+                        _,
+                        _,
+                        _) => true;
             }
         }
     }

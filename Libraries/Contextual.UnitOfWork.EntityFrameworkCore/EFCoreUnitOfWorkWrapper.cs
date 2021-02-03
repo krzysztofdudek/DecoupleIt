@@ -126,7 +126,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
 
 #if NET5_0 || NETCOREAPP3_1 || NETSTANDARD2_1
         /// <inheritdoc />
-        public Task ResetStateAsync(CancellationToken cancellationToken = new CancellationToken())
+        public Task ResetStateAsync(CancellationToken cancellationToken = new())
         {
             return ((IResettableService) _dbContext).ResetStateAsync(cancellationToken);
         }

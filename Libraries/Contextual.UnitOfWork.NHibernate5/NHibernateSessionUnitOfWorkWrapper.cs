@@ -153,7 +153,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task<IQuery> CreateFilterAsync(object collection, string queryString, CancellationToken cancellationToken = new CancellationToken())
+        public Task<IQuery> CreateFilterAsync(object collection, string queryString, CancellationToken cancellationToken = new())
         {
             return _session.CreateFilterAsync(collection, queryString, cancellationToken);
         }
@@ -213,19 +213,19 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task DeleteAsync(object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task DeleteAsync(object obj, CancellationToken cancellationToken = new())
         {
             return _session.DeleteAsync(obj, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task DeleteAsync(string entityName, object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task DeleteAsync(string entityName, object obj, CancellationToken cancellationToken = new())
         {
             return _session.DeleteAsync(entityName, obj, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task<int> DeleteAsync(string query, CancellationToken cancellationToken = new CancellationToken())
+        public Task<int> DeleteAsync(string query, CancellationToken cancellationToken = new())
         {
             return _session.DeleteAsync(query, cancellationToken);
         }
@@ -235,7 +235,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             string query,
             object value,
             IType type,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = new())
         {
             return _session.DeleteAsync(query,
                                         value,
@@ -248,7 +248,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             string query,
             object[] values,
             IType[] types,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = new())
         {
             return _session.DeleteAsync(query,
                                         values,
@@ -302,7 +302,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task EvictAsync(object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task EvictAsync(object obj, CancellationToken cancellationToken = new())
         {
             return _session.EvictAsync(obj, cancellationToken);
         }
@@ -314,7 +314,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task FlushAsync(CancellationToken cancellationToken = new CancellationToken())
+        public Task FlushAsync(CancellationToken cancellationToken = new())
         {
             return _session.FlushAsync(cancellationToken);
         }
@@ -350,7 +350,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task<object> GetAsync(Type clazz, object id, CancellationToken cancellationToken = new CancellationToken())
+        public Task<object> GetAsync(Type clazz, object id, CancellationToken cancellationToken = new())
         {
             return _session.GetAsync(clazz, id, cancellationToken);
         }
@@ -360,7 +360,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             Type clazz,
             object id,
             LockMode lockMode,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = new())
         {
             return _session.GetAsync(clazz,
                                      id,
@@ -369,19 +369,19 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task<object> GetAsync(string entityName, object id, CancellationToken cancellationToken = new CancellationToken())
+        public Task<object> GetAsync(string entityName, object id, CancellationToken cancellationToken = new())
         {
             return _session.GetAsync(entityName, id, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task<T> GetAsync<T>(object id, CancellationToken cancellationToken = new CancellationToken())
+        public Task<T> GetAsync<T>(object id, CancellationToken cancellationToken = new())
         {
             return _session.GetAsync<T>(id, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task<T> GetAsync<T>(object id, LockMode lockMode, CancellationToken cancellationToken = new CancellationToken())
+        public Task<T> GetAsync<T>(object id, LockMode lockMode, CancellationToken cancellationToken = new())
         {
             return _session.GetAsync<T>(id, lockMode, cancellationToken);
         }
@@ -405,7 +405,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task<string> GetEntityNameAsync(object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task<string> GetEntityNameAsync(object obj, CancellationToken cancellationToken = new())
         {
             return _session.GetEntityNameAsync(obj, cancellationToken);
         }
@@ -441,7 +441,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task<bool> IsDirtyAsync(CancellationToken cancellationToken = new CancellationToken())
+        public Task<bool> IsDirtyAsync(CancellationToken cancellationToken = new())
         {
             return _session.IsDirtyAsync(cancellationToken);
         }
@@ -505,7 +505,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             Type theType,
             object id,
             LockMode lockMode,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = new())
         {
             return _session.LoadAsync(theType,
                                       id,
@@ -518,7 +518,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             string entityName,
             object id,
             LockMode lockMode,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = new())
         {
             return _session.LoadAsync(entityName,
                                       id,
@@ -527,31 +527,31 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task<object> LoadAsync(Type theType, object id, CancellationToken cancellationToken = new CancellationToken())
+        public Task<object> LoadAsync(Type theType, object id, CancellationToken cancellationToken = new())
         {
             return _session.LoadAsync(theType, id, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task<T> LoadAsync<T>(object id, LockMode lockMode, CancellationToken cancellationToken = new CancellationToken())
+        public Task<T> LoadAsync<T>(object id, LockMode lockMode, CancellationToken cancellationToken = new())
         {
             return _session.LoadAsync<T>(id, lockMode, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task<T> LoadAsync<T>(object id, CancellationToken cancellationToken = new CancellationToken())
+        public Task<T> LoadAsync<T>(object id, CancellationToken cancellationToken = new())
         {
             return _session.LoadAsync<T>(id, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task<object> LoadAsync(string entityName, object id, CancellationToken cancellationToken = new CancellationToken())
+        public Task<object> LoadAsync(string entityName, object id, CancellationToken cancellationToken = new())
         {
             return _session.LoadAsync(entityName, id, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task LoadAsync(object obj, object id, CancellationToken cancellationToken = new CancellationToken())
+        public Task LoadAsync(object obj, object id, CancellationToken cancellationToken = new())
         {
             return _session.LoadAsync(obj, id, cancellationToken);
         }
@@ -569,7 +569,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task LockAsync(object obj, LockMode lockMode, CancellationToken cancellationToken = new CancellationToken())
+        public Task LockAsync(object obj, LockMode lockMode, CancellationToken cancellationToken = new())
         {
             return _session.LockAsync(obj, lockMode, cancellationToken);
         }
@@ -579,7 +579,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             string entityName,
             object obj,
             LockMode lockMode,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = new())
         {
             return _session.LockAsync(entityName,
                                       obj,
@@ -614,26 +614,26 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task<object> MergeAsync(object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task<object> MergeAsync(object obj, CancellationToken cancellationToken = new())
         {
             return _session.MergeAsync(obj, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task<object> MergeAsync(string entityName, object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task<object> MergeAsync(string entityName, object obj, CancellationToken cancellationToken = new())
         {
             return _session.MergeAsync(entityName, obj, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task<T> MergeAsync<T>(T entity, CancellationToken cancellationToken = new CancellationToken())
+        public Task<T> MergeAsync<T>(T entity, CancellationToken cancellationToken = new())
             where T : class
         {
             return _session.MergeAsync(entity, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task<T> MergeAsync<T>(string entityName, T entity, CancellationToken cancellationToken = new CancellationToken())
+        public Task<T> MergeAsync<T>(string entityName, T entity, CancellationToken cancellationToken = new())
             where T : class
         {
             return _session.MergeAsync(entityName, entity, cancellationToken);
@@ -652,13 +652,13 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task PersistAsync(object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task PersistAsync(object obj, CancellationToken cancellationToken = new())
         {
             return _session.PersistAsync(obj, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task PersistAsync(string entityName, object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task PersistAsync(string entityName, object obj, CancellationToken cancellationToken = new())
         {
             return _session.PersistAsync(entityName, obj, cancellationToken);
         }
@@ -728,13 +728,13 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task RefreshAsync(object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task RefreshAsync(object obj, CancellationToken cancellationToken = new())
         {
             return _session.RefreshAsync(obj, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task RefreshAsync(object obj, LockMode lockMode, CancellationToken cancellationToken = new CancellationToken())
+        public Task RefreshAsync(object obj, LockMode lockMode, CancellationToken cancellationToken = new())
         {
             return _session.RefreshAsync(obj, lockMode, cancellationToken);
         }
@@ -752,7 +752,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task ReplicateAsync(object obj, ReplicationMode replicationMode, CancellationToken cancellationToken = new CancellationToken())
+        public Task ReplicateAsync(object obj, ReplicationMode replicationMode, CancellationToken cancellationToken = new())
         {
             return _session.ReplicateAsync(obj, replicationMode, cancellationToken);
         }
@@ -762,7 +762,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             string entityName,
             object obj,
             ReplicationMode replicationMode,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = new())
         {
             return _session.ReplicateAsync(entityName,
                                            obj,
@@ -795,19 +795,19 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task<object> SaveAsync(object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task<object> SaveAsync(object obj, CancellationToken cancellationToken = new())
         {
             return _session.SaveAsync(obj, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task SaveAsync(object obj, object id, CancellationToken cancellationToken = new CancellationToken())
+        public Task SaveAsync(object obj, object id, CancellationToken cancellationToken = new())
         {
             return _session.SaveAsync(obj, id, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task<object> SaveAsync(string entityName, object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task<object> SaveAsync(string entityName, object obj, CancellationToken cancellationToken = new())
         {
             return _session.SaveAsync(entityName, obj, cancellationToken);
         }
@@ -817,7 +817,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             string entityName,
             object obj,
             object id,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = new())
         {
             return _session.SaveAsync(entityName,
                                       obj,
@@ -862,13 +862,13 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task SaveOrUpdateAsync(object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task SaveOrUpdateAsync(object obj, CancellationToken cancellationToken = new())
         {
             return _session.SaveOrUpdateAsync(obj, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task SaveOrUpdateAsync(string entityName, object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task SaveOrUpdateAsync(string entityName, object obj, CancellationToken cancellationToken = new())
         {
             return _session.SaveOrUpdateAsync(entityName, obj, cancellationToken);
         }
@@ -878,7 +878,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             string entityName,
             object obj,
             object id,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = new())
         {
             return _session.SaveOrUpdateAsync(entityName,
                                               obj,
@@ -929,19 +929,19 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task UpdateAsync(object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task UpdateAsync(object obj, CancellationToken cancellationToken = new())
         {
             return _session.UpdateAsync(obj, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task UpdateAsync(object obj, object id, CancellationToken cancellationToken = new CancellationToken())
+        public Task UpdateAsync(object obj, object id, CancellationToken cancellationToken = new())
         {
             return _session.UpdateAsync(obj, id, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task UpdateAsync(string entityName, object obj, CancellationToken cancellationToken = new CancellationToken())
+        public Task UpdateAsync(string entityName, object obj, CancellationToken cancellationToken = new())
         {
             return _session.UpdateAsync(entityName, obj, cancellationToken);
         }
@@ -951,7 +951,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             string entityName,
             object obj,
             object id,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken = new())
         {
             return _session.UpdateAsync(entityName,
                                         obj,

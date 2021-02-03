@@ -32,7 +32,7 @@ namespace GS.DecoupleIt.InternalEvents
         }
 
         [NotNull]
-        private static readonly ConcurrentDictionary<(Type, Type), Type> Cache = new ConcurrentDictionary<(Type, Type), Type>();
+        private static readonly ConcurrentDictionary<(Type, Type), Type> Cache = new();
 
         [NotNull]
         private readonly IServiceProvider _serviceProvider;

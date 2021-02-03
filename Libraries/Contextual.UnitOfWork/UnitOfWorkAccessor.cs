@@ -192,7 +192,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         }
 
         [NotNull]
-        private static readonly AsyncLocal<List<StorageEntry>> StorageEntries = new AsyncLocal<List<StorageEntry>>();
+        private static readonly AsyncLocal<List<StorageEntry>> StorageEntries = new();
 
         [CanBeNull]
         private static StorageEntry GetEntry([NotNull] Type type)

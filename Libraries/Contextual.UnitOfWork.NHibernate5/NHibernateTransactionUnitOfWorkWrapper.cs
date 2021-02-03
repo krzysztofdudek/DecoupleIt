@@ -142,7 +142,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         }
 
         /// <inheritdoc />
-        public Task RollbackAsync(CancellationToken cancellationToken = new CancellationToken())
+        public Task RollbackAsync(CancellationToken cancellationToken = new())
         {
             return _transactionImplementation.RollbackAsync(cancellationToken);
         }

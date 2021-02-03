@@ -13,6 +13,6 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         ///     Allows to configure transaction behaviour.
         /// </summary>
         [NotNull]
-        public TransactionOptions Transaction { get; set; } = new TransactionOptions();
+        public TransactionOptions Transaction { get; set; } = new();
     }
 }

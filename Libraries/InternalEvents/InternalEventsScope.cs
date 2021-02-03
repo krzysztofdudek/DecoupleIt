@@ -272,10 +272,10 @@ namespace GS.DecoupleIt.InternalEvents
         }
 
         [NotNull]
-        private static readonly AsyncLocal<Stack<InternalEventsScope>> AsyncLocalStack = new AsyncLocal<Stack<InternalEventsScope>>();
+        private static readonly AsyncLocal<Stack<InternalEventsScope>> AsyncLocalStack = new();
 
         [NotNull]
-        private static IInternalEventsScope CurrentScope =>
+        public static IInternalEventsScope CurrentScope =>
             Stack.Peek()
                  .AsNotNull();
 
@@ -286,7 +286,7 @@ namespace GS.DecoupleIt.InternalEvents
 
         [NotNull]
         [ItemNotNull]
-        private readonly List<Event> _events = new List<Event>();
+        private readonly List<Event> _events = new();
 
         private bool _isDisposed;
 

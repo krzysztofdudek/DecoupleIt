@@ -12,7 +12,7 @@ namespace System
         [NotNull]
         public static Task AsValueTask([NotNull] this Task task) => task;
 #else
-        public static ValueTask AsValueTask([NotNull] this Task task) => new ValueTask(task);
+        public static ValueTask AsValueTask([NotNull] this Task task) => new(task);
 #endif
     }
 }
