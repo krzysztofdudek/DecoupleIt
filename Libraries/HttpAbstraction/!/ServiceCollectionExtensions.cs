@@ -10,6 +10,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using RestEase;
 using RestEase.Implementation;
 
 namespace GS.DecoupleIt.HttpAbstraction
@@ -108,6 +109,15 @@ namespace GS.DecoupleIt.HttpAbstraction
                 };
 
                 var requester = new Requester(httpClient, options, tracer);
+
+                var requestBodySerializer = serviceProvider.GetService<RequestBodySerializer>();
+                var responseDeserializer  = serviceProvider.GetService<ResponseDeserializer>();
+
+                if (requestBodySerializer != null)
+                    requester.RequestBodySerializer = requestBodySerializer;
+
+                if (responseDeserializer != null)
+                    requester.ResponseDeserializer = responseDeserializer;
 
                 var implementation = ImplementationBuilder.Instance.CreateImplementation<TService>(requester);
 

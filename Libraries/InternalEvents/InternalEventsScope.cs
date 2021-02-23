@@ -131,14 +131,14 @@ namespace GS.DecoupleIt.InternalEvents
 
             try
             {
-                await aggregateEventsMethod();
+                await aggregateEventsMethod()!;
             }
             finally
             {
                 StackEventEmitted -= OnEventEmitted;
             }
 
-            await processAggregateEventsMethod(events);
+            await processAggregateEventsMethod(events)!;
         }
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace GS.DecoupleIt.InternalEvents
 
             try
             {
-                await invokeEvents();
+                await invokeEvents()!;
 
                 foreach (var @event in Events)
                     await internalEventDispatcher.DispatchOnSuccessAsync(@event, cancellationToken);
