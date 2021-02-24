@@ -19,7 +19,7 @@ namespace GS.DecoupleIt.HttpAbstraction.AspNetCore
 
         public override T Deserialize<T>(string content, HttpResponseMessage response, ResponseDeserializerInfo info)
         {
-            return content is null ? default : JsonSerializer.Deserialize<T>(content, _options);
+            return string.IsNullOrWhiteSpace(content) ? default : JsonSerializer.Deserialize<T>(content, _options);
         }
 
         [CanBeNull]
