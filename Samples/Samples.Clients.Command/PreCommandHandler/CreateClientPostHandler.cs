@@ -12,7 +12,7 @@ namespace Samples.Clients.Command.PreCommandHandler
         protected override ValueTask HandleAsync(CreateClient command, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(command.Name))
-                throw new InvalidOperationException("Invalid name");
+                throw new InvalidOperationException("Name cannot be null or empty.").WithCategory(ExceptionCategories.Business);
 
             return new ValueTask();
         }

@@ -43,9 +43,10 @@ namespace GS.DecoupleIt.Operations
             Exception exception,
             Func<TState, Exception, string> formatter)
         {
-            if (exception is ExtendedException exceptionBase && _options.Logging.ExceptionRemap.ContainsKey(exceptionBase.Category))
+            if (exception is not null && exception.Data.Contains("Category") && exception.Data["Category"] is string category &&
+                _options.Logging.ExceptionCategoryRemap.ContainsKey(category))
             {
-                _logger.Log(_options.Logging.ExceptionRemap[exceptionBase.Category],
+                _logger.Log(_options.Logging.ExceptionCategoryRemap[category],
                             eventId,
                             state,
                             exception,

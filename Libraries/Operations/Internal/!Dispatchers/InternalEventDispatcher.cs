@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -112,42 +111,29 @@ namespace GS.DecoupleIt.Operations.Internal
 
             using var span = Tracer.OpenSpan(eventType, SpanType.InternalEvent);
 
-            IReadOnlyCollection<object> eventHandlers;
-            string                      mode;
+            IEnumerable<object> eventHandlers;
+            string              mode;
 
             if (onEmission)
             {
-                eventHandlers = OperationHandlerFactory.GetOnEmissionInternalEventHandlers(@event)
-                                                       .ToList();
+                eventHandlers = OperationHandlerFactory.GetOnEmissionInternalEventHandlers(@event);
 
                 mode = "on emission";
             }
             else if (exception is null)
             {
-                eventHandlers = OperationHandlerFactory.GetOnSuccessInternalEventHandlers(@event)
-                                                       .ToList();
+                eventHandlers = OperationHandlerFactory.GetOnSuccessInternalEventHandlers(@event);
 
                 mode = "on success";
             }
             else
             {
-                eventHandlers = OperationHandlerFactory.GetOnFailureInternalEventHandlers(@event)
-                                                       .ToList();
+                eventHandlers = OperationHandlerFactory.GetOnFailureInternalEventHandlers(@event);
 
                 mode = "on failure";
             }
 
-            if (eventHandlers.Count == 0)
-            {
-                Logger.LogInformation("Dispatching event {@EventDispatchingMode} {@OperationAction}, but no handlers found.", mode, "started");
-
-                return;
-            }
-
-            Logger.LogInformation("Dispatching event {@EventDispatchingMode} {@OperationAction}, {@OperationHandlersCount} will handle it.",
-                                  mode,
-                                  "started",
-                                  eventHandlers.Count);
+            Logger.LogDebug("Dispatching event {@EventDispatchingMode} {@OperationAction}.", mode, "started");
 
             try
             {
@@ -157,17 +143,17 @@ namespace GS.DecoupleIt.Operations.Internal
                                            mode,
                                            cancellationToken);
 
-                Logger.LogInformation("Dispatching event {@EventDispatchingMode} {@OperationAction} after {@OperationDuration}ms.",
-                                      mode,
-                                      "finished",
-                                      span.Duration.Milliseconds);
+                Logger.LogDebug("Dispatching event {@EventDispatchingMode} {@OperationAction} after {@OperationDuration}ms.",
+                                mode,
+                                "finished",
+                                span.Duration.Milliseconds);
             }
             catch
             {
-                Logger.LogInformation("Dispatching event {@EventDispatchingMode} {@OperationAction} after {@OperationDuration}ms.",
-                                      mode,
-                                      "failed",
-                                      span.Duration.Milliseconds);
+                Logger.LogDebug("Dispatching event {@EventDispatchingMode} {@OperationAction} after {@OperationDuration}ms.",
+                                mode,
+                                "failed",
+                                span.Duration.Milliseconds);
 
                 throw;
             }
@@ -206,14 +192,18 @@ namespace GS.DecoupleIt.Operations.Internal
             }
             catch (Exception caughtException)
             {
-                Logger.LogInformation(caughtException,
-                                      "Event handler {@EventDispatchingMode} invocation {@OperationAction} after {@OperationDuration}ms.",
-                                      mode,
-                                      "failed",
-                                      span.Duration.Milliseconds);
+                Logger.LogError(caughtException,
+                                "Event handler {@EventDispatchingMode} invocation {@OperationAction} after {@OperationDuration}ms.",
+                                mode,
+                                "failed",
+                                span.Duration.Milliseconds);
 
                 if (eventHandler is IOnEmissionInternalEventHandler)
+                {
+                    caughtException.Data.Add("WasHandled", true);
+
                     throw;
+                }
             }
         }
 

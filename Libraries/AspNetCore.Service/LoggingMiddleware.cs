@@ -103,10 +103,15 @@ namespace GS.DecoupleIt.AspNetCore.Service
             }
             catch (Exception exception)
             {
-                _logger.LogInformation(exception,
-                                       "External request handling {@OperationAction} after {@OperationDuration}ms.",
-                                       "failure",
-                                       (int) scope.Duration.TotalMilliseconds);
+                if (exception.Data.Contains("WasHandled") && exception.Data["WasHandled"] is bool wasHandled && wasHandled)
+                    _logger.LogInformation("External request handling {@OperationAction} after {@OperationDuration}ms.",
+                                           "failure",
+                                           (int) scope.Duration.TotalMilliseconds);
+                else
+                    _logger.LogInformation(exception,
+                                           "External request handling {@OperationAction} after {@OperationDuration}ms.",
+                                           "failure",
+                                           (int) scope.Duration.TotalMilliseconds);
             }
         }
 

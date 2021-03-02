@@ -43,10 +43,10 @@ namespace GS.DecoupleIt.Operations
             public Dictionary<string, LogLevel> ErrorRemap { get; set; } = new();
 
             /// <summary>
-            ///     Map that allows to remap log level for specific exception types.
+            ///     Map that allows to remap log level for specific exception categories.
             /// </summary>
             [NotNull]
-            public Dictionary<string, LogLevel> ExceptionRemap { get; set; } = new();
+            public Dictionary<string, LogLevel> ExceptionCategoryRemap { get; set; } = new();
 
             /// <summary>
             ///     Map that allows to remap Information logs to another level for specific classes.

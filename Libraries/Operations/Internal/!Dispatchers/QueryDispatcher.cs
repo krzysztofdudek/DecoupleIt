@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
@@ -33,29 +32,21 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             using var span = Tracer.OpenSpan(query.GetType(), SpanType.Query);
 
-            var handlers = OperationHandlerFactory.GetQueryHandlers(query)
-                                                  .ToList();
+            var handlers = OperationHandlerFactory.GetQueryHandlers(query);
 
-            if (handlers.Count == 0)
-            {
-                Logger.LogInformation("Dispatching query {@OperationAction}, but no handlers found.", "started");
-
-                return null;
-            }
-
-            Logger.LogInformation("Dispatching query {@OperationAction}, {@OperationHandlersCount} will handle it.", "started", handlers.Count);
+            Logger.LogDebug("Dispatching query {@OperationAction}.", "started");
 
             try
             {
                 var result = await ProcessHandlers(query, handlers, cancellationToken);
 
-                Logger.LogInformation("Dispatching query {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
+                Logger.LogDebug("Dispatching query {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
 
                 return result;
             }
             catch
             {
-                Logger.LogInformation("Dispatching query {@OperationAction} after {@OperationDuration}ms.", "failed", span.Duration.Milliseconds);
+                Logger.LogDebug("Dispatching query {@OperationAction} after {@OperationDuration}ms.", "failed", span.Duration.Milliseconds);
 
                 throw;
             }
@@ -85,10 +76,12 @@ namespace GS.DecoupleIt.Operations.Internal
             }
             catch (Exception exception)
             {
-                Logger.LogInformation(exception,
-                                      "Query handler invocation {@OperationAction} after {@OperationDuration}ms.",
-                                      "failed",
-                                      span.Duration.Milliseconds);
+                Logger.LogError(exception,
+                                "Query handler invocation {@OperationAction} after {@OperationDuration}ms.",
+                                "failed",
+                                span.Duration.Milliseconds);
+
+                exception.Data.Add("WasHandled", true);
 
                 throw;
             }

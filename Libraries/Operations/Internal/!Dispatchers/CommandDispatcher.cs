@@ -110,6 +110,8 @@ namespace GS.DecoupleIt.Operations.Internal
                 {
                     Logger.LogError(preCommandHandlerException, "Pre command handler invocation {@OperationAction}.", "failed");
 
+                    preCommandHandlerException.Data.Add("WasHandled", true);
+
                     throw;
                 }
             }
@@ -174,6 +176,8 @@ namespace GS.DecoupleIt.Operations.Internal
                         }
                     }
 
+                    commandHandlerException.Data.Add("WasHandled", true);
+
                     throw;
                 }
             }
@@ -194,6 +198,8 @@ namespace GS.DecoupleIt.Operations.Internal
                 catch (Exception preCommandHandlerException)
                 {
                     Logger.LogError(preCommandHandlerException, "Pre command handler invocation {@OperationAction}.", "failed");
+
+                    preCommandHandlerException.Data.Add("WasHandled", true);
 
                     throw;
                 }
@@ -265,6 +271,8 @@ namespace GS.DecoupleIt.Operations.Internal
                             Logger.LogError(postCommandHandlerException, "Post command handler invocation {@OperationAction}.", "failed");
                         }
                     }
+
+                    commandHandlerException.Data.Add("WasHandled", true);
 
                     throw;
                 }
