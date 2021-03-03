@@ -4,7 +4,6 @@
 
     <PropertyGroup>
         <VersionPrefix>5.0.0</VersionPrefix>
-        <VersionSuffix>prerelease.2</VersionSuffix>
         <Title>DecoupleIt - Automatic registration for Microsoft.Extensions.DependencyInjection</Title>
         <Description>Are you fed up with manual dependency registrations? This package resolves this problem by allowing Microsoft.Extensions.DependencyInjection to be more automatic by registering dependencies with attributes.</Description>
     </PropertyGroup>
