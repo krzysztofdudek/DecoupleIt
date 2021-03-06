@@ -1,105 +1,107 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using GS.DecoupleIt.DependencyInjection.Automatic;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GS.DecoupleIt.Operations.Internal
 {
-    [Singleton]
-    internal sealed class OperationHandlerFactory
+    internal static class OperationHandlerFactory
     {
-        public OperationHandlerFactory([NotNull] IServiceProvider serviceProvider)
+        [NotNull]
+        [ItemNotNull]
+        public static IEnumerable<ICommandHandler> GetCommandHandlers([NotNull] IServiceProvider serviceProvider, [NotNull] ICommand command)
         {
-            _serviceProvider = serviceProvider;
+            return serviceProvider.GetServices(typeof(CommandHandlerBase<>).MakeGenericType(command.GetType()))!.Select(x => (ICommandHandler) x);
         }
 
         [NotNull]
         [ItemNotNull]
-        public IEnumerable<ICommandHandler> GetCommandHandlers([NotNull] ICommand command)
-        {
-            return _serviceProvider.GetServices(typeof(CommandHandlerBase<>).MakeGenericType(command.GetType()))!.Select(x => (ICommandHandler) x);
-        }
-
-        [NotNull]
-        [ItemNotNull]
-        public IEnumerable<ICommandWithResultHandler> GetCommandHandlersWithResult([NotNull] ICommandWithResult commandWithResult)
+        public static IEnumerable<ICommandWithResultHandler> GetCommandHandlersWithResult(
+            [NotNull] IServiceProvider serviceProvider,
+            [NotNull] ICommandWithResult commandWithResult)
         {
             var resultType = commandWithResult.ResultType;
 
-            return _serviceProvider.GetServices(typeof(CommandHandlerBase<,>).MakeGenericType(commandWithResult.GetType(), resultType))!.Select(
+            return serviceProvider.GetServices(typeof(CommandHandlerBase<,>).MakeGenericType(commandWithResult.GetType(), resultType))!.Select(
                 x => (ICommandWithResultHandler) x);
         }
 
         [NotNull]
         [ItemNotNull]
-        public IEnumerable<IOnEmissionInternalEventHandler> GetOnEmissionInternalEventHandlers([NotNull] IInternalEvent internalEvent)
+        public static IEnumerable<IOnEmissionInternalEventHandler> GetOnEmissionInternalEventHandlers(
+            [NotNull] IServiceProvider serviceProvider,
+            [NotNull] IInternalEvent internalEvent)
         {
-            return _serviceProvider.GetServices(typeof(OnEmissionInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!.Select(
+            return serviceProvider.GetServices(typeof(OnEmissionInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!.Select(
                 x => (IOnEmissionInternalEventHandler) x);
         }
 
         [NotNull]
         [ItemNotNull]
-        public IEnumerable<IOnFailureInternalEventHandler> GetOnFailureInternalEventHandlers([NotNull] IInternalEvent internalEvent)
+        public static IEnumerable<IOnFailureInternalEventHandler> GetOnFailureInternalEventHandlers(
+            [NotNull] IServiceProvider serviceProvider,
+            [NotNull] IInternalEvent internalEvent)
         {
-            return _serviceProvider.GetServices(typeof(OnFailureInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!.Select(
+            return serviceProvider.GetServices(typeof(OnFailureInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!.Select(
                 x => (IOnFailureInternalEventHandler) x);
         }
 
         [NotNull]
         [ItemNotNull]
-        public IEnumerable<IOnSuccessInternalEventHandler> GetOnSuccessInternalEventHandlers([NotNull] IInternalEvent internalEvent)
+        public static IEnumerable<IOnSuccessInternalEventHandler> GetOnSuccessInternalEventHandlers(
+            [NotNull] IServiceProvider serviceProvider,
+            [NotNull] IInternalEvent internalEvent)
         {
-            return _serviceProvider.GetServices(typeof(OnSuccessInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!.Select(
+            return serviceProvider.GetServices(typeof(OnSuccessInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!.Select(
                 x => (IOnSuccessInternalEventHandler) x);
         }
 
         [NotNull]
         [ItemNotNull]
-        public IEnumerable<IPostCommandHandler> GetPostCommandHandlers([NotNull] ICommand command)
+        public static IEnumerable<IPostCommandHandler> GetPostCommandHandlers([NotNull] IServiceProvider serviceProvider, [NotNull] ICommand command)
         {
-            return _serviceProvider.GetServices(typeof(PostCommandHandlerBase<>).MakeGenericType(command.GetType()))!.Select(x => (IPostCommandHandler) x);
+            return serviceProvider.GetServices(typeof(PostCommandHandlerBase<>).MakeGenericType(command.GetType()))!.Select(x => (IPostCommandHandler) x);
         }
 
         [NotNull]
         [ItemNotNull]
-        public IEnumerable<IPostCommandWithResultHandler> GetPostCommandWithResultHandlers([NotNull] ICommandWithResult commandWithResult)
+        public static IEnumerable<IPostCommandWithResultHandler> GetPostCommandWithResultHandlers(
+            [NotNull] IServiceProvider serviceProvider,
+            [NotNull] ICommandWithResult commandWithResult)
         {
             var resultType = commandWithResult.ResultType;
 
-            return _serviceProvider.GetServices(typeof(PostCommandHandlerBase<,>).MakeGenericType(commandWithResult.GetType(), resultType))!.Select(
+            return serviceProvider.GetServices(typeof(PostCommandHandlerBase<,>).MakeGenericType(commandWithResult.GetType(), resultType))!.Select(
                 x => (IPostCommandWithResultHandler) x);
         }
 
         [NotNull]
         [ItemNotNull]
-        public IEnumerable<IPreCommandHandler> GetPreCommandHandlers([NotNull] ICommand command)
+        public static IEnumerable<IPreCommandHandler> GetPreCommandHandlers([NotNull] IServiceProvider serviceProvider, [NotNull] ICommand command)
         {
-            return _serviceProvider.GetServices(typeof(PreCommandHandlerBase<>).MakeGenericType(command.GetType()))!.Select(x => (IPreCommandHandler) x);
+            return serviceProvider.GetServices(typeof(PreCommandHandlerBase<>).MakeGenericType(command.GetType()))!.Select(x => (IPreCommandHandler) x);
         }
 
         [NotNull]
         [ItemNotNull]
-        public IEnumerable<IPreCommandWithResultHandler> GetPreCommandWithResultHandlers([NotNull] ICommandWithResult commandWithResult)
+        public static IEnumerable<IPreCommandWithResultHandler> GetPreCommandWithResultHandlers(
+            [NotNull] IServiceProvider serviceProvider,
+            [NotNull] ICommandWithResult commandWithResult)
         {
             var resultType = commandWithResult.ResultType;
 
-            return _serviceProvider.GetServices(typeof(PreCommandHandlerBase<,>).MakeGenericType(commandWithResult.GetType(), resultType))!.Select(
+            return serviceProvider.GetServices(typeof(PreCommandHandlerBase<,>).MakeGenericType(commandWithResult.GetType(), resultType))!.Select(
                 x => (IPreCommandWithResultHandler) x);
         }
 
         [NotNull]
         [ItemNotNull]
-        public IEnumerable<IQueryHandler> GetQueryHandlers([NotNull] IQuery query)
+        public static IEnumerable<IQueryHandler> GetQueryHandlers([NotNull] IServiceProvider serviceProvider, [NotNull] IQuery query)
         {
             var resultType = query.ResultType;
 
-            return _serviceProvider.GetServices(typeof(QueryHandlerBase<,>).MakeGenericType(query.GetType(), resultType))!.Select(x => (IQueryHandler) x);
+            return serviceProvider.GetServices(typeof(QueryHandlerBase<,>).MakeGenericType(query.GetType(), resultType))!.Select(x => (IQueryHandler) x);
         }
-
-        [NotNull]
-        private readonly IServiceProvider _serviceProvider;
     }
 }

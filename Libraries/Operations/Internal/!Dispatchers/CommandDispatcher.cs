@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace GS.DecoupleIt.Operations.Internal
@@ -17,9 +18,9 @@ namespace GS.DecoupleIt.Operations.Internal
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
         public CommandDispatcher(
             [NotNull] IExtendedLoggerFactory extendedLoggerFactory,
-            [NotNull] OperationHandlerFactory operationHandlerFactory,
             [NotNull] ITracer tracer,
-            [NotNull] IOperationContext operationContext) : base(extendedLoggerFactory.Create<CommandDispatcher>(), operationHandlerFactory, tracer)
+            [NotNull] IOperationContext operationContext,
+            [NotNull] IServiceProvider serviceProvider) : base(extendedLoggerFactory.Create<CommandDispatcher>(), tracer, serviceProvider)
         {
             _operationContext = operationContext;
         }
@@ -70,14 +71,16 @@ namespace GS.DecoupleIt.Operations.Internal
             {
                 object result = null;
 
+                using var serviceProviderScope = ServiceProvider.CreateScope();
+
                 switch (command)
                 {
                     case ICommand typedCommand:
-                        await InvokeCommandHandler(typedCommand, cancellationToken);
+                        await InvokeCommandHandler(typedCommand, serviceProviderScope.ServiceProvider, cancellationToken);
 
                         break;
                     case ICommandWithResult typedCommand:
-                        result = await InvokeCommandWithResultHandler(typedCommand, cancellationToken);
+                        result = await InvokeCommandWithResultHandler(typedCommand, serviceProviderScope.ServiceProvider, cancellationToken);
 
                         break;
                     default:
@@ -96,9 +99,12 @@ namespace GS.DecoupleIt.Operations.Internal
             }
         }
 
-        private async Task InvokeCommandHandler([NotNull] ICommand typedCommand, CancellationToken cancellationToken)
+        private async Task InvokeCommandHandler(
+            [NotNull] ICommand typedCommand,
+            [NotNull] IServiceProvider serviceProvider,
+            CancellationToken cancellationToken)
         {
-            foreach (var preCommandHandler in OperationHandlerFactory.GetPreCommandHandlers(typedCommand))
+            foreach (var preCommandHandler in OperationHandlerFactory.GetPreCommandHandlers(serviceProvider, typedCommand))
             {
                 using var tracerSpan = Tracer.OpenSpan(preCommandHandler.GetType(), SpanType.PreCommandHandler);
 
@@ -116,7 +122,7 @@ namespace GS.DecoupleIt.Operations.Internal
                 }
             }
 
-            foreach (var commandHandler in OperationHandlerFactory.GetCommandHandlers(typedCommand))
+            foreach (var commandHandler in OperationHandlerFactory.GetCommandHandlers(serviceProvider, typedCommand))
             {
                 var       tracerSpan            = Tracer.OpenSpan(commandHandler.GetType(), SpanType.CommandHandler);
                 using var operationContextScope = _operationContext.OpenScope();
@@ -133,7 +139,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
                     tracerSpan.Dispose();
 
-                    foreach (var postCommandHandler in OperationHandlerFactory.GetPostCommandHandlers(typedCommand))
+                    foreach (var postCommandHandler in OperationHandlerFactory.GetPostCommandHandlers(serviceProvider, typedCommand))
                     {
                         using var _ = Tracer.OpenSpan(postCommandHandler.GetType(), SpanType.PostCommandHandler);
 
@@ -159,7 +165,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
                     tracerSpan.Dispose();
 
-                    foreach (var postCommandHandler in OperationHandlerFactory.GetPostCommandHandlers(typedCommand))
+                    foreach (var postCommandHandler in OperationHandlerFactory.GetPostCommandHandlers(serviceProvider, typedCommand))
                     {
                         using var _ = Tracer.OpenSpan(postCommandHandler.GetType(), SpanType.PostCommandHandler);
 
@@ -183,11 +189,14 @@ namespace GS.DecoupleIt.Operations.Internal
             }
         }
 
-        private async Task<object> InvokeCommandWithResultHandler([NotNull] ICommandWithResult typedCommand, CancellationToken cancellationToken)
+        private async Task<object> InvokeCommandWithResultHandler(
+            [NotNull] ICommandWithResult typedCommand,
+            [NotNull] IServiceProvider serviceProvider,
+            CancellationToken cancellationToken)
         {
             object result = null;
 
-            foreach (var preCommandHandler in OperationHandlerFactory.GetPreCommandWithResultHandlers(typedCommand))
+            foreach (var preCommandHandler in OperationHandlerFactory.GetPreCommandWithResultHandlers(serviceProvider, typedCommand))
             {
                 using var tracerSpan = Tracer.OpenSpan(preCommandHandler.GetType(), SpanType.PreCommandHandler);
 
@@ -205,7 +214,7 @@ namespace GS.DecoupleIt.Operations.Internal
                 }
             }
 
-            foreach (var commandHandler in OperationHandlerFactory.GetCommandHandlersWithResult(typedCommand))
+            foreach (var commandHandler in OperationHandlerFactory.GetCommandHandlersWithResult(serviceProvider, typedCommand))
             {
                 var       tracerSpan            = Tracer.OpenSpan(commandHandler.GetType(), SpanType.CommandHandler);
                 using var operationContextScope = _operationContext.OpenScope();
@@ -225,7 +234,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
                     tracerSpan.Dispose();
 
-                    foreach (var postCommandHandler in OperationHandlerFactory.GetPostCommandWithResultHandlers(typedCommand))
+                    foreach (var postCommandHandler in OperationHandlerFactory.GetPostCommandWithResultHandlers(serviceProvider, typedCommand))
                     {
                         using var _ = Tracer.OpenSpan(postCommandHandler.GetType(), SpanType.PostCommandHandler);
 
@@ -254,7 +263,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
                     tracerSpan.Dispose();
 
-                    foreach (var postCommandHandler in OperationHandlerFactory.GetPostCommandWithResultHandlers(typedCommand))
+                    foreach (var postCommandHandler in OperationHandlerFactory.GetPostCommandWithResultHandlers(serviceProvider, typedCommand))
                     {
                         using var _ = Tracer.OpenSpan(postCommandHandler.GetType(), SpanType.PostCommandHandler);
 

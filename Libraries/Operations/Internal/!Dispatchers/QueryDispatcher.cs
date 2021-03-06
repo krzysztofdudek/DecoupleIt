@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace GS.DecoupleIt.Operations.Internal
@@ -15,10 +16,8 @@ namespace GS.DecoupleIt.Operations.Internal
     internal sealed class QueryDispatcher : DispatcherBase
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-        public QueryDispatcher(
-            [NotNull] IExtendedLoggerFactory extendedLoggerFactory,
-            [NotNull] OperationHandlerFactory operationHandlerFactory,
-            [NotNull] ITracer tracer) : base(extendedLoggerFactory.Create<QueryDispatcher>(), operationHandlerFactory, tracer) { }
+        public QueryDispatcher([NotNull] IExtendedLoggerFactory extendedLoggerFactory, [NotNull] ITracer tracer, [NotNull] IServiceProvider serviceProvider) :
+            base(extendedLoggerFactory.Create<QueryDispatcher>(), tracer, serviceProvider) { }
 
         [NotNull]
         [ItemCanBeNull]
@@ -32,7 +31,9 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             using var span = Tracer.OpenSpan(query.GetType(), SpanType.Query);
 
-            var handlers = OperationHandlerFactory.GetQueryHandlers(query);
+            using var serviceProviderScope = ServiceProvider.CreateScope();
+
+            var handlers = OperationHandlerFactory.GetQueryHandlers(serviceProviderScope.ServiceProvider, query);
 
             Logger.LogDebug("Dispatching query {@OperationAction}.", "started");
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace GS.DecoupleIt.Operations.Internal
@@ -17,8 +18,8 @@ namespace GS.DecoupleIt.Operations.Internal
     {
         public InternalEventDispatcher(
             [NotNull] IExtendedLoggerFactory extendedLoggerFactory,
-            [NotNull] OperationHandlerFactory operationHandlerFactory,
-            [NotNull] ITracer tracer) : base(extendedLoggerFactory.Create<InternalEventDispatcher>(), operationHandlerFactory, tracer) { }
+            [NotNull] ITracer tracer,
+            [NotNull] IServiceProvider serviceProvider) : base(extendedLoggerFactory.Create<InternalEventDispatcher>(), tracer, serviceProvider) { }
 
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -111,24 +112,26 @@ namespace GS.DecoupleIt.Operations.Internal
 
             using var span = Tracer.OpenSpan(eventType, SpanType.InternalEvent);
 
+            using var serviceProviderScope = ServiceProvider.CreateScope();
+
             IEnumerable<object> eventHandlers;
             string              mode;
 
             if (onEmission)
             {
-                eventHandlers = OperationHandlerFactory.GetOnEmissionInternalEventHandlers(@event);
+                eventHandlers = OperationHandlerFactory.GetOnEmissionInternalEventHandlers(serviceProviderScope.ServiceProvider, @event);
 
                 mode = "on emission";
             }
             else if (exception is null)
             {
-                eventHandlers = OperationHandlerFactory.GetOnSuccessInternalEventHandlers(@event);
+                eventHandlers = OperationHandlerFactory.GetOnSuccessInternalEventHandlers(serviceProviderScope.ServiceProvider, @event);
 
                 mode = "on success";
             }
             else
             {
-                eventHandlers = OperationHandlerFactory.GetOnFailureInternalEventHandlers(@event);
+                eventHandlers = OperationHandlerFactory.GetOnFailureInternalEventHandlers(serviceProviderScope.ServiceProvider, @event);
 
                 mode = "on failure";
             }
