@@ -12,7 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestEase;
-using RestEase.Implementation;
 
 namespace GS.DecoupleIt.HttpAbstraction
 {
@@ -126,7 +125,7 @@ namespace GS.DecoupleIt.HttpAbstraction
                 if (responseDeserializer != null)
                     requester.ResponseDeserializer = responseDeserializer;
 
-                var implementation = ImplementationBuilder.Instance.CreateImplementation<TService>(requester);
+                var implementation = RestClient.For<TService>(requester);
 
                 return implementation;
             });

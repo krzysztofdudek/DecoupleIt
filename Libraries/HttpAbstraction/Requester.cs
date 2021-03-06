@@ -36,14 +36,18 @@ namespace GS.DecoupleIt.HttpAbstraction
         [ItemNotNull]
         protected override async Task<HttpResponseMessage> SendRequestAsync([NotNull] IRequestInfo requestInfo, bool readBody)
         {
-            var basePath = SubstitutePathParameters(requestInfo.BasePath, requestInfo) ?? string.Empty;
-            var path     = SubstitutePathParameters(requestInfo.Path, requestInfo) ?? string.Empty;
+            var baseAddress = SubstitutePathParameters(requestInfo.BaseAddress, requestInfo) ?? string.Empty;
+            var basePath    = SubstitutePathParameters(requestInfo.BasePath, requestInfo) ?? string.Empty;
+            var path        = SubstitutePathParameters(requestInfo.Path, requestInfo) ?? string.Empty;
 
             var message = new HttpRequestMessage
             {
-                Method     = requestInfo.Method,
-                RequestUri = ConstructUri(basePath, path, requestInfo),
-                Content    = ConstructContent(requestInfo),
+                Method = requestInfo.Method,
+                RequestUri = ConstructUri(baseAddress,
+                                          basePath,
+                                          path,
+                                          requestInfo),
+                Content = ConstructContent(requestInfo),
 #if !NET5_0
                 Properties =
                 {
