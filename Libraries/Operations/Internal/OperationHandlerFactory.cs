@@ -37,8 +37,9 @@ namespace GS.DecoupleIt.Operations.Internal
             [NotNull] IServiceProvider serviceProvider,
             [NotNull] IInternalEvent internalEvent)
         {
-            return serviceProvider.GetServices(typeof(OnEmissionInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!.Select(
-                x => (IOnEmissionInternalEventHandler) x);
+            return serviceProvider.GetServices(typeof(OnEmissionInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!
+                   .Concat(serviceProvider.GetServices(typeof(InternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType())))
+                   .Select(x => (IOnEmissionInternalEventHandler) x);
         }
 
         [NotNull]
@@ -48,8 +49,9 @@ namespace GS.DecoupleIt.Operations.Internal
             [NotNull] IServiceProvider serviceProvider,
             [NotNull] IInternalEvent internalEvent)
         {
-            return serviceProvider.GetServices(typeof(OnFailureInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!.Select(
-                x => (IOnFailureInternalEventHandler) x);
+            return serviceProvider.GetServices(typeof(OnFailureInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!
+                   .Concat(serviceProvider.GetServices(typeof(InternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType())))
+                   .Select(x => (IOnFailureInternalEventHandler) x);
         }
 
         [NotNull]
@@ -59,8 +61,9 @@ namespace GS.DecoupleIt.Operations.Internal
             [NotNull] IServiceProvider serviceProvider,
             [NotNull] IInternalEvent internalEvent)
         {
-            return serviceProvider.GetServices(typeof(OnSuccessInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!.Select(
-                x => (IOnSuccessInternalEventHandler) x);
+            return serviceProvider.GetServices(typeof(OnSuccessInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!
+                   .Concat(serviceProvider.GetServices(typeof(InternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType())))
+                   .Select(x => (IOnSuccessInternalEventHandler) x);
         }
 
         [NotNull]

@@ -46,7 +46,7 @@ namespace GS.DecoupleIt.Operations.Internal
                 // ReSharper disable once PossibleNullReferenceException
                 if (eventTypes.All(x => x != events.GetType()))
 #if NETCOREAPP2_2 || NETSTANDARD2_0
-                    return Task.CompletedTask!.AsValueTask();
+                    return Task.CompletedTask;
 #else
                     return new ValueTask();
 #endif
@@ -54,7 +54,7 @@ namespace GS.DecoupleIt.Operations.Internal
                 events.Add(@event);
 
 #if NETCOREAPP2_2 || NETSTANDARD2_0
-                return Task.CompletedTask!.AsValueTask();
+                return Task.CompletedTask;
 #else
                 return new ValueTask();
 #endif
@@ -94,7 +94,7 @@ namespace GS.DecoupleIt.Operations.Internal
                 // ReSharper disable once PossibleNullReferenceException
                 if (eventTypes.All(x => x != events.GetType()))
 #if NETCOREAPP2_2 || NETSTANDARD2_0
-                    return Task.CompletedTask!.AsValueTask();
+                    return Task.CompletedTask;
 #else
                     return new ValueTask();
 #endif
@@ -102,7 +102,7 @@ namespace GS.DecoupleIt.Operations.Internal
                 events.Add(@event);
 
 #if NETCOREAPP2_2 || NETSTANDARD2_0
-                return Task.CompletedTask!.AsValueTask();
+                return Task.CompletedTask;
 #else
                 return new ValueTask();
 #endif
