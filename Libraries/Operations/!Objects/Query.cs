@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.Operations.Internal;
@@ -20,10 +19,12 @@ namespace GS.DecoupleIt.Operations
         /// </summary>
         /// <returns>Result.</returns>
         [CanBeNull]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TResult Dispatch()
         {
             return OperationDispatcher.DispatchQueryAsync(this, CancellationToken.None)
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+                                      .AsTask()
+#endif
                                       .GetAwaiter()
                                       .GetResult();
         }
@@ -34,7 +35,6 @@ namespace GS.DecoupleIt.Operations
         /// <returns>Result.</returns>
         [NotNull]
         [ItemCanBeNull]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<TResult>

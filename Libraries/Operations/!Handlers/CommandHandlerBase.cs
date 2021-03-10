@@ -24,7 +24,6 @@ namespace GS.DecoupleIt.Operations
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Task.</returns>
         [NotNull]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected abstract
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task

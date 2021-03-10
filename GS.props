@@ -21,12 +21,12 @@
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <DocumentationFile>bin\Debug\$(RootNamespace).xml</DocumentationFile>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(RootNamespace).xml</DocumentationFile>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <DefineConstants>TRACE;JETBRAINS_ANNOTATIONS</DefineConstants>
-        <DocumentationFile>bin\Release\$(RootNamespace).xml</DocumentationFile>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(RootNamespace).xml</DocumentationFile>
     </PropertyGroup>
 
 </Project>

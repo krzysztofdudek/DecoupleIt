@@ -19,10 +19,11 @@ namespace GS.DecoupleIt.Operations.Internal
         public InternalEventDispatcher(
             [NotNull] IExtendedLoggerFactory extendedLoggerFactory,
             [NotNull] ITracer tracer,
-            [NotNull] IServiceProvider serviceProvider) : base(extendedLoggerFactory.Create<InternalEventDispatcher>(), tracer, serviceProvider) { }
+            [NotNull] IServiceProvider serviceProvider) : base(extendedLoggerFactory.Create<InternalEventDispatcher>(),
+                                                                                     tracer,
+                                                                                     serviceProvider) { }
 
         [NotNull]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task
@@ -38,7 +39,6 @@ namespace GS.DecoupleIt.Operations.Internal
         }
 
         [NotNull]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task
@@ -54,7 +54,6 @@ namespace GS.DecoupleIt.Operations.Internal
         }
 
         [NotNull]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task
@@ -95,6 +94,7 @@ namespace GS.DecoupleIt.Operations.Internal
             };
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AccessToDisposedClosure")]
         private async
 #if NETCOREAPP2_2 || NETSTANDARD2_0
@@ -119,19 +119,19 @@ namespace GS.DecoupleIt.Operations.Internal
 
             if (onEmission)
             {
-                eventHandlers = OperationHandlerFactory.GetOnEmissionInternalEventHandlers(serviceProviderScope.ServiceProvider, @event);
+                eventHandlers = OperationHandlerFactory.GetOnEmissionInternalEventHandlers(serviceProviderScope!.ServiceProvider!, @event);
 
                 mode = "on emission";
             }
             else if (exception is null)
             {
-                eventHandlers = OperationHandlerFactory.GetOnSuccessInternalEventHandlers(serviceProviderScope.ServiceProvider, @event);
+                eventHandlers = OperationHandlerFactory.GetOnSuccessInternalEventHandlers(serviceProviderScope!.ServiceProvider!, @event);
 
                 mode = "on success";
             }
             else
             {
-                eventHandlers = OperationHandlerFactory.GetOnFailureInternalEventHandlers(serviceProviderScope.ServiceProvider, @event);
+                eventHandlers = OperationHandlerFactory.GetOnFailureInternalEventHandlers(serviceProviderScope!.ServiceProvider!, @event);
 
                 mode = "on failure";
             }
@@ -220,7 +220,8 @@ namespace GS.DecoupleIt.Operations.Internal
 #endif
             ProcessEventHandlers(
                 [NotNull] IInternalEvent @event,
-                [NotNull] [ItemNotNull] IEnumerable<object> eventHandlers,
+                [NotNull] [ItemNotNull]
+                IEnumerable<object> eventHandlers,
                 [CanBeNull] Exception exception,
                 [NotNull] string mode,
                 CancellationToken cancellationToken)

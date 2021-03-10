@@ -1,12 +1,11 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using GS.DecoupleIt.Shared;
 using Xunit;
 
 namespace GS.DecoupleIt.Tracing.Tests
 {
-    [ExcludeFromCodeCoverage]
-    [SuppressMessage("ReSharper", "UnusedVariable")]
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "UnusedVariable")]
     public class TracerTests
     {
         [JetBrains.Annotations.NotNull]

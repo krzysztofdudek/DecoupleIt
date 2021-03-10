@@ -18,6 +18,9 @@ namespace GS.DecoupleIt.Operations
         public void Emit()
         {
             OperationDispatcher.DispatchInternalEventAsync(this, CancellationToken.None)
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+                               .AsTask()
+#endif
                                .GetAwaiter()
                                .GetResult();
         }

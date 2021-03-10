@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using DifferentNamespace;
 using GS.DecoupleIt.Shared;
@@ -36,7 +35,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic.Tests
         }
 
         [JetBrains.Annotations.NotNull]
-        [SuppressMessage("ReSharper", "NotNullMemberIsNotInitialized")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "NotNullMemberIsNotInitialized")]
         private readonly IServiceProvider _serviceProvider;
 
         [Fact]

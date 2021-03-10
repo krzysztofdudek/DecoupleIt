@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
@@ -16,7 +17,10 @@ namespace GS.DecoupleIt.Operations.Internal
     internal sealed class QueryDispatcher : DispatcherBase
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-        public QueryDispatcher([NotNull] IExtendedLoggerFactory extendedLoggerFactory, [NotNull] ITracer tracer, [NotNull] IServiceProvider serviceProvider) :
+        public QueryDispatcher(
+            [NotNull] IExtendedLoggerFactory extendedLoggerFactory,
+            [NotNull] ITracer tracer,
+            [NotNull] IServiceProvider serviceProvider) :
             base(extendedLoggerFactory.Create<QueryDispatcher>(), tracer, serviceProvider) { }
 
         [NotNull]
@@ -33,7 +37,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
             using var serviceProviderScope = ServiceProvider.CreateScope();
 
-            var handlers = OperationHandlerFactory.GetQueryHandlers(serviceProviderScope.ServiceProvider, query);
+            var handlers = OperationHandlerFactory.GetQueryHandlers(serviceProviderScope!.ServiceProvider!, query);
 
             Logger.LogDebug("Dispatching query {@OperationAction}.", "started");
 
@@ -55,13 +59,17 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         [ItemCanBeNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<object>
 #else
             ValueTask<object>
 #endif
-            ProcessHandler([NotNull] IQuery query, [NotNull] IQueryHandler handler, CancellationToken cancellationToken)
+            ProcessHandler(
+                [NotNull] IQuery query,
+                [NotNull] IQueryHandler handler,
+                CancellationToken cancellationToken)
         {
             using var span = Tracer.OpenSpan(handler.GetType(), SpanType.QueryHandler);
 
@@ -90,13 +98,18 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         [ItemCanBeNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<object>
 #else
             ValueTask<object>
 #endif
-            ProcessHandlers([NotNull] IQuery query, [NotNull] [ItemNotNull] IEnumerable<IQueryHandler> handlers, CancellationToken cancellationToken)
+            ProcessHandlers(
+                [NotNull] IQuery query,
+                [NotNull] [ItemNotNull]
+                IEnumerable<IQueryHandler> handlers,
+                CancellationToken cancellationToken)
         {
             object result = null;
 

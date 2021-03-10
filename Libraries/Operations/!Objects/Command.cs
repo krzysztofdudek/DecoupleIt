@@ -20,6 +20,9 @@ namespace GS.DecoupleIt.Operations
         public void Dispatch()
         {
             OperationDispatcher.DispatchCommandAsync(this, CancellationToken.None)
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+                               .AsTask()
+#endif
                                .GetAwaiter()
                                .GetResult();
         }
@@ -123,6 +126,9 @@ namespace GS.DecoupleIt.Operations
         public TResult Dispatch()
         {
             return OperationDispatcher.DispatchCommandAsync(this, CancellationToken.None)
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+                                      .AsTask()
+#endif
                                       .GetAwaiter()
                                       .GetResult();
         }

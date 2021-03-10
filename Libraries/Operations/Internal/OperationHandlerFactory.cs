@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,7 @@ namespace GS.DecoupleIt.Operations.Internal
     {
         [NotNull]
         [ItemNotNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<ICommandHandler> GetCommandHandlers([NotNull] IServiceProvider serviceProvider, [NotNull] ICommand command)
         {
             return serviceProvider.GetServices(typeof(CommandHandlerBase<>).MakeGenericType(command.GetType()))!.Select(x => (ICommandHandler) x);
@@ -17,6 +19,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         [ItemNotNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<ICommandWithResultHandler> GetCommandHandlersWithResult(
             [NotNull] IServiceProvider serviceProvider,
             [NotNull] ICommandWithResult commandWithResult)
@@ -29,6 +32,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         [ItemNotNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<IOnEmissionInternalEventHandler> GetOnEmissionInternalEventHandlers(
             [NotNull] IServiceProvider serviceProvider,
             [NotNull] IInternalEvent internalEvent)
@@ -39,6 +43,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         [ItemNotNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<IOnFailureInternalEventHandler> GetOnFailureInternalEventHandlers(
             [NotNull] IServiceProvider serviceProvider,
             [NotNull] IInternalEvent internalEvent)
@@ -49,6 +54,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         [ItemNotNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<IOnSuccessInternalEventHandler> GetOnSuccessInternalEventHandlers(
             [NotNull] IServiceProvider serviceProvider,
             [NotNull] IInternalEvent internalEvent)
@@ -59,6 +65,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         [ItemNotNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<IPostCommandHandler> GetPostCommandHandlers([NotNull] IServiceProvider serviceProvider, [NotNull] ICommand command)
         {
             return serviceProvider.GetServices(typeof(PostCommandHandlerBase<>).MakeGenericType(command.GetType()))!.Select(x => (IPostCommandHandler) x);
@@ -66,6 +73,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         [ItemNotNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<IPostCommandWithResultHandler> GetPostCommandWithResultHandlers(
             [NotNull] IServiceProvider serviceProvider,
             [NotNull] ICommandWithResult commandWithResult)
@@ -78,6 +86,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         [ItemNotNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<IPreCommandHandler> GetPreCommandHandlers([NotNull] IServiceProvider serviceProvider, [NotNull] ICommand command)
         {
             return serviceProvider.GetServices(typeof(PreCommandHandlerBase<>).MakeGenericType(command.GetType()))!.Select(x => (IPreCommandHandler) x);
@@ -85,6 +94,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         [ItemNotNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<IPreCommandWithResultHandler> GetPreCommandWithResultHandlers(
             [NotNull] IServiceProvider serviceProvider,
             [NotNull] ICommandWithResult commandWithResult)
@@ -97,6 +107,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         [ItemNotNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<IQueryHandler> GetQueryHandlers([NotNull] IServiceProvider serviceProvider, [NotNull] IQuery query)
         {
             var resultType = query.ResultType;

@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
@@ -34,12 +35,29 @@ namespace GS.DecoupleIt.Operations.Internal
 #endif
             DispatchAsync([NotNull] ICommand command, CancellationToken cancellationToken = default)
         {
-            await DispatchAsync((object) command, cancellationToken);
+            using var span = Tracer.OpenSpan(command.GetType(), SpanType.Command);
+
+            Logger.LogDebug("Dispatching command {@OperationAction}.", "started");
+
+            try
+            {
+                using var serviceProviderScope = ServiceProvider.CreateScope();
+
+                await InvokeCommandHandler(command, serviceProviderScope!.ServiceProvider!, cancellationToken);
+
+                Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
+            }
+            catch
+            {
+                Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "failed", span.Duration.Milliseconds);
+
+                throw;
+            }
         }
 
         [NotNull]
         [ItemCanBeNull]
-        public
+        public async
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task<object>
 #else
@@ -47,45 +65,15 @@ namespace GS.DecoupleIt.Operations.Internal
 #endif
             DispatchAsync([NotNull] ICommandWithResult command, CancellationToken cancellationToken = default)
         {
-            return DispatchAsync((object) command, cancellationToken);
-        }
-
-        [NotNull]
-        private readonly IOperationContext _operationContext;
-
-        [NotNull]
-        [ItemCanBeNull]
-        private async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
-            Task<object>
-#else
-            ValueTask<object>
-#endif
-            DispatchAsync([NotNull] object command, CancellationToken cancellationToken = default)
-        {
             using var span = Tracer.OpenSpan(command.GetType(), SpanType.Command);
 
             Logger.LogDebug("Dispatching command {@OperationAction}.", "started");
 
             try
             {
-                object result = null;
-
                 using var serviceProviderScope = ServiceProvider.CreateScope();
 
-                switch (command)
-                {
-                    case ICommand typedCommand:
-                        await InvokeCommandHandler(typedCommand, serviceProviderScope.ServiceProvider, cancellationToken);
-
-                        break;
-                    case ICommandWithResult typedCommand:
-                        result = await InvokeCommandWithResultHandler(typedCommand, serviceProviderScope.ServiceProvider, cancellationToken);
-
-                        break;
-                    default:
-                        return default;
-                }
+                var result = await InvokeCommandWithResultHandler(command, serviceProviderScope!.ServiceProvider!, cancellationToken);
 
                 Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
 
@@ -99,6 +87,10 @@ namespace GS.DecoupleIt.Operations.Internal
             }
         }
 
+        [NotNull]
+        private readonly IOperationContext _operationContext;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task InvokeCommandHandler(
             [NotNull] ICommand typedCommand,
             [NotNull] IServiceProvider serviceProvider,
@@ -189,6 +181,7 @@ namespace GS.DecoupleIt.Operations.Internal
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task<object> InvokeCommandWithResultHandler(
             [NotNull] ICommandWithResult typedCommand,
             [NotNull] IServiceProvider serviceProvider,

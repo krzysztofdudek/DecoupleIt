@@ -170,7 +170,6 @@ namespace GS.DecoupleIt.Operations.Internal
 #endif
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async
 #if NETCOREAPP2_2 || NETSTANDARD2_0
             Task

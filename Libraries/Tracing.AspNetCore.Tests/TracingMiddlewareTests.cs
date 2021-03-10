@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -17,7 +16,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace GS.DecoupleIt.Tracing.AspNetCore.Tests
 {
-    [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
     public class TracingMiddlewareTests
     {
         private const string Url = "http://localhost:60020";
