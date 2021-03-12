@@ -70,7 +70,7 @@ namespace GS.DecoupleIt.Operations
 #else
             ValueTask
 #endif
-            HandleAsync([NotNull] TCommand command, CancellationToken cancellationToken = default);
+            PreHandleAsync([NotNull] TCommand command, CancellationToken cancellationToken = default);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if NETCOREAPP2_2 || NETSTANDARD2_0
@@ -83,7 +83,7 @@ namespace GS.DecoupleIt.Operations
             if (!(command is TCommand typedCommand))
                 throw new ArgumentException("Command is of invalid type.", nameof(command));
 
-            return HandleAsync(typedCommand, cancellationToken);
+            return PreHandleAsync(typedCommand, cancellationToken);
         }
     }
 }

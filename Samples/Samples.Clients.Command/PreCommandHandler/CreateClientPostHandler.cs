@@ -9,7 +9,7 @@ namespace Samples.Clients.Command.PreCommandHandler
 {
     internal sealed class CreateClientPostHandler : PreCommandHandlerBase<CreateClient, CreateClientResult>
     {
-        protected override ValueTask HandleAsync(CreateClient command, CancellationToken cancellationToken = default)
+        protected override ValueTask PreHandleAsync(CreateClient command, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(command.Name))
                 throw new InvalidOperationException("Name cannot be null or empty.").WithCategory(ExceptionCategories.Business);

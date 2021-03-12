@@ -87,7 +87,7 @@ namespace GS.DecoupleIt.Operations
 #else
             ValueTask
 #endif
-            HandleAsync(
+            PostHandleAsync(
                 [NotNull] TCommand command,
                 [CanBeNull] TResult result,
                 [NotNull] [ItemNotNull] IReadOnlyCollection<InternalEvent> internalEvents,
@@ -110,11 +110,11 @@ namespace GS.DecoupleIt.Operations
             if (!(command is TCommand typedCommand))
                 throw new ArgumentException("Command is of invalid type.", nameof(command));
 
-            return HandleAsync(typedCommand,
-                               (TResult) result,
-                               internalEvents,
-                               exception,
-                               cancellationToken);
+            return PostHandleAsync(typedCommand,
+                                   (TResult) result,
+                                   internalEvents,
+                                   exception,
+                                   cancellationToken);
         }
     }
 }
