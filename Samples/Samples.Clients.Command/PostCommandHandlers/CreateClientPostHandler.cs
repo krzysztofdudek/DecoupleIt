@@ -19,7 +19,7 @@ namespace Samples.Clients.Command.PostCommandHandlers
             _logger = logger;
         }
 
-        protected override ValueTask HandleAsync(
+        protected override ValueTask PostHandleAsync(
             CreateClient command,
             CreateClientResult result,
             IReadOnlyCollection<InternalEvent> internalEvents,
