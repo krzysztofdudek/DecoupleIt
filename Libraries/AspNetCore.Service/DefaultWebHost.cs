@@ -270,6 +270,13 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               context    = context.AsNotNull();
                               collection = collection.AsNotNull();
 
+                              // Configure automatic dependency injection.
+                              collection.ConfigureAutomaticDependencyInjection(context.Configuration,
+                                                                               options =>
+                                                                               {
+                                                                                   options.Environment = context.HostingEnvironment.EnvironmentName;
+                                                                               });
+
                               // Configure unit of work.
                               var unitOfWorkBuilder = collection.AddContextualUnitOfWork(context.Configuration.AsNotNull());
 

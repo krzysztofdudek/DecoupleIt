@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>5.0.0</VersionPrefix>
+        <VersionPrefix>5.0.1</VersionPrefix>
         <Title>DecoupleIt - http abstraction</Title>
         <Description>Implements http abstraction for uniformity of interfaces between controllers and services used on client side.</Description>
     </PropertyGroup>
@@ -9,14 +9,14 @@
     <Import Project="../libraries.core.props" />
 
     <ItemGroup>
-      <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
-      <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
-      <ProjectReference Include="..\Shared\Shared.csproj" />
-      <ProjectReference Include="..\Tracing\Tracing.csproj" />
+        <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
+        <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
+        <ProjectReference Include="..\Shared\Shared.csproj" />
+        <ProjectReference Include="..\Tracing\Tracing.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="RestEase" Version="1.5.2" />
+        <PackageReference Include="RestEase" Version="1.5.2" />
     </ItemGroup>
 
 </Project>

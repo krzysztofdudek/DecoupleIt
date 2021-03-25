@@ -7,6 +7,9 @@
     <Import Project="../libraries.core.props" />
 
     <ItemGroup>
+        <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
+        <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
+        <ProjectReference Include="..\Shared\Shared.csproj" />
         <ProjectReference Include="..\Tracing\Tracing.csproj" />
     </ItemGroup>
 

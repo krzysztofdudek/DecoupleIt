@@ -7,5 +7,12 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
     ///     Base class for lifetime attribute.
     /// </summary>
     [MeansImplicitUse(ImplicitUseKindFlags.InstantiatedNoFixedConstructorSignature)]
-    public abstract class LifeTimeAttribute : Attribute { }
+    [PublicAPI]
+    public abstract class LifeTimeAttribute : Attribute
+    {
+        /// <summary>
+        ///     Defines in which environments implementation should be registered.
+        /// </summary>
+        public string Environments { get; set; }
+    }
 }

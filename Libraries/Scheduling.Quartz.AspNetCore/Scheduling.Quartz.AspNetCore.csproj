@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>5.0.0</VersionPrefix>
+        <VersionPrefix>5.0.1</VersionPrefix>
         <Title>DecoupleIt - ASP .NET Core support for GS.DecoupleIt.Scheduling.Quartz</Title>
         <Description>ASP .NET Core support for GS.DecoupleIt.Scheduling.Quartz.</Description>
     </PropertyGroup>

@@ -4,7 +4,9 @@ using System.Linq;
 using System.Reflection;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace GS.DecoupleIt.DependencyInjection.Automatic
 {
@@ -14,6 +16,27 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
     [PublicAPI]
     public static class ServiceCollectionExtensions
     {
+        /// <summary>
+        ///     Configures automatic dependency injection. It's MANDATORY to call this before any usage of method <see cref="ScanAssemblyForImplementations"/>.
+        /// </summary>
+        /// <param name="serviceCollection">Service collection.</param>
+        /// <param name="configuration">Configuration.</param>
+        /// <param name="configure">Configure options.</param>
+        public static void ConfigureAutomaticDependencyInjection(
+            [NotNull] [ItemNotNull] this IServiceCollection serviceCollection,
+            [NotNull] IConfiguration configuration,
+            [CanBeNull] Action<Options> configure = default)
+        {
+            var options = new Options();
+
+            configuration.GetSection(typeof(ServiceCollectionExtensions).Namespace!.Replace(".", ":"))
+                         .Bind(options);
+
+            configure?.Invoke(options);
+
+            serviceCollection.AddSingleton<IOptions<Options>>(new OptionsWrapper<Options>(options));
+        }
+
         /// <summary>
         ///     <para>
         ///         Method automatically registers all found services in the assembly if they're annotated with one of this three attributes: <br />
@@ -54,16 +77,32 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
             ignoredBaseTypes    ??= new Type[0];
             registerAsManyTypes ??= new Type[0];
 
-            var types = GetTypesToRegister(assembly,
-                                           @namespace,
-                                           ignoredTypes,
-                                           ignoredBaseTypes);
+            if (!(serviceCollection.FirstOrDefault(x => x.ImplementationInstance is IOptions<Options>)
+                                   ?.ImplementationInstance is IOptions<Options> options))
+                throw new InvalidOperationException($"Method {nameof(ConfigureAutomaticDependencyInjection)} was not called before on {nameof(IServiceCollection)}.");
 
-            foreach (var implementationType in types)
+            var typesWithAttributes = GetTypesToRegister(assembly,
+                                                         @namespace,
+                                                         ignoredTypes,
+                                                         ignoredBaseTypes)
+                                      .Select(x => (types: x, attribute: x.GetTheMostImportantLifetimeAttribute()))
+                                      .ToList();
+
+            foreach (var (types, attribute) in typesWithAttributes.Where(x => x.attribute.Environments is null))
                 ProcessSingleImplementationType(serviceCollection,
                                                 ignoredTypes,
                                                 registerAsManyTypes,
-                                                implementationType);
+                                                types!,
+                                                attribute!,
+                                                options.Value!);
+
+            foreach (var (types, attribute) in typesWithAttributes.Where(x => x.attribute.Environments is not null))
+                ProcessSingleImplementationType(serviceCollection,
+                                                ignoredTypes,
+                                                registerAsManyTypes,
+                                                types!,
+                                                attribute!,
+                                                options.Value!);
         }
 
         [NotNull]
@@ -74,6 +113,9 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
             typeof(SingletonAttribute),
             typeof(ScopedAttribute)
         };
+
+        [NotNull]
+        private static string _configurationPath = typeof(ServiceCollectionExtensions).Namespace!.Replace(".", ":");
 
         [NotNull]
         [ItemCanBeNull]
@@ -191,13 +233,20 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
             [NotNull] [ItemNotNull] IServiceCollection serviceCollection,
             [NotNull] [ItemNotNull] Type[] ignoredTypes,
             [NotNull] [ItemNotNull] Type[] registerAsManyTypes,
-            [NotNull] Type implementationType)
+            [NotNull] Type implementationType,
+            [NotNull] LifeTimeAttribute attribute,
+            [NotNull] Options options)
         {
             // Do not register the same services again.
             if (serviceCollection.Any(x => x.ServiceType == implementationType && x.ImplementationType == implementationType))
                 return;
 
-            RegisterImplementation(serviceCollection, implementationType);
+            // If environments are defined for implementation component then verify if it should be registered or not.
+            if (attribute.Environments is not null && attribute.Environments.Split()
+                                                               .Contains(options.Environment) != true)
+                return;
+
+            RegisterImplementation(serviceCollection, implementationType, attribute);
 
             var serviceDescriptors = GetImplementationServices(implementationType, ignoredTypes);
 
@@ -214,9 +263,9 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
                 }
         }
 
-        private static void RegisterImplementation([NotNull] IServiceCollection serviceCollection, [NotNull] Type type)
+        private static void RegisterImplementation([NotNull] IServiceCollection serviceCollection, [NotNull] Type type, [NotNull] LifeTimeAttribute attribute)
         {
-            var serviceDescriptor = type.GetTheMostImportantLifetimeAttribute() switch
+            var serviceDescriptor = attribute switch
             {
                 TransientAttribute _ => ServiceDescriptor.Transient(type, type),
                 ScopedAttribute _    => ServiceDescriptor.Scoped(type, type),

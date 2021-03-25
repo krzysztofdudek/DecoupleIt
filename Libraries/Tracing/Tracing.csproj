@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>5.0.0</VersionPrefix>
+        <VersionPrefix>5.0.1</VersionPrefix>
         <Title>DecoupleIt - Tracing</Title>
         <Description>Implementation of tracing pattern allowing to define own scopes per case.</Description>
     </PropertyGroup>

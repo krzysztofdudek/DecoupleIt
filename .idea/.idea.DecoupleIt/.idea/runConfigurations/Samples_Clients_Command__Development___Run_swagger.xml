@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Samples.Clients.Command: Run swagger" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
+  <configuration default="false" name="Samples.Clients.Command: Development - Run swagger" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
     <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/Samples/Samples.Clients.Command/Samples.Clients.Command.csproj" />
-    <option name="LAUNCH_PROFILE_TFM" value=".NETCoreApp,Version=v3.1" />
-    <option name="LAUNCH_PROFILE_NAME" value="Run swagger" />
+    <option name="LAUNCH_PROFILE_TFM" value="net5.0" />
+    <option name="LAUNCH_PROFILE_NAME" value="Development - Run swagger" />
     <option name="USE_EXTERNAL_CONSOLE" value="0" />
     <option name="USE_MONO" value="0" />
     <option name="RUNTIME_ARGUMENTS" value="" />
