@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
+using System.Buffers;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
@@ -11,6 +10,8 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IO;
+using System.Linq;
 #if NETCOREAPP2_2
 using Microsoft.AspNetCore.Routing;
 #elif NETCOREAPP3_1 || NET5_0
@@ -38,6 +39,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ConvertToUsingDeclaration")]
         public async Task InvokeAsync([NotNull] HttpContext context, [NotNull] RequestDelegate next)
         {
             context.Request.EnableBuffering();
@@ -68,74 +70,65 @@ namespace GS.DecoupleIt.AspNetCore.Service
             }
 #endif
 
-            var requestBody = await ReadStream(context.Request.Body);
-
             using var scope = _tracer.OpenSpan($"{controllerName}.{actionName}", SpanType.ExternalRequestHandler);
+
+            context.Request.Body.Position = 0;
+
+            using var reader = new StreamReader(context.Request.Body,
+                                                Encoding.UTF8,
+                                                false,
+                                                -1,
+                                                true);
+
+            var requestBody = await reader.ReadToEndAsync();
+
+            context.Request.Body.Position = 0;
 
             if (_serviceOptions.LogRequests)
                 LogStart(context, requestBody);
 
-            try
-            {
-                string responseBody;
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
-                await
-#endif
-                    using (var memoryStream = new MemoryStream())
-                {
-                    var responseBodyStream = context.Response.Body;
-                    context.Response.Body = memoryStream;
+            Memory<byte> responseBody;
+            Exception    exception = default;
 
+#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+            await
+#endif
+                using (var memoryStream = _recyclableMemoryStreamManager.GetStream())
+            {
+                var originalResponseBodyStream = context.Response.Body;
+                context.Response.Body = memoryStream;
+
+                try
+                {
                     await next(context)
                         .AsNotNull();
-
-                    responseBody          = await ReadStream(memoryStream);
-                    context.Response.Body = responseBodyStream;
-
-                    var bytes = Encoding.UTF8.GetBytes(responseBody);
-
-                    context.Response.ContentLength = bytes.Length;
-                    await context.Response.Body.WriteAsync(bytes);
+                }
+                catch (Exception exception2)
+                {
+                    exception = exception2;
                 }
 
-                if (_serviceOptions.LogResponses)
-                    LogFinish(context, responseBody, scope.Duration);
+                responseBody = memoryStream.GetBuffer()
+                                           .AsMemory(0, (int) memoryStream.Length);
+
+                context.Response.Body          = originalResponseBodyStream;
+                context.Response.ContentLength = memoryStream.Length;
+
+                await context.Response.Body.WriteAsync(responseBody, context.RequestAborted);
             }
-            catch (Exception exception)
-            {
-                if (exception.Data.Contains("WasHandled") && exception.Data["WasHandled"] is bool wasHandled && wasHandled)
-                    _logger.LogInformation("External request handling {@OperationAction} after {@OperationDuration}ms.",
-                                           "failure",
-                                           (int) scope.Duration.TotalMilliseconds);
-                else
-                    _logger.LogInformation(exception,
-                                           "External request handling {@OperationAction} after {@OperationDuration}ms.",
-                                           "failure",
-                                           (int) scope.Duration.TotalMilliseconds);
-            }
-        }
 
-        [NotNull]
-        [ItemNotNull]
-        private static async Task<string> ReadStream([NotNull] Stream stream)
-        {
-            stream.Position = 0;
-
-            using var reader = new StreamReader(stream,
-                                                Encoding.UTF8,
-                                                true,
-                                                -1,
-                                                true);
-
-            var result = await reader.ReadToEndAsync();
-
-            stream.Position = 0;
-
-            return result;
+            if (_serviceOptions.LogResponses)
+                LogFinish(context,
+                          responseBody,
+                          scope.Duration,
+                          exception);
         }
 
         [NotNull]
         private readonly ILogger<LoggingMiddleware> _logger;
+
+        [NotNull]
+        private readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager = new();
 
         [NotNull]
         private readonly ServiceOptions _serviceOptions;
@@ -143,49 +136,57 @@ namespace GS.DecoupleIt.AspNetCore.Service
         [NotNull]
         private readonly ITracer _tracer;
 
-        private void LogFinish([NotNull] HttpContext context, [CanBeNull] string responseBody, TimeSpan duration)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "TemplateFormatStringProblem")]
+        private void LogFinish(
+            [NotNull] HttpContext context,
+            Memory<byte> responseBody,
+            TimeSpan duration,
+            [CanBeNull] Exception exception)
         {
-            var message = new StringBuilder(
-                "External request handling {@OperationAction} after {@OperationDuration}ms.\nStatus code: {@StatusCode}\nHeaders: {@Headers}");
+            const string message =
+                "External request handling {@OperationAction} after {@OperationDuration}ms.\nStatus code: {@StatusCode}\nHeaders: {@Headers}\nBody: {@Body:l}";
 
-            var args = new List<object>
-            {
-                "finished",
-                (int) duration.TotalMilliseconds,
-                context.Response.StatusCode,
-                context.Request.Headers.ToDictionary(x => x.Key, x => x.Value)
-            };
+            var wasHandled = exception is not null && exception.Data.Contains("WasHandled") && exception.Data["WasHandled"] is bool x && x;
 
-            if (!string.IsNullOrWhiteSpace(responseBody))
-            {
-                message.Append("\nBody: {@Body:l}");
-                args.Add(responseBody);
-            }
+            var args = ArrayPool<object>.Shared.Rent(5);
 
-            _logger.LogInformation(message.ToString(), args.ToArray());
+            args[0] = wasHandled || exception is null ? "finished" : "failed";
+            args[1] = (int) duration.TotalMilliseconds;
+            args[2] = context.Response.StatusCode;
+            args[3] = context.Request.Headers.ToDictionary(entry => entry.Key, entry => entry.Value);
+            args[4] = _serviceOptions.LogResponsesBodies && responseBody.Length > 0 ? Encoding.UTF8.GetString(responseBody.Span) : string.Empty;
+
+            if (wasHandled || exception is null)
+                _logger.LogInformation(message, args);
+            else
+                _logger.LogInformation(exception, message, args);
+
+            for (var i = 0; i < 5; i++)
+                args[i] = default;
+
+            ArrayPool<object>.Shared.Return(args);
         }
 
         private void LogStart([NotNull] HttpContext context, [CanBeNull] string requestBody)
         {
-            var message = new StringBuilder(
-                "External request handling {@OperationAction}.\nMethod: {@Method}\nPath: {@Path}\nQuery string: {@Query}\nHeaders: {@Headers}");
+            const string message =
+                "External request handling {@OperationAction}.\nMethod: {@Method}\nPath: {@Path}\nQuery string: {@Query}\nHeaders: {@Headers}\nBody: {@Body:l}";
 
-            var args = new List<object>
-            {
-                "started",
-                context.Request.Method,
-                context.Request.Path.Value,
-                context.Request.QueryString.Value,
-                context.Request.Headers.ToDictionary(x => x.Key, x => x.Value)
-            };
+            var args = ArrayPool<object>.Shared.Rent(6);
 
-            if (!string.IsNullOrWhiteSpace(requestBody))
-            {
-                message.Append("\nBody: {@Body:l}");
-                args.Add(requestBody);
-            }
+            args[0] = "started";
+            args[1] = context.Request.Method;
+            args[2] = context.Request.Path.Value;
+            args[3] = context.Request.QueryString.Value;
+            args[4] = context.Request.Headers.ToDictionary(entry => entry.Key, entry => entry.Value);
+            args[5] = _serviceOptions.LogRequestsBodies ? requestBody : string.Empty;
 
-            _logger.LogInformation(message.ToString(), args.ToArray());
+            _logger.LogInformation(message, args);
+
+            for (var i = 0; i < 6; i++)
+                args[i] = default;
+
+            ArrayPool<object>.Shared.Return(args);
         }
     }
 }
