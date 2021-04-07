@@ -9,7 +9,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
     internal static class TypeExtensions
     {
         [CanBeNull]
-        internal static LifeTimeAttribute GetTheMostImportantLifetimeAttribute([NotNull] this Type type)
+        internal static LifetimeAttribute GetTheMostImportantLifetimeAttribute([NotNull] this Type type)
         {
             while (true)
             {
@@ -26,11 +26,11 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         }
 
         [CanBeNull]
-        private static LifeTimeAttribute GetLifeTimeAttributeForInterfaces([NotNull] Type type)
+        private static LifetimeAttribute GetLifeTimeAttributeForInterfaces([NotNull] Type type)
         {
             var interfaceAttributes = type.GetInterfaces()
                                           .SelectMany(@interface => @interface.GetCustomAttributes(true)
-                                                                              .OfType<LifeTimeAttribute>())
+                                                                              .OfType<LifetimeAttribute>())
                                           .ToList();
 
             if (interfaceAttributes.Select(x => x.GetType())
@@ -42,10 +42,10 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
         }
 
         [CanBeNull]
-        private static LifeTimeAttribute GetLifeTimeAttributeForType([NotNull] Type type)
+        private static LifetimeAttribute GetLifeTimeAttributeForType([NotNull] Type type)
         {
             var typeAttributes = type.GetCustomAttributes(true)
-                                     .OfType<LifeTimeAttribute>()
+                                     .OfType<LifetimeAttribute>()
                                      .ToList();
 
             if (typeAttributes.Select(x => x.GetType())

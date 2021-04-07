@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.Optionals
 {
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
     /// <summary>
     ///     Extends <see cref="Task" /> and <see cref="ValueTask" /> with methods using optionals.
     /// </summary>
@@ -27,7 +27,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<Optional<T>>
 #else
             ValueTask<Optional<T>>
@@ -37,7 +37,7 @@ namespace GS.DecoupleIt.Optionals
             return obj is null ? new Optional<T>() : new Optional<T>(await obj);
         }
 
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         /// <summary>
         ///     Treats input object as optional.
         /// </summary>
@@ -64,7 +64,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
@@ -81,7 +81,7 @@ namespace GS.DecoupleIt.Optionals
             return (await optional.MapAsync(map, cancellationToken)).AsNotNull();
         }
 
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         /// <summary>
         ///     Maps value to another type.
         /// </summary>
@@ -116,7 +116,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
@@ -133,7 +133,7 @@ namespace GS.DecoupleIt.Optionals
             return (await optional.MapAsync(map, cancellationToken)).AsNotNull();
         }
 
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         /// <summary>
         ///     Maps value to another type.
         /// </summary>
@@ -168,7 +168,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
@@ -185,7 +185,7 @@ namespace GS.DecoupleIt.Optionals
             return await optional.MapAsync(map, cancellationToken);
         }
 
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         /// <summary>
         ///     Maps value to another optional.
         /// </summary>
@@ -218,7 +218,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<T>
 #else
             ValueTask<T>
@@ -235,7 +235,7 @@ namespace GS.DecoupleIt.Optionals
             return await optional.ReduceAsync(whenNone, cancellationToken);
         }
 
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         /// <summary>
         ///     Reduces value to value returned by the delegate.
         /// </summary>
@@ -265,7 +265,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<T>
 #else
             ValueTask<T>
@@ -279,7 +279,7 @@ namespace GS.DecoupleIt.Optionals
             return optional.Reduce(whenNone);
         }
 
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         /// <summary>
         ///     Reduces value to given value.
         /// </summary>
@@ -307,7 +307,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<Optional<T>>
 #else
             ValueTask<Optional<T>>
@@ -324,7 +324,7 @@ namespace GS.DecoupleIt.Optionals
             return await optional.ReduceToAlternateAsync(alternateWay, cancellationToken);
         }
 
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         /// <summary>
         ///     Reduces to an alternate optional.
         /// </summary>
@@ -357,7 +357,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<Optional<T>>
 #else
             ValueTask<Optional<T>>
@@ -371,7 +371,7 @@ namespace GS.DecoupleIt.Optionals
             return optional.ReduceToAlternate(whenNone);
         }
 
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         /// <summary>
         ///     Reduces to an alternate optional.
         /// </summary>
@@ -400,7 +400,7 @@ namespace GS.DecoupleIt.Optionals
         /// <returns>Value.</returns>
         [NotNull]
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<T>
 #else
             ValueTask<T>
@@ -414,7 +414,7 @@ namespace GS.DecoupleIt.Optionals
             return optional.ReduceToDefault();
         }
 
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         /// <summary>
         ///     Reduces value to default.
         /// </summary>

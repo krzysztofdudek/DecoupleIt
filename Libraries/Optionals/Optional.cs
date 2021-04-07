@@ -52,7 +52,7 @@ namespace GS.DecoupleIt.Optionals
         /// <returns>Task.</returns>
         [NotNull]
         public
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -64,7 +64,7 @@ namespace GS.DecoupleIt.Optionals
             if (_hasValue)
                 return doAction(_value!, cancellationToken)!;
             else
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                 return Task.CompletedTask;
 #else
                 return new ValueTask();
@@ -122,7 +122,7 @@ namespace GS.DecoupleIt.Optionals
         /// <returns>Optional.</returns>
         [NotNull]
         public async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
@@ -143,7 +143,7 @@ namespace GS.DecoupleIt.Optionals
         /// <returns>Optional.</returns>
         [NotNull]
         public async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
@@ -165,7 +165,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
@@ -225,7 +225,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<T>
 #else
             ValueTask<T>
@@ -237,7 +237,7 @@ namespace GS.DecoupleIt.Optionals
             if (!_hasValue)
                 return whenNone(cancellationToken);
 
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             return Task.FromResult(_value);
 #else
             return new ValueTask<T>(_value);
@@ -285,7 +285,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<Optional<T>>
 #else
             ValueTask<Optional<T>>
@@ -297,7 +297,7 @@ namespace GS.DecoupleIt.Optionals
             if (!_hasValue)
                 return alternateWay(cancellationToken);
 
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             return Task.FromResult(this);
 #else
             return new ValueTask<Optional<T>>(this);

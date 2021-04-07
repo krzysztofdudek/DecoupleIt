@@ -1,15 +1,12 @@
-#if NETCOREAPP3_1 || NET5_0
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-#elif NETCOREAPP2_2
-using Newtonsoft.Json;
-#endif
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Serilog;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -30,7 +27,20 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// <param name="builder">Application builder.</param>
         void ConfigureApplication([NotNull] WebHostBuilderContext context, [NotNull] IApplicationBuilder builder);
 
-#if NETCOREAPP3_1 || NET5_0
+        /// <summary>
+        ///     Configures <see cref="CorsOptions" />.
+        /// </summary>
+        /// <param name="context">Web host builder context.</param>
+        /// <param name="options">Cors options.</param>
+        void ConfigureCors([NotNull] WebHostBuilderContext context, [NotNull] CorsOptions options);
+
+        /// <summary>
+        ///     Configures <see cref="CorsPolicyBuilder" />.
+        /// </summary>
+        /// <param name="context">Web host builder context.</param>
+        /// <param name="builder">Cors policy builder.</param>
+        void ConfigureCorsPolicyBuilder([NotNull] WebHostBuilderContext context, [NotNull] CorsPolicyBuilder builder);
+
         /// <summary>
         ///     Configures <see cref="IEndpointRouteBuilder" />.
         /// </summary>
@@ -39,26 +49,18 @@ namespace GS.DecoupleIt.AspNetCore.Service
         void ConfigureEndpoints([NotNull] WebHostBuilderContext context, [NotNull] IEndpointRouteBuilder builder);
 
         /// <summary>
-        ///     Configures <see cref="JsonOptions" />.
+        ///     Configures <see cref="LoggerConfiguration" />.
         /// </summary>
         /// <param name="context">Web host builder context.</param>
-        /// <param name="options">Json options.</param>
-        void ConfigureJson([NotNull] WebHostBuilderContext context, [NotNull] JsonSerializerOptions options);
-#elif NETCOREAPP2_2
-        /// <summary>
-        ///     Configures <see cref="IRouteBuilder" />.
-        /// </summary>
-        /// <param name="context">Web host builder context.</param>
-        /// <param name="builder">Endpoint route builder.</param>
-        void ConfigureEndpoints([NotNull] WebHostBuilderContext context, [NotNull] IRouteBuilder builder);
+        /// <param name="configuration">Logger configuration.</param>
+        void ConfigureLogging([NotNull] WebHostBuilderContext context, [NotNull] LoggerConfiguration configuration);
 
         /// <summary>
-        ///     Configures <see cref="JsonSerializerSettings" />.
+        ///     Configures migrations <see cref="DecoupleIt.Migrations.Builder" />.
         /// </summary>
         /// <param name="context">Web host builder context.</param>
-        /// <param name="options">Json options.</param>
-        void ConfigureJson([NotNull] WebHostBuilderContext context, [NotNull] JsonSerializerSettings options);
-#endif
+        /// <param name="builder">Unit of work builder.</param>
+        void ConfigureMigrations([NotNull] WebHostBuilderContext context, [NotNull] DecoupleIt.Migrations.Builder builder);
 
         /// <summary>
         ///     Configures <see cref="IMvcBuilder" />.
@@ -66,6 +68,27 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// <param name="context">Web host builder context.</param>
         /// <param name="builder">Mvc builder.</param>
         void ConfigureMvcBuilder([NotNull] WebHostBuilderContext context, [NotNull] IMvcBuilder builder);
+
+        /// <summary>
+        ///     Configures <see cref="JsonSerializerSettings" />.
+        /// </summary>
+        /// <param name="context">Web host builder context.</param>
+        /// <param name="options">Json options.</param>
+        void ConfigureNewtonsoftJson([NotNull] WebHostBuilderContext context, [NotNull] JsonSerializerSettings options);
+
+        /// <summary>
+        ///     Configures operations <see cref="DecoupleIt.Operations.Builder" />.
+        /// </summary>
+        /// <param name="context">Web host builder context.</param>
+        /// <param name="builder">Operations builder.</param>
+        void ConfigureOperations([NotNull] WebHostBuilderContext context, [NotNull] DecoupleIt.Operations.Builder builder);
+
+        /// <summary>
+        ///     Configures <see cref="DecoupleIt.Scheduling.Options" />.
+        /// </summary>
+        /// <param name="context">Web host builder context.</param>
+        /// <param name="options">Scheduling options.</param>
+        void ConfigureScheduling([NotNull] WebHostBuilderContext context, [NotNull] DecoupleIt.Scheduling.Options options);
 
         /// <summary>
         ///     Configures <see cref="IServiceCollection" />.
@@ -96,31 +119,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
         void ConfigureSwaggerUI([NotNull] WebHostBuilderContext context, [NotNull] SwaggerUIOptions options);
 
         /// <summary>
-        ///     Configures <see cref="IWebHostBuilder" />.
-        /// </summary>
-        /// <param name="webHostBuilder">Web host builder.</param>
-        void ConfigureWebHostBuilder([NotNull] IWebHostBuilder webHostBuilder);
-
-        /// <summary>
-        ///     Configures <see cref="CorsOptions" />.
+        ///     Configures <see cref="JsonOptions" />.
         /// </summary>
         /// <param name="context">Web host builder context.</param>
-        /// <param name="options">Cors options.</param>
-        void ConfigureCors([NotNull] WebHostBuilderContext context, [NotNull] CorsOptions options);
-
-        /// <summary>
-        ///     Configures <see cref="CorsPolicyBuilder" />.
-        /// </summary>
-        /// <param name="context">Web host builder context.</param>
-        /// <param name="builder">Cors policy builder.</param>
-        void ConfigureCorsPolicyBuilder([NotNull] WebHostBuilderContext context, [NotNull] CorsPolicyBuilder builder);
-
-        /// <summary>
-        ///     Configures <see cref="LoggerConfiguration" />.
-        /// </summary>
-        /// <param name="context">Web host builder context.</param>
-        /// <param name="configuration">Logger configuration.</param>
-        void ConfigureLogging([NotNull] WebHostBuilderContext context, [NotNull] LoggerConfiguration configuration);
+        /// <param name="options">Json options.</param>
+        void ConfigureSystemTextJson([NotNull] WebHostBuilderContext context, [NotNull] JsonSerializerOptions options);
 
         /// <summary>
         ///     Configures unit of work <see cref="Contextual.UnitOfWork.Builder" />.
@@ -130,10 +133,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
         void ConfigureUnitOfWork([NotNull] WebHostBuilderContext context, [NotNull] Contextual.UnitOfWork.Builder builder);
 
         /// <summary>
-        ///     Configures operations <see cref="Operations.Builder" />.
+        ///     Configures <see cref="IWebHostBuilder" />.
         /// </summary>
-        /// <param name="context">Web host builder context.</param>
-        /// <param name="builder">Operations builder.</param>
-        void ConfigureOperations([NotNull] WebHostBuilderContext context, [NotNull] Operations.Builder builder);
+        /// <param name="webHostBuilder">Web host builder.</param>
+        void ConfigureWebHostBuilder([NotNull] IWebHostBuilder webHostBuilder);
     }
 }

@@ -8,7 +8,7 @@ namespace System
     internal static class TaskExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
         [NotNull]
         public static Task AsValueTask([NotNull] this Task task) => task;
 #else

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
 
 #endif
-#if (NETCOREAPP3_1 || NETSTANDARD2_1 || NETCOREAPP2_2 || NETSTANDARD2_0) && !NET5_0
+#if NETCOREAPP3_1 || NETSTANDARD2_1 || NETSTANDARD2_0
 using Microsoft.EntityFrameworkCore.Query.Internal;
 
 #endif
@@ -28,7 +28,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
     [PublicAPI]
     public class EFCoreUnitOfWorkWrapper
-        : IDisposable, IInfrastructure<IServiceProvider>, IDbContextDependencies, IDbSetCache, IDbContextPoolable, IUnitOfWork
+        : IDisposable, IInfrastructure<IServiceProvider>, IDbContextDependencies, IDbSetCache, IDbContextPoolable, IPooledUnitOfWork
 #if NET5_0 || NETCOREAPP3_1 || NETSTANDARD2_1
         , IAsyncDisposable
 #endif
@@ -51,9 +51,12 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))
                 return;
 
-            _dbContext.Dispose();
+            if (!IsPooled)
+            {
+                _dbContext.Dispose();
 
-            GC.SuppressFinalize(this);
+                GC.SuppressFinalize(this);
+            }
 
             Disposed?.Invoke(this);
         }
@@ -86,9 +89,17 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
         public IDiagnosticsLogger<DbLoggerCategory.Infrastructure> InfrastructureLogger => ((IDbContextDependencies) _dbContext).InfrastructureLogger;
 
         /// <inheritdoc />
-        public void ResetState()
+        void IResettableService.ResetState()
         {
             ((IResettableService) _dbContext).ResetState();
+        }
+
+        public bool IsPooled { get; set; }
+
+        /// <inheritdoc />
+        public Task ResetStateAsync(CancellationToken cancellationToken = new())
+        {
+            return ((IResettableService) _dbContext).ResetStateAsync(cancellationToken);
         }
 
         /// <inheritdoc />
@@ -128,26 +139,23 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
 
 #if NET5_0 || NETCOREAPP3_1 || NETSTANDARD2_1
         /// <inheritdoc />
-        public Task ResetStateAsync(CancellationToken cancellationToken = new())
-        {
-            return ((IResettableService) _dbContext).ResetStateAsync(cancellationToken);
-        }
-
-        /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))
                 return;
 
-            await _dbContext.DisposeAsync();
+            if (!IsPooled)
+            {
+                await _dbContext.DisposeAsync();
 
-            GC.SuppressFinalize(this);
+                GC.SuppressFinalize(this);
+            }
 
             Disposed?.Invoke(this);
         }
 #endif
 
-#if (NETCOREAPP3_1 || NETSTANDARD2_1 || NETCOREAPP2_2 || NETSTANDARD2_0) && !NET5_0
+#if NETCOREAPP3_1 || NETSTANDARD2_1 || NETSTANDARD2_0
         /// <inheritdoc />
         public void SetPool(IDbContextPool contextPool)
         {
@@ -167,10 +175,6 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
         }
 #endif
 
-#if NETCOREAPP2_2 || NETSTANDARD2_0
-        /// <inheritdoc />
-        public IDbQuerySource QuerySource => ((IDbContextDependencies) _dbContext).QuerySource;
-#endif
         public event Action<IUnitOfWork> Disposed;
 
         /// <inheritdoc />
@@ -184,7 +188,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
 
         /// <inheritdoc />
         public
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -192,7 +196,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
             SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocation(this))
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                 return Task.CompletedTask!;
 #else
                 return new ValueTask();
@@ -200,6 +204,16 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
 
             return _dbContext.SaveChangesAsync(cancellationToken)
                              .AsValueTask();
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "EF1001")]
+        void IPooledUnitOfWork.ResetState()
+        {
+#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP3_1
+            ((IDbContextDependencies) _dbContext).StateManager!.ResetState();
+#else
+            _dbContext.ChangeTracker!.Clear();
+#endif
         }
     }
 }

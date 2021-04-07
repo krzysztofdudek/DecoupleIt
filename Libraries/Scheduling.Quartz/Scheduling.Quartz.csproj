@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>5.0.1</VersionPrefix>
+        <VersionPrefix>6.0.0-alpha.0</VersionPrefix>
         <Title>DecoupleIt - Scheduling using Quartz</Title>
         <Description>Library uses Quartz as a scheduler for registered jobs using attributes from GS.DecoupleIt.Scheduling.</Description>
     </PropertyGroup>
@@ -11,7 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Quartz" Version="3.2.4" />
+        <PackageReference Include="Quartz" Version="3.3.2" />
     </ItemGroup>
 
     <Import Project="../libraries.core.props" />

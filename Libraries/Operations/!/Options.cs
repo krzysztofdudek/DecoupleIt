@@ -37,6 +37,11 @@ namespace GS.DecoupleIt.Operations
             public Dictionary<string, LogLevel> DebugRemap { get; set; } = new();
 
             /// <summary>
+            ///     Enables logging of additional information about flows that are executed. Error level logs are always enabled despite of this setting.
+            /// </summary>
+            public bool EnableNonErrorLogging { get; set; }
+
+            /// <summary>
             ///     Map that allows to remap Error logs to another level for specific classes.
             /// </summary>
             [NotNull]

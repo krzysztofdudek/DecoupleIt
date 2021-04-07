@@ -12,7 +12,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -26,7 +26,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [ItemCanBeNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<TResult>
 #else
             ValueTask<TResult>
@@ -39,7 +39,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -53,7 +53,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [ItemCanBeNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<TResult>
 #else
             ValueTask<TResult>
@@ -66,7 +66,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -75,7 +75,7 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             return OperationContext.CurrentScope == null
                 ?
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                 Task.CompletedTask
 #else
                 new ValueTask()
@@ -87,7 +87,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<object>
 #else
             ValueTask<object>
@@ -96,7 +96,7 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             return OperationContext.CurrentScope == null
                 ?
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                 Task.FromResult<object>(null)
 #else
                 new ValueTask<object>()
@@ -107,7 +107,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         private delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -116,7 +116,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         private delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<object>
 #else
             ValueTask<object>

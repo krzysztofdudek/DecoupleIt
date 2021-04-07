@@ -22,7 +22,7 @@ namespace GS.DecoupleIt.HttpAbstraction
     {
         public Requester(
             [NotNull] HttpClient httpClient,
-            [NotNull] HttpAbstractionOptions options,
+            [NotNull] Options options,
             [NotNull] ITracer tracer,
             [NotNull] ILogger<Requester> logger) : base(httpClient)
         {
@@ -101,13 +101,13 @@ namespace GS.DecoupleIt.HttpAbstraction
         private readonly ILogger<Requester> _logger;
 
         [NotNull]
-        private readonly HttpAbstractionOptions _options;
+        private readonly Options _options;
 
         [NotNull]
         private readonly ITracer _tracer;
 
         private async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -138,7 +138,7 @@ namespace GS.DecoupleIt.HttpAbstraction
         }
 
         private async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -150,7 +150,7 @@ namespace GS.DecoupleIt.HttpAbstraction
             var args = new List<object>
             {
                 "started",
-                context.Method,
+                context.Method.Method,
                 context.RequestUri,
                 context.Headers?.ToDictionary(x => x.Key, x => x.Value) ?? new Dictionary<string, IEnumerable<string>>()
             };

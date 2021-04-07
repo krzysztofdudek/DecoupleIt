@@ -1,8 +1,10 @@
 using GS.DecoupleIt.AspNetCore.Service;
-using GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore;
+using GS.DecoupleIt.AspNetCore.Service.UnitOfWork;
 using GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Samples.Clients.Command.Model;
 using Builder = GS.DecoupleIt.Contextual.UnitOfWork.Builder;
 
@@ -17,6 +19,11 @@ namespace Samples.Clients.Command
             return Main<WebHost>(args);
         }
 
+        public WebHost()
+        {
+            UseMigrations = true;
+        }
+
         public override void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder builder)
         {
             base.ConfigureApplication(context, builder);
@@ -24,12 +31,28 @@ namespace Samples.Clients.Command
             builder.UseContextualUnitOfWork<ClientsDbContext>();
         }
 
+        public override void ConfigureMigrations(WebHostBuilderContext context, GS.DecoupleIt.Migrations.Builder builder)
+        {
+            base.ConfigureMigrations(context, builder);
+
+            builder.ConfigureDbContext(dbContextOptionsBuilder =>
+            {
+                dbContextOptionsBuilder!.UseInMemoryDatabase("sample");
+
+                dbContextOptionsBuilder.ConfigureWarnings(warningsConfigurationBuilder =>
+                {
+                    warningsConfigurationBuilder!.Ignore(InMemoryEventId.TransactionIgnoredWarning);
+                });
+            });
+        }
+
         public override void ConfigureUnitOfWork(WebHostBuilderContext context, Builder builder)
         {
             base.ConfigureUnitOfWork(context, builder);
 
-            builder.AddSupportForEntityFrameworkCore()
-                   .WithContextMiddlewareFor<ClientsDbContext>();
+            builder.AddSupportForEntityFrameworkCore();
+
+            builder.WithContextMiddlewareFor<ClientsDbContext>();
         }
     }
 }

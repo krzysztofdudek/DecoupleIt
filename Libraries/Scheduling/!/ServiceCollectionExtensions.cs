@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using GS.DecoupleIt.DependencyInjection.Automatic;
+using GS.DecoupleIt.Options.Automatic;
 using GS.DecoupleIt.Scheduling.Exceptions;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
@@ -19,12 +20,32 @@ namespace GS.DecoupleIt.Scheduling
     public static class ServiceCollectionExtensions
     {
         /// <summary>
+        ///     Configures jobs.
+        /// </summary>
+        /// <param name="serviceCollection">Service collection.</param>
+        /// <param name="configuration">Configuration.</param>
+        /// <param name="configureOptions">Configure options delegate.</param>
+        /// <returns>Service collection.</returns>
+        [NotNull]
+        public static IServiceCollection ConfigureJobs(
+            [NotNull] [ItemNotNull] this IServiceCollection serviceCollection,
+            [NotNull] IConfiguration configuration,
+            [CanBeNull] Action<Options> configureOptions = default)
+        {
+            serviceCollection.ScanAssemblyForOptions(typeof(ServiceCollectionExtensions).Assembly, configuration);
+
+            if (configureOptions is not null)
+                serviceCollection.PostConfigure(configureOptions);
+
+            return serviceCollection;
+        }
+
+        /// <summary>
         ///     Registers all jobs that are annotated with <see cref="CyclicSchedule" />. They'll be run later by selected
         ///     implementation, for ex. Quartz.
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
         /// <param name="assembly">Assembly to scan.</param>
-        /// <param name="configuration">Configuration.</param>
         /// <returns>Service collection.</returns>
         /// <exception cref="AmbiguousSchedulingAttributes">
         ///     Exception is thrown when scan of the assembly founds jobs with more
@@ -32,10 +53,7 @@ namespace GS.DecoupleIt.Scheduling
         /// </exception>
         [NotNull]
         [PublicAPI]
-        public static IServiceCollection ScanAssemblyForJobs(
-            [NotNull] [ItemNotNull] this IServiceCollection serviceCollection,
-            [NotNull] Assembly assembly,
-            [NotNull] IConfiguration configuration)
+        public static IServiceCollection ScanAssemblyForJobs([NotNull] [ItemNotNull] this IServiceCollection serviceCollection, [NotNull] Assembly assembly)
         {
             serviceCollection.ScanAssemblyForImplementations(typeof(ServiceCollectionExtensions).Assembly);
 

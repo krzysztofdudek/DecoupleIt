@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>5.0.3</VersionPrefix>
+        <VersionPrefix>6.0.0-alpha.0</VersionPrefix>
+        <Title>DecoupleIt - Operations</Title>
+        <Description>Implementation of operations like command, query, internal event.</Description>
     </PropertyGroup>
 
     <Import Project="../libraries.core.props" />
@@ -11,18 +13,6 @@
         <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
         <ProjectReference Include="..\Shared\Shared.csproj" />
         <ProjectReference Include="..\Tracing\Tracing.csproj" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="System.Text.Json" Version="5.0.1" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
-        <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     </ItemGroup>
 
 </Project>

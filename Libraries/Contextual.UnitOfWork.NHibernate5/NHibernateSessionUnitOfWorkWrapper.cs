@@ -19,7 +19,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
     ///     Wrapper for <see cref="ISession" /> implementing <see cref="IUnitOfWork" />.
     /// </summary>
     [PublicAPI]
-    public class NHibernateSessionUnitOfWorkWrapper : ISession, IUnitOfWork
+    public class NHibernateSessionUnitOfWorkWrapper : ISession, IPooledUnitOfWork
     {
         /// <inheritdoc />
         public CacheMode CacheMode
@@ -50,6 +50,8 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
 
         /// <inheritdoc />
         public bool IsOpen => _session.IsOpen;
+
+        public bool IsPooled { get; set; }
 
         /// <inheritdoc />
         public ISessionFactory SessionFactory => _session.SessionFactory;
@@ -274,12 +276,17 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))
                 return;
 
-            _session.Dispose();
+            if (!IsPooled)
+            {
+                _session.Dispose();
+
+                GC.SuppressFinalize(this);
+            }
 
             Disposed?.Invoke(this);
         }
 
-#if !(NETSTANDARD2_0 || NETCOREAPP2_2)
+#if !NETSTANDARD2_0
         /// <inheritdoc />
         public ValueTask DisposeAsync()
         {
@@ -833,7 +840,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
 
         /// <inheritdoc />
         public
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -961,5 +968,10 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
 
         [NotNull]
         private readonly ISession _session;
+
+        void IPooledUnitOfWork.ResetState()
+        {
+            _session.Clear();
+        }
     }
 }

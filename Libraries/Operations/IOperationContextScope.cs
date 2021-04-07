@@ -43,7 +43,7 @@ namespace GS.DecoupleIt.Operations
             [NotNull] [InstantHandle] AggregateEventsAsyncDelegate aggregateEventsMethod,
             [NotNull] [InstantHandle] ProcessAggregateEventsAsyncDelegate processAggregateEventsMethod,
             [NotNull] [ItemNotNull] params Type[] eventTypes);
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
         [NotNull]
         Task
 #else
@@ -56,7 +56,7 @@ namespace GS.DecoupleIt.Operations
         /// </summary>
         [NotNull]
         public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -75,7 +75,7 @@ namespace GS.DecoupleIt.Operations
         /// <returns>Task.</returns>
         [NotNull]
         public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask

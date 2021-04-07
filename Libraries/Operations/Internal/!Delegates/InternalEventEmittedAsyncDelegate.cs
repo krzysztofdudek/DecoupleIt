@@ -6,7 +6,7 @@ namespace GS.DecoupleIt.Operations.Internal
 {
     [NotNull]
     internal delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
         Task
 #else
         ValueTask

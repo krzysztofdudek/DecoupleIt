@@ -13,7 +13,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
     [PublicAPI]
     public interface IUnitOfWork
         : IDisposable
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         , IAsyncDisposable
 #endif
     {
@@ -31,7 +31,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         ///     Saves all changes made in the context of this unit of work.
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
         [NotNull]
         Task
 #else

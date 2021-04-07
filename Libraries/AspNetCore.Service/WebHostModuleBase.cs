@@ -14,12 +14,8 @@ using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using GS.DecoupleIt.HttpAbstraction;
-#if NETCOREAPP2_2
 using Newtonsoft.Json;
-#elif NETCOREAPP3_1 || NET5_0
 using System.Text.Json;
-
-#endif
 
 namespace GS.DecoupleIt.AspNetCore.Service
 {
@@ -31,19 +27,20 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// <inheritdoc />
         public virtual void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder builder) { }
 
-#if NETCOREAPP3_1 || NET5_0
+        /// <inheritdoc />
+        public virtual void ConfigureCors(WebHostBuilderContext context, CorsOptions options) { }
+
+        /// <inheritdoc />
+        public virtual void ConfigureCorsPolicyBuilder(WebHostBuilderContext context, CorsPolicyBuilder builder) { }
+
         /// <inheritdoc />
         public virtual void ConfigureEndpoints(WebHostBuilderContext context, IEndpointRouteBuilder builder) { }
 
         /// <inheritdoc />
-        public virtual void ConfigureJson(WebHostBuilderContext context, JsonSerializerOptions options) { }
-#elif NETCOREAPP2_2
-        /// <inheritdoc />
-        public virtual void ConfigureEndpoints(WebHostBuilderContext context, IRouteBuilder builder) { }
+        public virtual void ConfigureLogging(WebHostBuilderContext context, LoggerConfiguration configuration) { }
 
         /// <inheritdoc />
-        public virtual void ConfigureJson(WebHostBuilderContext context, JsonSerializerSettings options) { }
-#endif
+        public virtual void ConfigureMigrations(WebHostBuilderContext context, DecoupleIt.Migrations.Builder builder) { }
 
         /// <inheritdoc />
         public virtual void ConfigureMvcBuilder(WebHostBuilderContext context, IMvcBuilder builder)
@@ -52,11 +49,20 @@ namespace GS.DecoupleIt.AspNetCore.Service
         }
 
         /// <inheritdoc />
+        public virtual void ConfigureNewtonsoftJson(WebHostBuilderContext context, JsonSerializerSettings options) { }
+
+        /// <inheritdoc />
+        public virtual void ConfigureOperations(WebHostBuilderContext context, DecoupleIt.Operations.Builder builder) { }
+
+        /// <inheritdoc />
+        public virtual void ConfigureScheduling(WebHostBuilderContext context, DecoupleIt.Scheduling.Options options) { }
+
+        /// <inheritdoc />
         public virtual void ConfigureServices(WebHostBuilderContext context, IServiceCollection serviceCollection)
         {
             serviceCollection.ScanAssemblyForImplementations(ThisAssembly);
             serviceCollection.ScanAssemblyForOptions(ThisAssembly, context.Configuration.AsNotNull());
-            serviceCollection.ScanAssemblyForJobs(ThisAssembly, context.Configuration.AsNotNull());
+            serviceCollection.ScanAssemblyForJobs(ThisAssembly);
             serviceCollection.ScanAssemblyForHttpClients(ThisAssembly);
         }
 
@@ -70,22 +76,13 @@ namespace GS.DecoupleIt.AspNetCore.Service
         public virtual void ConfigureSwaggerUI(WebHostBuilderContext context, SwaggerUIOptions options) { }
 
         /// <inheritdoc />
-        public virtual void ConfigureWebHostBuilder(IWebHostBuilder webHostBuilder) { }
-
-        /// <inheritdoc />
-        public virtual void ConfigureCors(WebHostBuilderContext context, CorsOptions options) { }
-
-        /// <inheritdoc />
-        public virtual void ConfigureCorsPolicyBuilder(WebHostBuilderContext context, CorsPolicyBuilder builder) { }
-
-        /// <inheritdoc />
-        public virtual void ConfigureLogging(WebHostBuilderContext context, LoggerConfiguration configuration) { }
+        public virtual void ConfigureSystemTextJson(WebHostBuilderContext context, JsonSerializerOptions options) { }
 
         /// <inheritdoc />
         public virtual void ConfigureUnitOfWork(WebHostBuilderContext context, Contextual.UnitOfWork.Builder builder) { }
 
         /// <inheritdoc />
-        public virtual void ConfigureOperations(WebHostBuilderContext context, Operations.Builder builder) { }
+        public virtual void ConfigureWebHostBuilder(IWebHostBuilder webHostBuilder) { }
 
         /// <summary>
         ///     Assembly that contains this module.

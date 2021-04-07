@@ -9,6 +9,7 @@ using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace GS.DecoupleIt.Scheduling.Implementation
 {
@@ -22,13 +23,15 @@ namespace GS.DecoupleIt.Scheduling.Implementation
             [NotNull] ILogger<JobExecutor> logger,
             [NotNull] ITracer tracer,
             [NotNull] IOperationContext operationContext,
-            [NotNull] IServiceProvider serviceProvider)
+            [NotNull] IServiceProvider serviceProvider,
+            [NotNull] IOptions<Options> options)
         {
             _registeredJobs   = registeredJobs;
             _logger           = logger;
             _tracer           = tracer;
             _operationContext = operationContext;
             _serviceProvider  = serviceProvider;
+            _options          = options.Value!;
         }
 
         public void Run(CancellationToken cancellationToken = default)
@@ -55,6 +58,9 @@ namespace GS.DecoupleIt.Scheduling.Implementation
 
         [NotNull]
         private readonly IOperationContext _operationContext;
+
+        [NotNull]
+        private readonly Options _options;
 
         [NotNull]
         private readonly IRegisteredJobs _registeredJobs;
@@ -104,7 +110,8 @@ namespace GS.DecoupleIt.Scheduling.Implementation
 
                     try
                     {
-                        _logger.LogDebug("Job executing {@OperationAction}.", "started");
+                        if (_options.Logging.EnableNonErrorLogging)
+                            _logger.LogDebug("Job executing {@OperationAction}.", "started");
 
                         var job = (IJob) _serviceProvider.GetRequiredService(jobEntry.JobType)
                                                          .AsNotNull();
@@ -113,7 +120,8 @@ namespace GS.DecoupleIt.Scheduling.Implementation
 
                         lastIterationDuration = tracerSpan.Duration;
 
-                        _logger.LogDebug("Job executing {@OperationAction} after {@OperationDuration}ms.", "finished", lastIterationDuration.Milliseconds);
+                        if (_options.Logging.EnableNonErrorLogging)
+                            _logger.LogDebug("Job executing {@OperationAction} after {@OperationDuration}ms.", "finished", lastIterationDuration.Milliseconds);
                     }
                     catch (Exception exception)
                     {

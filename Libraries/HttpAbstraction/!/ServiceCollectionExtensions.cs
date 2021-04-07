@@ -55,11 +55,11 @@ namespace GS.DecoupleIt.HttpAbstraction
 
             foreach (var @interface in httpClientInterfaces)
                 typeof(ServiceCollectionExtensions).GetMethod(nameof(For), BindingFlags.NonPublic | BindingFlags.Static)!.MakeGenericMethod(@interface!)
-                    .Invoke(null,
-                            new object[]
-                            {
-                                serviceCollection
-                            });
+                                                   .Invoke(null,
+                                                           new object[]
+                                                           {
+                                                               serviceCollection
+                                                           });
         }
 
         private static void For<TService>([NotNull] IServiceCollection serviceCollection)
@@ -69,7 +69,7 @@ namespace GS.DecoupleIt.HttpAbstraction
             {
                 serviceProvider = serviceProvider.AsNotNull();
 
-                var options = serviceProvider.GetRequiredService<IOptions<HttpAbstractionOptions>>()
+                var options = serviceProvider.GetRequiredService<IOptions<Options>>()
                                              .AsNotNull()
                                              .Value.AsNotNull();
 
@@ -86,6 +86,9 @@ namespace GS.DecoupleIt.HttpAbstraction
                 var logger = serviceProvider.GetRequiredService<ILogger<Requester>>()
                                             .AsNotNull();
 
+                var hostInformation = serviceProvider.GetRequiredService<IHostInformation>()
+                                                     .AsNotNull();
+
                 var serviceName = serviceAssemblyName.EndsWith(".Contracts")
                     ? serviceAssemblyName.Substring(0, serviceAssemblyName.LastIndexOf(".", StringComparison.Ordinal))
                     : serviceAssemblyName;
@@ -100,13 +103,13 @@ namespace GS.DecoupleIt.HttpAbstraction
                     DefaultRequestHeaders =
                     {
                         {
-                            options.HostIdentifierHeaderName, options.HostIdentifier.ToString()
+                            options.HostIdentifierHeaderName, hostInformation.Identifier.ToString()
                         },
                         {
-                            options.HostNameHeaderName, options.HostName
+                            options.HostNameHeaderName, hostInformation.Name
                         },
                         {
-                            options.HostVersionHeaderName, options.HostVersion
+                            options.HostVersionHeaderName, hostInformation.Version
                         }
                     }
                 };
@@ -133,7 +136,7 @@ namespace GS.DecoupleIt.HttpAbstraction
 
         private sealed class WebRequestHandler : HttpClientHandler
         {
-            public WebRequestHandler([NotNull] HttpAbstractionOptions settings)
+            public WebRequestHandler([NotNull] Options settings)
             {
                 if (settings.SkipSSLCertificateValidation)
                     ServerCertificateCustomValidationCallback = (

@@ -12,12 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IO;
 using System.Linq;
-#if NETCOREAPP2_2
-using Microsoft.AspNetCore.Routing;
-#elif NETCOREAPP3_1 || NET5_0
 using Microsoft.AspNetCore.Mvc.Controllers;
-
-#endif
 
 namespace GS.DecoupleIt.AspNetCore.Service
 {
@@ -31,11 +26,25 @@ namespace GS.DecoupleIt.AspNetCore.Service
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "TemplateIsNotCompileTimeConstantProblem")]
     public sealed class LoggingMiddleware : IMiddleware
     {
-        public LoggingMiddleware([NotNull] ILogger<LoggingMiddleware> logger, [NotNull] IOptions<ServiceOptions> serviceOptions, [NotNull] ITracer tracer)
+        public LoggingMiddleware([NotNull] ILogger<LoggingMiddleware> logger, [NotNull] IOptions<Options> serviceOptions, [NotNull] ITracer tracer)
         {
-            _logger         = logger;
-            _tracer         = tracer;
-            _serviceOptions = serviceOptions.Value;
+            _logger  = logger;
+            _tracer  = tracer;
+            _options = serviceOptions.Value;
+
+            var blockSize                 = 1024;
+            var largeBufferMultiple       = 1024 * 1024;
+            var maximumBufferSize         = 16 * largeBufferMultiple;
+            var maximumFreeLargePoolBytes = maximumBufferSize * 4;
+            var maximumFreeSmallPoolBytes = 250 * blockSize;
+
+            _recyclableMemoryStreamManager = new RecyclableMemoryStreamManager(blockSize, largeBufferMultiple, maximumBufferSize)
+            {
+                AggressiveBufferReturn    = true,
+                GenerateCallStacks        = false,
+                MaximumFreeLargePoolBytes = maximumFreeLargePoolBytes,
+                MaximumFreeSmallPoolBytes = maximumFreeSmallPoolBytes
+            };
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
@@ -44,7 +53,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
         {
             context.Request.EnableBuffering();
 
-#if NETCOREAPP3_1 || NET5_0
             var endpoint = context.GetEndpoint();
 
             if (endpoint is null)
@@ -59,44 +67,22 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
             var controllerName = controllerActionDescriptor.ControllerTypeInfo.FullName;
             var actionName     = controllerActionDescriptor.ActionName;
-#elif NETCOREAPP2_2
-            var routeData = context.GetRouteData();
-
-            if (!routeData.Values.TryGetValue("controller", out var controllerName) || !routeData.Values.TryGetValue("action", out var actionName))
-            {
-                await next(context);
-
-                return;
-            }
-#endif
 
             using var scope = _tracer.OpenSpan($"{controllerName}.{actionName}", SpanType.ExternalRequestHandler);
 
             context.Request.Body.Position = 0;
 
-            using var reader = new StreamReader(context.Request.Body,
-                                                Encoding.UTF8,
-                                                false,
-                                                -1,
-                                                true);
+            var requestBody = await ReadStreamAsync(context.Request.Body);
 
-            var requestBody = await reader.ReadToEndAsync();
-
-            context.Request.Body.Position = 0;
-
-            if (_serviceOptions.LogRequests)
+            if (_options.Logging.LogRequests)
                 LogStart(context, requestBody);
 
-            Memory<byte> responseBody;
-            Exception    exception = default;
-
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
-            await
-#endif
-                using (var memoryStream = _recyclableMemoryStreamManager.GetStream())
+            await using (var memoryStream = (RecyclableMemoryStream) _recyclableMemoryStreamManager.GetStream())
             {
                 var originalResponseBodyStream = context.Response.Body;
                 context.Response.Body = memoryStream;
+
+                Exception exception = default;
 
                 try
                 {
@@ -108,30 +94,50 @@ namespace GS.DecoupleIt.AspNetCore.Service
                     exception = exception2;
                 }
 
-                responseBody = memoryStream.GetBuffer()
-                                           .AsMemory(0, (int) memoryStream.Length);
+                var length = memoryStream.Position;
+
+                memoryStream.Seek(0, SeekOrigin.Begin);
+
+                var responseBody = memoryStream.GetMemory()[..(int) length];
+
+                await originalResponseBodyStream.WriteAsync(responseBody, context.RequestAborted);
 
                 context.Response.Body          = originalResponseBodyStream;
-                context.Response.ContentLength = memoryStream.Length;
+                context.Response.ContentLength = memoryStream.Position;
 
-                await context.Response.Body.WriteAsync(responseBody, context.RequestAborted);
+                if (_options.Logging.LogResponses)
+                    LogFinish(context,
+                              responseBody,
+                              scope.Duration,
+                              exception);
             }
+        }
 
-            if (_serviceOptions.LogResponses)
-                LogFinish(context,
-                          responseBody,
-                          scope.Duration,
-                          exception);
+        [NotNull]
+        [ItemNotNull]
+        private static async Task<string> ReadStreamAsync([NotNull] Stream stream)
+        {
+            using var reader = new StreamReader(stream,
+                                                Encoding.UTF8,
+                                                false,
+                                                -1,
+                                                true);
+
+            var requestBody = await reader.ReadToEndAsync();
+
+            stream.Position = 0;
+
+            return requestBody;
         }
 
         [NotNull]
         private readonly ILogger<LoggingMiddleware> _logger;
 
         [NotNull]
-        private readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager = new();
+        private readonly Options _options;
 
         [NotNull]
-        private readonly ServiceOptions _serviceOptions;
+        private readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager;
 
         [NotNull]
         private readonly ITracer _tracer;
@@ -139,14 +145,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "TemplateFormatStringProblem")]
         private void LogFinish(
             [NotNull] HttpContext context,
-            Memory<byte> responseBody,
+            ReadOnlyMemory<byte> responseBody,
             TimeSpan duration,
             [CanBeNull] Exception exception)
         {
             const string message =
                 "External request handling {@OperationAction} after {@OperationDuration}ms.\nStatus code: {@StatusCode}\nHeaders: {@Headers}\nBody: {@Body:l}";
 
-            var wasHandled = exception is not null && exception.Data.Contains("WasHandled") && exception.Data["WasHandled"] is bool x && x;
+            var wasHandled = exception is not null && exception.Data.Contains("WasHandled") && exception.Data["WasHandled"] is true;
 
             var args = ArrayPool<object>.Shared.Rent(5);
 
@@ -154,7 +160,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
             args[1] = (int) duration.TotalMilliseconds;
             args[2] = context.Response.StatusCode;
             args[3] = context.Request.Headers.ToDictionary(entry => entry.Key, entry => entry.Value);
-            args[4] = _serviceOptions.LogResponsesBodies && responseBody.Length > 0 ? Encoding.UTF8.GetString(responseBody.Span) : string.Empty;
+            args[4] = _options.Logging.LogResponsesBodies ? Encoding.UTF8.GetString(responseBody.Span) : string.Empty;
 
             if (wasHandled || exception is null)
                 _logger.LogInformation(message, args);
@@ -179,7 +185,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
             args[2] = context.Request.Path.Value;
             args[3] = context.Request.QueryString.Value;
             args[4] = context.Request.Headers.ToDictionary(entry => entry.Key, entry => entry.Value);
-            args[5] = _serviceOptions.LogRequestsBodies ? requestBody : string.Empty;
+            args[5] = _options.Logging.LogRequestsBodies ? requestBody : string.Empty;
 
             _logger.LogInformation(message, args);
 

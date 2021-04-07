@@ -18,14 +18,14 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
         /// <param name="builder">Builder.</param>
         /// <returns>Builder.</returns>
         [NotNull]
-        public static Builder AddSupportForEntityFrameworkCore([NotNull] this Builder builder)
+        public static Builder AddSupportForEntityFrameworkCore([NotNull] this GS.DecoupleIt.Contextual.UnitOfWork.Builder builder)
         {
             ContractGuard.IfArgumentIsNull(nameof(builder), builder);
 
             builder.ServiceCollection.ScanAssemblyForImplementations(ThisAssembly);
             builder.ServiceCollection.ScanAssemblyForOptions(ThisAssembly, builder.Configuration);
 
-            return builder;
+            return new Builder(builder.ServiceCollection, builder.Configuration);
         }
 
         [NotNull]

@@ -7,6 +7,7 @@ using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace GS.DecoupleIt.Operations.Internal
 {
@@ -21,14 +22,18 @@ namespace GS.DecoupleIt.Operations.Internal
             [NotNull] IExtendedLoggerFactory extendedLoggerFactory,
             [NotNull] ITracer tracer,
             [NotNull] IOperationContext operationContext,
-            [NotNull] IServiceProvider serviceProvider) : base(extendedLoggerFactory.Create<CommandDispatcher>(), tracer, serviceProvider)
+            [NotNull] IServiceProvider serviceProvider,
+            [NotNull] IOptions<Options> options) : base(extendedLoggerFactory.Create<CommandDispatcher>(),
+                                                        tracer,
+                                                        serviceProvider,
+                                                        options)
         {
             _operationContext = operationContext;
         }
 
         [NotNull]
         public async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -37,7 +42,8 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             using var span = Tracer.OpenSpan(command.GetType(), SpanType.Command);
 
-            Logger.LogDebug("Dispatching command {@OperationAction}.", "started");
+            if (Options.Logging.EnableNonErrorLogging)
+                Logger.LogDebug("Dispatching command {@OperationAction}.", "started");
 
             try
             {
@@ -45,11 +51,13 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 await InvokeCommandHandler(command, serviceProviderScope!.ServiceProvider!, cancellationToken);
 
-                Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
             }
             catch
             {
-                Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "failed", span.Duration.Milliseconds);
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "failed", span.Duration.Milliseconds);
 
                 throw;
             }
@@ -58,7 +66,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [NotNull]
         [ItemCanBeNull]
         public async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<object>
 #else
             ValueTask<object>
@@ -67,7 +75,8 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             using var span = Tracer.OpenSpan(command.GetType(), SpanType.Command);
 
-            Logger.LogDebug("Dispatching command {@OperationAction}.", "started");
+            if (Options.Logging.EnableNonErrorLogging)
+                Logger.LogDebug("Dispatching command {@OperationAction}.", "started");
 
             try
             {
@@ -75,13 +84,15 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 var result = await InvokeCommandWithResultHandler(command, serviceProviderScope!.ServiceProvider!, cancellationToken);
 
-                Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
 
                 return result;
             }
             catch
             {
-                Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "failed", span.Duration.Milliseconds);
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "failed", span.Duration.Milliseconds);
 
                 throw;
             }
@@ -119,15 +130,17 @@ namespace GS.DecoupleIt.Operations.Internal
                 var       tracerSpan            = Tracer.OpenSpan(commandHandler.GetType(), SpanType.CommandHandler);
                 using var operationContextScope = _operationContext.OpenScope();
 
-                Logger.LogInformation("Command handler invocation {@OperationAction}.", "started");
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Command handler invocation {@OperationAction}.", "started");
 
                 try
                 {
                     await operationContextScope.DispatchOperationsAsync(() => commandHandler.HandleAsync(typedCommand, cancellationToken), cancellationToken);
 
-                    Logger.LogInformation("Command handler invocation {@OperationAction} after {@OperationDuration}ms.",
-                                          "finished",
-                                          tracerSpan.Duration.Milliseconds);
+                    if (Options.Logging.EnableNonErrorLogging)
+                        Logger.LogDebug("Command handler invocation {@OperationAction} after {@OperationDuration}ms.",
+                                        "finished",
+                                        tracerSpan.Duration.Milliseconds);
 
                     tracerSpan.Dispose();
 
@@ -213,7 +226,8 @@ namespace GS.DecoupleIt.Operations.Internal
                 using var operationContextScope = _operationContext.OpenScope();
                 object    tempResult            = null;
 
-                Logger.LogInformation("Command handler invocation {@OperationAction}.", "started");
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Command handler invocation {@OperationAction}.", "started");
 
                 try
                 {
@@ -221,9 +235,10 @@ namespace GS.DecoupleIt.Operations.Internal
                         async () => tempResult = await commandHandler.HandleAsync(typedCommand, cancellationToken),
                         cancellationToken);
 
-                    Logger.LogInformation("Command handler invocation {@OperationAction} after {@OperationDuration}ms.",
-                                          "finished",
-                                          tracerSpan.Duration.Milliseconds);
+                    if (Options.Logging.EnableNonErrorLogging)
+                        Logger.LogDebug("Command handler invocation {@OperationAction} after {@OperationDuration}ms.",
+                                        "finished",
+                                        tracerSpan.Duration.Milliseconds);
 
                     tracerSpan.Dispose();
 

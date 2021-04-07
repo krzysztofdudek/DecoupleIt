@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <VersionPrefix>6.0.0-alpha.0</VersionPrefix>
+        <Title>DecoupleIt - Migrations</Title>
+        <Description>Implementation migrations mechanism allowing to perform those across many nodes and with ability to rollback failed one.</Description>
+    </PropertyGroup>
+
+    <Import Project="../libraries.core.props" />
+
+    <ItemGroup>
+        <ProjectReference Include="..\Contextual.UnitOfWork.EntityFrameworkCore\Contextual.UnitOfWork.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
+        <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
+        <ProjectReference Include="..\Shared\Shared.csproj" />
+        <ProjectReference Include="..\Tracing\Tracing.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,7 +1,7 @@
 using System;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
 using System.Threading.Tasks;
 
 #endif
@@ -41,16 +41,16 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 Disposed?.Invoke(this);
         }
 
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         public ValueTask DisposeAsync()
         {
-            if (UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(typeof(TUnitOfWork)))
-            {
-                if (_value != null)
-                    return _value.DisposeAsync();
+            if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(typeof(TUnitOfWork)))
+                return new ValueTask();
 
-                Disposed?.Invoke(this);
-            }
+            if (_value != null)
+                return _value.DisposeAsync();
+
+            Disposed?.Invoke(this);
 
             return new ValueTask();
         }

@@ -26,14 +26,14 @@ namespace GS.DecoupleIt.Operations
         /// <returns>Task.</returns>
         [NotNull]
         protected virtual
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
 #endif
             HandleOnEmissionAsync([NotNull] TEvent @event, CancellationToken cancellationToken = default)
         {
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             return Task.CompletedTask;
 #else
             return new ValueTask();
@@ -49,14 +49,14 @@ namespace GS.DecoupleIt.Operations
         /// <returns>Task.</returns>
         [NotNull]
         protected virtual
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
 #endif
             HandleOnFailureAsync([NotNull] TEvent @event, [NotNull] Exception exception, CancellationToken cancellationToken = default)
         {
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             return Task.CompletedTask;
 #else
             return new ValueTask();
@@ -71,14 +71,14 @@ namespace GS.DecoupleIt.Operations
         /// <returns>Task.</returns>
         [NotNull]
         protected virtual
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
 #endif
             HandleOnSuccessAsync([NotNull] TEvent @event, CancellationToken cancellationToken = default)
         {
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             return Task.CompletedTask;
 #else
             return new ValueTask();
@@ -86,7 +86,7 @@ namespace GS.DecoupleIt.Operations
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
         Task
 #else
         ValueTask
@@ -100,7 +100,7 @@ namespace GS.DecoupleIt.Operations
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
         Task
 #else
         ValueTask
@@ -114,7 +114,7 @@ namespace GS.DecoupleIt.Operations
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
         Task
 #else
         ValueTask

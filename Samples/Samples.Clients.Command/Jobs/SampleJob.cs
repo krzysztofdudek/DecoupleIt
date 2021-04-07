@@ -1,13 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
-using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Scheduling;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 
 namespace Samples.Clients.Command.Jobs
 {
-    [Singleton]
     [CyclicSchedule(Seconds = 5)]
     internal sealed class SampleJob : IJob
     {

@@ -2,16 +2,14 @@
 
     <Import Project="../tests.props" />
 
-    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
-    </ItemGroup>
-
     <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.12" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.14" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.14" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     </ItemGroup>
 
     <ItemGroup>

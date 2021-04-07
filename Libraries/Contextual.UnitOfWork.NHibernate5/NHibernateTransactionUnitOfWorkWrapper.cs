@@ -113,7 +113,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             GC.SuppressFinalize(this);
         }
 
-#if !(NETSTANDARD2_0 || NETCOREAPP2_2)
+#if !NETSTANDARD2_0
         /// <inheritdoc />
         public ValueTask DisposeAsync()
         {
@@ -155,7 +155,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
 
         /// <inheritdoc />
         public
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask

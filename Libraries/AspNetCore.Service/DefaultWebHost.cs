@@ -4,16 +4,20 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using GS.DecoupleIt.AspNetCore.Service.HttpAbstraction;
+using GS.DecoupleIt.AspNetCore.Service.Migrations;
+using GS.DecoupleIt.AspNetCore.Service.Operations;
+using GS.DecoupleIt.AspNetCore.Service.Scheduling;
+using GS.DecoupleIt.AspNetCore.Service.Tracing;
+using GS.DecoupleIt.AspNetCore.Service.UnitOfWork;
 using GS.DecoupleIt.Contextual.UnitOfWork;
-using GS.DecoupleIt.Contextual.UnitOfWork.AspNetCore;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.HttpAbstraction;
-using GS.DecoupleIt.HttpAbstraction.AspNetCore;
-using GS.DecoupleIt.Operations.AspNetCore;
-using GS.DecoupleIt.Scheduling.AspNetCore;
+using GS.DecoupleIt.Migrations;
+using GS.DecoupleIt.Options.Automatic;
+using GS.DecoupleIt.Scheduling;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
-using GS.DecoupleIt.Tracing.AspNetCore;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -22,17 +26,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
-#if NETCOREAPP2_2
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Rewrite;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-#elif !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Hosting;
 using System.Text.Json;
@@ -48,26 +48,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ConstantConditionalAccessQualifier")]
     public abstract class DefaultWebHost : WebHostModuleBase
     {
-        /// <summary>
-        ///     Identifier.
-        /// </summary>
-        public Guid Identifier { get; }
-
-        /// <summary>
-        ///     If this flag is set, https is enforced.
-        /// </summary>
-        public bool UseHttpsRedirection { get; set; }
-
-        /// <summary>
-        ///     Version.
-        /// </summary>
-        public string Version { get; }
-
-        /// <summary>
-        ///     If this flag is set, then web host will test all registered services if are possible to instantiate.
-        /// </summary>
-        protected virtual bool ValidateServices { get; } = true;
-
         /// <summary>
         ///     Template of main function that reports errors caused by test run.
         /// </summary>
@@ -94,24 +74,79 @@ namespace GS.DecoupleIt.AspNetCore.Service
             return 0;
         }
 
-#if NETCOREAPP3_1 || NET5_0
+        /// <summary>
+        ///     Host information summary.
+        /// </summary>
+        [CanBeNull]
+        public IHostInformation HostInformation { get; private set; }
+
+        /// <summary>
+        ///     If this flag is set, https is enforced.
+        /// </summary>
+        public bool UseHttpsRedirection { get; set; }
+
+        /// <summary>
+        ///     If this flag is set, migration engine is enabled.
+        /// </summary>
+        public bool UseMigrations { get; set; }
+
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        public override void ConfigureJson(WebHostBuilderContext context, JsonSerializerOptions options)
+        public override void ConfigureLogging(WebHostBuilderContext context, LoggerConfiguration configuration)
         {
-            options.Converters.Add(new JsonStringEnumConverter());
-            options.IgnoreReadOnlyProperties = false;
-            options.IgnoreNullValues         = true;
+            var builder = configuration.MinimumLevel.Debug()
+                                       .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                                       .Filter.ByExcluding(logEvent =>
+                                       {
+                                           if (logEvent.Level >= LogEventLevel.Warning)
+                                               return false;
+
+                                           logEvent.Properties.TryGetValue("SourceContext", out var sourceContextValue);
+
+                                           var sourceContext = sourceContextValue?.ToString()
+                                                                                 .Trim('"');
+
+                                           if (sourceContext is null)
+                                               return false;
+
+                                           if (sourceContext.StartsWith("Microsoft.AspNetCore"))
+                                               return true;
+
+                                           if (sourceContext.StartsWith("Quartz"))
+                                               return true;
+
+                                           return false;
+                                       })
+                                       .Filter.ByExcluding(x =>
+                                       {
+                                           x.RemovePropertyIfPresent("ActionId");
+                                           x.RemovePropertyIfPresent("ActionName");
+                                           x.RemovePropertyIfPresent("SourceContext");
+
+                                           x.RemovePropertyIfPresent("CorrelationId");
+                                           x.RemovePropertyIfPresent("RequestPath");
+                                           x.RemovePropertyIfPresent("ConnectionId");
+                                           x.RemovePropertyIfPresent("RequestId");
+                                           x.RemovePropertyIfPresent("EventId.Id");
+
+                                           return false;
+                                       });
+
+            var options = context.Configuration.GetValue<bool?>("GS:DecoupleIt:AspNetCore:Service:Logging:Console:Enabled");
+
+            if (options != false)
+                builder.WriteTo.Console(
+                    outputTemplate:
+                    "[{Timestamp:HH:mm:ss:fff} {Level:u3} | {@SpanType} {@SpanName} | {@TraceId}:{@SpanId}:{@ParentSpanId}]\n{Message:lj}{NewLine}{Exception}");
         }
-#elif NETCOREAPP2_2
+
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        public override void ConfigureJson(WebHostBuilderContext context, JsonSerializerSettings options)
+        public override void ConfigureNewtonsoftJson(WebHostBuilderContext context, JsonSerializerSettings options)
         {
             options.Converters.Add(new StringEnumConverter());
             options.NullValueHandling = NullValueHandling.Ignore;
         }
-#endif
 
         /// <inheritdoc />
         public override void ConfigureSwaggerGen(WebHostBuilderContext context, SwaggerGenOptions options)
@@ -135,48 +170,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        public override void ConfigureLogging(WebHostBuilderContext context, LoggerConfiguration configuration)
+        public override void ConfigureSystemTextJson(WebHostBuilderContext context, JsonSerializerOptions options)
         {
-            configuration.MinimumLevel.Debug()
-                         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                         .Filter.ByExcluding(logEvent =>
-                         {
-                             if (logEvent.Level >= LogEventLevel.Warning)
-                                 return false;
-
-                             logEvent.Properties.TryGetValue("SourceContext", out var sourceContextValue);
-
-                             var sourceContext = sourceContextValue?.ToString()
-                                                                   .Trim('"');
-
-                             if (sourceContext is null)
-                                 return false;
-
-                             if (sourceContext.StartsWith("Microsoft.AspNetCore"))
-                                 return true;
-
-                             if (sourceContext.StartsWith("Quartz"))
-                                 return true;
-
-                             return false;
-                         })
-                         .Filter.ByExcluding(x =>
-                         {
-                             x.RemovePropertyIfPresent("ActionId");
-                             x.RemovePropertyIfPresent("ActionName");
-                             x.RemovePropertyIfPresent("SourceContext");
-
-                             x.RemovePropertyIfPresent("CorrelationId");
-                             x.RemovePropertyIfPresent("RequestPath");
-                             x.RemovePropertyIfPresent("ConnectionId");
-                             x.RemovePropertyIfPresent("RequestId");
-                             x.RemovePropertyIfPresent("EventId.Id");
-
-                             return false;
-                         })
-                         .WriteTo.Console(
-                             outputTemplate:
-                             "[{Timestamp:HH:mm:ss:fff} {Level:u3} | {@SpanType} {@SpanName} | {@TraceId}:{@SpanId}:{@ParentSpanId}]\n{Message:lj}{NewLine}{Exception}");
+            options.Converters.Add(new JsonStringEnumConverter());
+            options.IgnoreReadOnlyProperties = false;
+            options.IgnoreNullValues         = true;
         }
 
         /// <inheritdoc cref="WebHostExtensions.Run" />
@@ -202,19 +200,23 @@ namespace GS.DecoupleIt.AspNetCore.Service
         }
 
         /// <summary>
-        ///     Setups an instance of <see cref="DefaultWebHost" />.
+        ///     Type of an json serializer used for whole pipeline.
         /// </summary>
-        protected DefaultWebHost()
+        public enum JsonSerializerType
         {
-            Identifier = Environment.GetEnvironmentVariable("ASPNETCORE_HOSTIDENTIFIER")
-                                    ?.ToLower() == "default"
-                ? Guid.Empty
-                : Guid.NewGuid();
-
-            Version = GetType()
-                      .Assembly.GetName()
-                      .Version?.ToString() ?? "undefined";
+            NewtonsoftJson,
+            SystemTextJson
         }
+
+        /// <summary>
+        ///     Type of an json serializer used for whole pipeline.
+        /// </summary>
+        protected virtual JsonSerializerType JsonSerializer { get; } = JsonSerializerType.SystemTextJson;
+
+        /// <summary>
+        ///     If this flag is set, then web host will test all registered services if are possible to instantiate.
+        /// </summary>
+        protected virtual bool ValidateServices { get; } = true;
 
         /// <summary>
         ///     Gets modules.
@@ -250,10 +252,8 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               options.AsNotNull()
                                      .ValidateScopes = isDevelopment;
 
-#if NETCOREAPP3_1 || NET5_0
                               options.AsNotNull()
                                      .ValidateOnBuild = isDevelopment;
-#endif
                           })
                           .ConfigureAppConfiguration((context, builder) =>
                           {
@@ -267,8 +267,27 @@ namespace GS.DecoupleIt.AspNetCore.Service
                           })
                           .ConfigureServices((context, collection) =>
                           {
-                              context    = context.AsNotNull();
-                              collection = collection.AsNotNull();
+                              var hostIdentifier = Environment.GetEnvironmentVariable("ASPNETCORE_HOSTIDENTIFIER")
+                                                              ?.ToLower() == "default"
+                                  ? Guid.Empty
+                                  : Guid.NewGuid();
+
+                              var hostName = GetType()
+                                             .Assembly.GetName()
+                                             .Name;
+
+                              var hostVersion = GetType()
+                                                .Assembly.GetName()
+                                                .Version?.ToString() ?? "undefined";
+
+                              var hostEnvironment = context.HostingEnvironment.EnvironmentName;
+
+                              HostInformation = new HostInformation(hostIdentifier,
+                                                                    hostName,
+                                                                    hostVersion,
+                                                                    hostEnvironment);
+
+                              collection.Add(ServiceDescriptor.Singleton(typeof(IHostInformation), HostInformation));
 
                               // Configure automatic dependency injection.
                               collection.ConfigureAutomaticDependencyInjection(context.Configuration,
@@ -276,6 +295,16 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                                                                {
                                                                                    options.Environment = context.HostingEnvironment.EnvironmentName;
                                                                                });
+
+                              // Configure scheduling.
+                              collection.ConfigureJobs(context.Configuration,
+                                                       options =>
+                                                       {
+                                                           ConfigureScheduling(context, options);
+
+                                                           foreach (var module in modules)
+                                                               module.ConfigureScheduling(context, options);
+                                                       });
 
                               // Configure unit of work.
                               var unitOfWorkBuilder = collection.AddContextualUnitOfWork(context.Configuration.AsNotNull());
@@ -296,66 +325,71 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               foreach (var module in modules)
                                   module.ConfigureOperations(context, operationsBuilder);
 
-                              // Configure http clients.
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
-                              var jsonSerializerOptions = new JsonSerializerOptions();
-
-                              ConfigureJson(context, jsonSerializerOptions);
-#else
+                              // Configure json serializer.
                               var jsonSerializerSettings = new JsonSerializerSettings();
+                              var jsonSerializerOptions  = new JsonSerializerOptions();
 
-                              ConfigureJson(context, jsonSerializerSettings);
-#endif
-
-                              collection.AddHttpClients(context.Configuration.AsNotNull())
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
-                                        .UseSystemTextJsonResponseDeserializer(jsonSerializerOptions)
-                                        .UseSystemTextJsonRequestBodySerializer(jsonSerializerOptions)
-#else
-                                        .UseNewtonsoftJsonResponseDeserializer(jsonSerializerSettings)
-                                        .UseNewtonsoftJsonRequestBodySerializer(jsonSerializerSettings)
-#endif
-                                  ;
-
-                              collection.PostConfigure<HttpAbstractionOptions>(options =>
+                              switch (JsonSerializer)
                               {
-                                  options.HostIdentifier = Identifier;
+                                  case JsonSerializerType.NewtonsoftJson:
+                                      ConfigureNewtonsoftJson(context, jsonSerializerSettings);
 
-                                  options.HostName = GetType()
-                                                     .Assembly.GetName()
-                                                     .Name;
+                                      break;
+                                  case JsonSerializerType.SystemTextJson:
+                                      ConfigureSystemTextJson(context, jsonSerializerOptions);
 
-                                  options.HostVersion = Version;
-                              });
+                                      break;
+                                  default:
+                                      throw new ArgumentOutOfRangeException();
+                              }
+
+                              // Configure http clients.
+                              var httpClientBuilder = collection.AddHttpClients(context.Configuration.AsNotNull());
+
+                              switch (JsonSerializer)
+                              {
+                                  case JsonSerializerType.NewtonsoftJson:
+                                      httpClientBuilder.UseNewtonsoftJsonResponseDeserializer(jsonSerializerSettings)
+                                                       .UseNewtonsoftJsonRequestBodySerializer(jsonSerializerSettings);
+
+                                      break;
+                                  case JsonSerializerType.SystemTextJson:
+                                      httpClientBuilder.UseSystemTextJsonResponseDeserializer(jsonSerializerOptions)
+                                                       .UseSystemTextJsonRequestBodySerializer(jsonSerializerOptions);
+
+                                      break;
+                                  default:
+                                      throw new ArgumentOutOfRangeException();
+                              }
 
                               // Configure MVC.
-#if NETCOREAPP3_1 || NET5_0
-                              var mvcBuilder = collection.AddControllersWithViews()
-                                                         .AddJsonOptions(options =>
-                                                         {
-                                                             options = options.AsNotNull();
+                              var mvcBuilder = collection.AddControllersWithViews();
 
-                                                             ConfigureJson(context, options.JsonSerializerOptions);
+                              switch (JsonSerializer)
+                              {
+                                  case JsonSerializerType.NewtonsoftJson:
+                                      mvcBuilder.AddNewtonsoftJson(options =>
+                                      {
+                                          ConfigureNewtonsoftJson(context, options.SerializerSettings);
 
-                                                             foreach (var module in modules)
-                                                                 module.ConfigureJson(context, options.JsonSerializerOptions);
-                                                         })
-                                                         .AsNotNull();
-#elif NETCOREAPP2_2
-                              collection.AddRouting();
+                                          foreach (var module in modules)
+                                              module.ConfigureNewtonsoftJson(context, options.SerializerSettings);
+                                      });
 
-                              var mvcBuilder = collection.AddMvc()
-                                                         .AddJsonOptions(options =>
-                                                         {
-                                                             options = options.AsNotNull();
+                                      break;
+                                  case JsonSerializerType.SystemTextJson:
+                                      mvcBuilder.AddJsonOptions(options =>
+                                      {
+                                          ConfigureSystemTextJson(context, options.JsonSerializerOptions);
 
-                                                             ConfigureJson(context, options.SerializerSettings.AsNotNull());
+                                          foreach (var module in modules)
+                                              module.ConfigureSystemTextJson(context, options.JsonSerializerOptions);
+                                      });
 
-                                                             foreach (var module in modules)
-                                                                 module.ConfigureJson(context, options.SerializerSettings.AsNotNull());
-                                                         })
-                                                         .AsNotNull();
-#endif
+                                      break;
+                                  default:
+                                      throw new ArgumentOutOfRangeException();
+                              }
 
                               ConfigureMvcBuilder(context, mvcBuilder);
 
@@ -365,8 +399,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               // Configure swagger.
                               collection.AddSwaggerGen(options =>
                               {
-                                  options = options.AsNotNull();
-
                                   options.OperationFilter<OperationNameFilter>();
 
                                   options.CustomSchemaIds(x =>
@@ -378,7 +410,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                       return x.Name;
                                   });
 
-                                  options.DocumentFilter<DocumentFilter>(Identifier, Version);
+                                  options.DocumentFilter<DocumentFilter>(hostIdentifier, hostVersion);
 
                                   foreach (var file in Directory.EnumerateFiles(Path.GetDirectoryName(GetType()
                                                                                                       .Assembly.Location)
@@ -398,13 +430,26 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               // Configure cors.
                               collection.AddCors(options =>
                               {
-                                  options = options.AsNotNull();
-
                                   ConfigureCors(context, options);
+
+                                  foreach (var module in modules)
+                                      module.ConfigureCors(context, options);
                               });
+
+                              // Configure migrations.
+                              if (UseMigrations)
+                              {
+                                  var migrationsBuilder = collection.AddMigrations(context.Configuration);
+
+                                  ConfigureMigrations(context, migrationsBuilder);
+
+                                  foreach (var module in modules)
+                                      module.ConfigureMigrations(context, migrationsBuilder);
+                              }
 
                               // Configure services.
                               collection.ScanAssemblyForImplementations(typeof(DefaultWebHost).Assembly);
+                              collection.ScanAssemblyForOptions(typeof(DefaultWebHost).Assembly, context.Configuration);
 
                               ConfigureServices(context, collection);
 
@@ -414,46 +459,26 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               if (ValidateServices)
                                   ValidateServicesIfArePossibleToInstantiate(collection);
                           })
-#if NETCOREAPP3_1 || NET5_0
                           .Configure((context, applicationBuilder) =>
                           {
                               context            = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
-#elif NETCOREAPP2_2
-                          .Configure(applicationBuilder =>
-                          {
-                              var context = new WebHostBuilderContext
-                              {
-                                  Configuration = applicationBuilder.ApplicationServices.GetRequiredService<IConfiguration>(),
-                                  HostingEnvironment = applicationBuilder.ApplicationServices.GetRequiredService<IHostingEnvironment>()
-                              };
-
-                              applicationBuilder = applicationBuilder.AsNotNull();
-#endif
 
                               if (UseHttpsRedirection)
-#if NETCOREAPP3_1 || NET5_0
                                   applicationBuilder.UseHttpsRedirection();
-#elif NETCOREAPP2_2
-                                  applicationBuilder.UseRewriter(new RewriteOptions().AddRedirectToHttps(StatusCodes.Status301MovedPermanently, 443));
-#endif
 
                               applicationBuilder.Use(async (context2, next) =>
                               {
                                   var logger = context2.RequestServices.GetRequiredService<ILogger<DefaultWebHost>>();
 
-                                  var httpAbstractionOptions = context2.RequestServices.GetRequiredService<IOptions<HttpAbstractionOptions>>()
+                                  var httpAbstractionOptions = context2.RequestServices.GetRequiredService<IOptions<DecoupleIt.HttpAbstraction.Options>>()
                                                                        .Value;
-
-                                  var hostName = GetType()
-                                                 .Assembly.GetName()
-                                                 .Name;
 
                                   context2.Response.OnStarting(() =>
                                   {
-                                      context2.Response.Headers.Add(httpAbstractionOptions.HostIdentifierHeaderName, Identifier.ToString());
-                                      context2.Response.Headers.Add(httpAbstractionOptions.HostNameHeaderName, hostName);
-                                      context2.Response.Headers.Add(httpAbstractionOptions.HostVersionHeaderName, Version);
+                                      context2.Response.Headers.Add(httpAbstractionOptions.HostIdentifierHeaderName, HostInformation.Identifier.ToString());
+                                      context2.Response.Headers.Add(httpAbstractionOptions.HostNameHeaderName, HostInformation.Name);
+                                      context2.Response.Headers.Add(httpAbstractionOptions.HostVersionHeaderName, HostInformation.Version);
 
                                       return Task.CompletedTask;
                                   });
@@ -461,13 +486,13 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   using (logger.BeginScope(new SelfDescribingDictionary<string, object>
                                   {
                                       {
-                                          "HostIdentifier", Identifier
+                                          "HostIdentifier", HostInformation.Identifier
                                       },
                                       {
-                                          "HostName", hostName
+                                          "HostName", HostInformation.Name
                                       },
                                       {
-                                          "HostVersion", Version
+                                          "HostVersion", HostInformation.Version
                                       }
                                   }))
                                   {
@@ -497,11 +522,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                       module.ConfigureSwaggerUI(context, options);
                               });
 
-#if NETCOREAPP3_1 || NET5_0
                               applicationBuilder.UseRouting();
-#elif NETCOREAPP2_2
-                              applicationBuilder.UseEndpointRouting();
-#endif
 
                               applicationBuilder.UseCors(builder =>
                               {
@@ -523,7 +544,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               foreach (var module in modules)
                                   module.ConfigureApplication(context, applicationBuilder);
 
-#if NETCOREAPP3_1 || NET5_0
                               applicationBuilder.UseEndpoints(builder =>
                               {
                                   builder = builder.AsNotNull();
@@ -535,17 +555,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   foreach (var module in modules)
                                       module.ConfigureEndpoints(context, builder);
                               });
-#elif NETCOREAPP2_2
-                              applicationBuilder.UseMvc(builder =>
-                              {
-                                  builder = builder.AsNotNull();
 
-                                  ConfigureEndpoints(context, builder);
-
-                                  foreach (var module in modules)
-                                      module.ConfigureEndpoints(context, builder);
-                              });
-#endif
+                              if (UseMigrations)
+                                  applicationBuilder.ExecuteMigrations();
 
                               applicationBuilder.UseDefaultScheduling();
                           })

@@ -1,4 +1,5 @@
 using System;
+using GS.DecoupleIt.DependencyInjection.Automatic;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.Scheduling
@@ -12,7 +13,7 @@ namespace GS.DecoupleIt.Scheduling
     [BaseTypeRequired(typeof(IJob))]
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     [PublicAPI]
-    public sealed class CyclicSchedule : Attribute, IScheduleAttribute
+    public sealed class CyclicSchedule : SingletonAttribute, IScheduleAttribute
     {
         /// <summary>
         ///     Days.

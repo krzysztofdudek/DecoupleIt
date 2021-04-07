@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>5.0.5</VersionPrefix>
+        <VersionPrefix>6.0.0-alpha.0</VersionPrefix>
         <Title>DecoupleIt - ASP .NET Core base service library</Title>
         <Description>Implements base web application host with extensible modules.</Description>
     </PropertyGroup>
@@ -9,41 +9,36 @@
     <Import Project="../libraries.aspnetcore.props" />
 
     <ItemGroup>
-        <ProjectReference Include="..\Contextual.UnitOfWork.AspNetCore\Contextual.UnitOfWork.AspNetCore.csproj" />
-        <ProjectReference Include="..\Operations.AspNetCore\Operations.AspNetCore.csproj" />
-        <ProjectReference Include="..\HttpAbstraction.AspNetCore\HttpAbstraction.AspNetCore.csproj" />
-        <ProjectReference Include="..\Scheduling.AspNetCore\Scheduling.AspNetCore.csproj" />
-        <ProjectReference Include="..\Tracing.AspNetCore\Tracing.AspNetCore.csproj" />
-        <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
+        <ProjectReference Include="..\Contextual.UnitOfWork\Contextual.UnitOfWork.csproj" />
+        <ProjectReference Include="..\Migrations\Migrations.csproj" />
+        <ProjectReference Include="..\Operations\Operations.csproj" />
         <ProjectReference Include="..\HttpAbstraction\HttpAbstraction.csproj" />
+        <ProjectReference Include="..\Scheduling\Scheduling.csproj" />
+        <ProjectReference Include="..\Tracing\Tracing.csproj" />
+        <ProjectReference Include="..\DependencyInjection.Automatic\DependencyInjection.Automatic.csproj" />
         <ProjectReference Include="..\Options.Automatic\Options.Automatic.csproj" />
         <ProjectReference Include="..\Optionals\Optionals.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.0.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.2" />
         <PackageReference Include="Serilog" Version="2.10.0" />
-        <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
+        <PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.2.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Rewrite" Version="2.2.0" />
+    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.14" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.14" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.14" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.14" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.14" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.14" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.12" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.12" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.12" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.12" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.12" />
+    <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.5" />
     </ItemGroup>
 
 </Project>

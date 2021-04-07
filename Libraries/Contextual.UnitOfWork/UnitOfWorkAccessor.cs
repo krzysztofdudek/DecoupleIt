@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace GS.DecoupleIt.Contextual.UnitOfWork
 {
@@ -47,10 +48,22 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// </summary>
         /// <typeparam name="TUnitOfWork">Type of a unit of work.</typeparam>
         /// <returns>Is available in storage.</returns>
-        public static bool IsAvailable<TUnitOfWork>()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsAvailable<TUnitOfWork>(out string stackTrace)
             where TUnitOfWork : class, IUnitOfWork
         {
-            return GetEntry(typeof(TUnitOfWork)) != null;
+            var entry = GetEntry(typeof(TUnitOfWork));
+
+            if (entry != null)
+            {
+                stackTrace = entry.StackTrace;
+
+                return true;
+            }
+
+            stackTrace = null;
+
+            return false;
         }
 
         /// <summary>
@@ -58,6 +71,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// </summary>
         /// <param name="unitOfWork">Unit of work.</param>
         /// <returns>Is last level.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLastLevelOfInvocation([NotNull] IUnitOfWork unitOfWork)
         {
             ContractGuard.IfArgumentIsNull(nameof(unitOfWork), unitOfWork);
@@ -75,6 +89,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// </summary>
         /// <param name="unitOfWork">Unit of work.</param>
         /// <returns>Is last level.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLastLevelOfInvocationWithDecrease([NotNull] IUnitOfWork unitOfWork)
         {
             return IsLastLevelOfInvocationWithDecrease(unitOfWork.GetType());
@@ -85,6 +100,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// </summary>
         /// <param name="unitOfWorkType">Unit of work type.</param>
         /// <returns>Is last level.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLastLevelOfInvocationWithDecrease([NotNull] Type unitOfWorkType)
         {
             ContractGuard.IfArgumentIsNull(nameof(unitOfWorkType), unitOfWorkType);
@@ -106,9 +122,13 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         ///     Creates an instance of <see cref="UnitOfWorkAccessor" />.
         /// </summary>
         /// <param name="serviceProvider">Service provider.</param>
-        public UnitOfWorkAccessor([NotNull] IServiceProvider serviceProvider)
+        /// <param name="unitOfWorkPool">Unit of work pool</param>
+        /// <param name="options">Options.</param>
+        public UnitOfWorkAccessor([NotNull] IServiceProvider serviceProvider, [NotNull] IUnitOfWorkPool unitOfWorkPool, [NotNull] IOptions<Options> options)
         {
             _serviceProvider = serviceProvider;
+            _unitOfWorkPool  = unitOfWorkPool;
+            _options         = options.Value!;
         }
 
         /// <inheritdoc />
@@ -138,21 +158,16 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 throw new InvalidOperationException("This should never happen. Unit of work accessor is broken in this thread.");
             }
 
-            TUnitOfWork instance;
-            var         factory = _serviceProvider.GetService<Func<TUnitOfWork>>();
-
-            if (factory is null)
-                instance = _serviceProvider.GetRequiredService<TUnitOfWork>()
-                                           .AsNotNull();
-            else
-                instance = factory()
-                    .AsNotNull();
+            var instance = _unitOfWorkPool.Rent<TUnitOfWork>();
 
             instance.Disposed += OnInstanceDisposed;
 
             lock (StorageEntries)
             {
-                (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(typeof(TUnitOfWork), instance, null));
+                (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(typeof(TUnitOfWork),
+                                                                                         instance,
+                                                                                         null,
+                                                                                         _options.LogStackTrace ? Environment.StackTrace : null));
             }
 
             return instance;
@@ -178,15 +193,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
             var lazyUnitOfWorkAccessor = new LazyUnitOfWorkAccessor<TUnitOfWork>(() =>
             {
-                TUnitOfWork instance;
-                var         factory = _serviceProvider.GetService<Func<TUnitOfWork>>();
-
-                if (factory is null)
-                    instance = _serviceProvider.GetRequiredService<TUnitOfWork>()
-                                               .AsNotNull();
-                else
-                    instance = factory()
-                        .AsNotNull();
+                var instance = _unitOfWorkPool.Rent<TUnitOfWork>();
 
                 instance.Disposed += OnInstanceDisposed;
 
@@ -197,7 +204,10 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
             lock (StorageEntries)
             {
-                (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(typeof(TUnitOfWork), null, lazyUnitOfWorkAccessor));
+                (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(typeof(TUnitOfWork),
+                                                                                         null,
+                                                                                         lazyUnitOfWorkAccessor,
+                                                                                         _options.LogStackTrace ? Environment.StackTrace : null));
             }
 
             return lazyUnitOfWorkAccessor;
@@ -207,6 +217,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         private static readonly AsyncLocal<List<StorageEntry>> StorageEntries = new();
 
         [CanBeNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static StorageEntry GetEntry([NotNull] Type type)
         {
             lock (StorageEntries)
@@ -221,8 +232,33 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         }
 
         [NotNull]
+        private readonly Options _options;
+
+        [NotNull]
         private readonly IServiceProvider _serviceProvider;
 
+        [NotNull]
+        private readonly IUnitOfWorkPool _unitOfWorkPool;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ClearStorageEntry([NotNull] StorageEntry entry)
+        {
+            if (entry.UnitOfWork != null)
+            {
+                entry.UnitOfWork.Disposed -= OnInstanceDisposed;
+
+                _unitOfWorkPool.Return(entry.UnitOfWork);
+            }
+            else if (entry.LazyUnitOfWorkAccessor != null)
+            {
+                entry.LazyUnitOfWorkAccessor.Value.Disposed -= OnInstanceDisposed;
+
+                if (entry.LazyUnitOfWorkAccessor.HasValueLoaded)
+                    _unitOfWorkPool.Return(entry.LazyUnitOfWorkAccessor.Value);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "InvertIf")]
         private void ManageDisposalOfEntry(StorageEntry entry)
         {
@@ -243,11 +279,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                     StorageEntries.Value = null;
             }
 
-            if (entry.UnitOfWork != null)
-                entry.UnitOfWork.Disposed -= OnInstanceDisposed;
-
-            if (entry.LazyUnitOfWorkAccessor != null)
-                entry.LazyUnitOfWorkAccessor.Value.Disposed -= OnInstanceDisposed;
+            ClearStorageEntry(entry);
         }
 
         private void OnInstanceDisposed([NotNull] IUnitOfWork source)
@@ -291,6 +323,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             public long Level = 1;
 
             [CanBeNull]
+            public readonly string StackTrace;
+
+            [CanBeNull]
             public readonly IUnitOfWork UnitOfWork;
 
             [NotNull]
@@ -299,11 +334,13 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             public StorageEntry(
                 [NotNull] Type unitOfWorkType,
                 [CanBeNull] IUnitOfWork unitOfWork,
-                [CanBeNull] ILazyUnitOfWorkAccessor<IUnitOfWork> lazyUnitOfWorkAccessor)
+                [CanBeNull] ILazyUnitOfWorkAccessor<IUnitOfWork> lazyUnitOfWorkAccessor,
+                [CanBeNull] string stackTrace)
             {
                 UnitOfWorkType         = unitOfWorkType;
                 UnitOfWork             = unitOfWork;
                 LazyUnitOfWorkAccessor = lazyUnitOfWorkAccessor;
+                StackTrace             = stackTrace;
             }
         }
     }

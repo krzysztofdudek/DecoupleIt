@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>5.0.1</VersionPrefix>
+        <VersionPrefix>6.0.0-alpha.0</VersionPrefix>
         <Title>DecoupleIt - Contextual Unit of Work for Entity Framework Core</Title>
         <Description>Package adds support of contextual unit of work for Entity Framework Core.</Description>
     </PropertyGroup>
@@ -11,19 +11,15 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.6" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.2'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.14" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.12" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.14" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.12" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.14" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">

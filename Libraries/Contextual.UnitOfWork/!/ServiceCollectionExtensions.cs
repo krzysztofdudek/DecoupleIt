@@ -1,4 +1,3 @@
-using System;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Options.Automatic;
 using GS.DecoupleIt.Shared;
@@ -31,24 +30,6 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             serviceCollection.ScanAssemblyForOptions(assembly, configuration);
 
             return new Builder(serviceCollection, configuration);
-        }
-
-        /// <summary>
-        ///     Registers factory of unit of work. It have to be used when unit of work is registered as transient.
-        /// </summary>
-        /// <param name="serviceCollection">Service collection.</param>
-        /// <param name="factory">Factory method.</param>
-        /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
-        /// <returns>Service collection.</returns>
-        [NotNull]
-        public static IServiceCollection AddUnitOfWorkFactory<TUnitOfWork>(
-            [NotNull] this IServiceCollection serviceCollection,
-            [NotNull] Func<IServiceProvider, TUnitOfWork> factory)
-            where TUnitOfWork : class, IUnitOfWork
-        {
-            serviceCollection.AddTransient<Func<TUnitOfWork>>(x => () => factory(x));
-
-            return serviceCollection;
         }
     }
 }

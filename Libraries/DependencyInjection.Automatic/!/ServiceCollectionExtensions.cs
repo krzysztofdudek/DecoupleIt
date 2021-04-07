@@ -17,7 +17,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        ///     Configures automatic dependency injection. It's MANDATORY to call this before any usage of method <see cref="ScanAssemblyForImplementations"/>.
+        ///     Configures automatic dependency injection. It's MANDATORY to call this before any usage of method <see cref="ScanAssemblyForImplementations" />.
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
         /// <param name="configuration">Configuration.</param>
@@ -79,7 +79,8 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
 
             if (!(serviceCollection.FirstOrDefault(x => x.ImplementationInstance is IOptions<Options>)
                                    ?.ImplementationInstance is IOptions<Options> options))
-                throw new InvalidOperationException($"Method {nameof(ConfigureAutomaticDependencyInjection)} was not called before on {nameof(IServiceCollection)}.");
+                throw new InvalidOperationException(
+                    $"Method {nameof(ConfigureAutomaticDependencyInjection)} was not called before on {nameof(IServiceCollection)}.");
 
             var typesWithAttributes = GetTypesToRegister(assembly,
                                                          @namespace,
@@ -234,7 +235,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
             [NotNull] [ItemNotNull] Type[] ignoredTypes,
             [NotNull] [ItemNotNull] Type[] registerAsManyTypes,
             [NotNull] Type implementationType,
-            [NotNull] LifeTimeAttribute attribute,
+            [NotNull] LifetimeAttribute attribute,
             [NotNull] Options options)
         {
             // Do not register the same services again.
@@ -242,7 +243,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
                 return;
 
             // If environments are defined for implementation component then verify if it should be registered or not.
-            if (attribute.Environments is not null && attribute.Environments.Split()
+            if (attribute.Environments is not null && attribute.Environments.Split(';')
                                                                .Contains(options.Environment) != true)
                 return;
 
@@ -263,7 +264,7 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
                 }
         }
 
-        private static void RegisterImplementation([NotNull] IServiceCollection serviceCollection, [NotNull] Type type, [NotNull] LifeTimeAttribute attribute)
+        private static void RegisterImplementation([NotNull] IServiceCollection serviceCollection, [NotNull] Type type, [NotNull] LifetimeAttribute attribute)
         {
             var serviceDescriptor = attribute switch
             {
@@ -310,8 +311,12 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
                                                     .GetCustomAttributes())
                                       .SelectMany(x => x)
                                       .Distinct()
-                                      .Select(x => x.AsNotNull()
-                                                    .GetType());
+                                      .Select(x => new[]
+                                      {
+                                          x!.GetType()
+                                      }.Concat(x.GetType()
+                                                .GetAllBaseTypes()))
+                                      .SelectMany(x => x);
 
             return _attributesMeaningAuto.Intersect(attributesTypes)
                                          .Any();

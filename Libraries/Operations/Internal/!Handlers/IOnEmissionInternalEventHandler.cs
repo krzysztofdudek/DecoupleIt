@@ -8,7 +8,7 @@ namespace GS.DecoupleIt.Operations.Internal
     [RegisterManyTimes]
     internal interface IOnEmissionInternalEventHandler
     {
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
         [NotNull]
         Task
 #else

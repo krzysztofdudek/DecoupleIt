@@ -6,5 +6,5 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
     ///     Marks a service type or it's implementation to be registered transient.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-    public sealed class TransientAttribute : LifeTimeAttribute { }
+    public class TransientAttribute : LifetimeAttribute { }
 }

@@ -9,7 +9,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<Optional<T>>
 #else
             ValueTask<Optional<T>>
@@ -21,7 +21,7 @@ namespace GS.DecoupleIt.Optionals
 
         [NotNull]
         public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -33,7 +33,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<TResult>
 #else
             ValueTask<TResult>
@@ -45,7 +45,7 @@ namespace GS.DecoupleIt.Optionals
 
         [NotNull]
         public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<Optional<TResult>>
 #else
             ValueTask<Optional<TResult>>
@@ -58,7 +58,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<TResult>
 #else
             ValueTask<TResult>
@@ -71,7 +71,7 @@ namespace GS.DecoupleIt.Optionals
         [NotNull]
         [ItemNotNull]
         public delegate
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<T>
 #else
             ValueTask<T>

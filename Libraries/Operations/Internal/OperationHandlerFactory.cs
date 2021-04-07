@@ -38,8 +38,8 @@ namespace GS.DecoupleIt.Operations.Internal
             [NotNull] IInternalEvent internalEvent)
         {
             return serviceProvider.GetServices(typeof(OnEmissionInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!
-                   .Concat(serviceProvider.GetServices(typeof(InternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType())))
-                   .Select(x => (IOnEmissionInternalEventHandler) x);
+                                  .Concat(serviceProvider.GetServices(typeof(InternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType())))
+                                  .Select(x => (IOnEmissionInternalEventHandler) x);
         }
 
         [NotNull]
@@ -50,8 +50,8 @@ namespace GS.DecoupleIt.Operations.Internal
             [NotNull] IInternalEvent internalEvent)
         {
             return serviceProvider.GetServices(typeof(OnFailureInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!
-                   .Concat(serviceProvider.GetServices(typeof(InternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType())))
-                   .Select(x => (IOnFailureInternalEventHandler) x);
+                                  .Concat(serviceProvider.GetServices(typeof(InternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType())))
+                                  .Select(x => (IOnFailureInternalEventHandler) x);
         }
 
         [NotNull]
@@ -62,8 +62,8 @@ namespace GS.DecoupleIt.Operations.Internal
             [NotNull] IInternalEvent internalEvent)
         {
             return serviceProvider.GetServices(typeof(OnSuccessInternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType()))!
-                   .Concat(serviceProvider.GetServices(typeof(InternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType())))
-                   .Select(x => (IOnSuccessInternalEventHandler) x);
+                                  .Concat(serviceProvider.GetServices(typeof(InternalEventHandlerBase<>).MakeGenericType(internalEvent.GetType())))
+                                  .Select(x => (IOnSuccessInternalEventHandler) x);
         }
 
         [NotNull]

@@ -56,7 +56,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -67,7 +67,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 CancellationToken cancellationToken = default)
             where TUnitOfWork : class, IUnitOfWork
         {
-#if !(NETSTANDARD2_0 || NETCOREAPP2_2)
+#if !NETSTANDARD2_0
             await
 #endif
                 using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
@@ -75,7 +75,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             var task = action(unitOfWork);
 
             if (task is null)
-                throw new MethodDoesNotReturnedTask();
+                throw new MethodDidntReturnTask();
 
             await task;
 
@@ -91,7 +91,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -102,7 +102,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 CancellationToken cancellationToken = default)
             where TUnitOfWork : class, IUnitOfWork
         {
-#if !(NETSTANDARD2_0 || NETCOREAPP2_2)
+#if !NETSTANDARD2_0
             await
 #endif
                 using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
@@ -122,7 +122,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
         /// <typeparam name="TResult">Type of a result.</typeparam>
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<TResult>
 #else
             ValueTask<TResult>
@@ -133,7 +133,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 CancellationToken cancellationToken = default)
             where TUnitOfWork : class, IUnitOfWork
         {
-#if !(NETSTANDARD2_0 || NETCOREAPP2_2)
+#if !NETSTANDARD2_0
             await
 #endif
                 using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();
@@ -141,7 +141,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             var task = action(unitOfWork);
 
             if (task is null)
-                throw new MethodDoesNotReturnedTask();
+                throw new MethodDidntReturnTask();
 
             var result = await task;
 
@@ -160,7 +160,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
         /// <typeparam name="TResult">Type of a result.</typeparam>
         public static async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<TResult>
 #else
             ValueTask<TResult>
@@ -171,7 +171,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 CancellationToken cancellationToken = default)
             where TUnitOfWork : class, IUnitOfWork
         {
-#if !(NETSTANDARD2_0 || NETCOREAPP2_2)
+#if !NETSTANDARD2_0
             await
 #endif
                 using var unitOfWork = unitOfWorkAccessor.Get<TUnitOfWork>();

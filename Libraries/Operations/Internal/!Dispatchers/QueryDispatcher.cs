@@ -8,6 +8,7 @@ using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace GS.DecoupleIt.Operations.Internal
 {
@@ -20,13 +21,16 @@ namespace GS.DecoupleIt.Operations.Internal
         public QueryDispatcher(
             [NotNull] IExtendedLoggerFactory extendedLoggerFactory,
             [NotNull] ITracer tracer,
-            [NotNull] IServiceProvider serviceProvider) :
-            base(extendedLoggerFactory.Create<QueryDispatcher>(), tracer, serviceProvider) { }
+            [NotNull] IServiceProvider serviceProvider,
+            [NotNull] IOptions<Options> options) : base(extendedLoggerFactory.Create<QueryDispatcher>(),
+                                                        tracer,
+                                                        serviceProvider,
+                                                        options) { }
 
         [NotNull]
         [ItemCanBeNull]
         public async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<object>
 #else
             ValueTask<object>
@@ -39,19 +43,22 @@ namespace GS.DecoupleIt.Operations.Internal
 
             var handlers = OperationHandlerFactory.GetQueryHandlers(serviceProviderScope!.ServiceProvider!, query);
 
-            Logger.LogDebug("Dispatching query {@OperationAction}.", "started");
+            if (Options.Logging.EnableNonErrorLogging)
+                Logger.LogDebug("Dispatching query {@OperationAction}.", "started");
 
             try
             {
                 var result = await ProcessHandlers(query, handlers, cancellationToken);
 
-                Logger.LogDebug("Dispatching query {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Dispatching query {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
 
                 return result;
             }
             catch
             {
-                Logger.LogDebug("Dispatching query {@OperationAction} after {@OperationDuration}ms.", "failed", span.Duration.Milliseconds);
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Dispatching query {@OperationAction} after {@OperationDuration}ms.", "failed", span.Duration.Milliseconds);
 
                 throw;
             }
@@ -61,25 +68,24 @@ namespace GS.DecoupleIt.Operations.Internal
         [ItemCanBeNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<object>
 #else
             ValueTask<object>
 #endif
-            ProcessHandler(
-                [NotNull] IQuery query,
-                [NotNull] IQueryHandler handler,
-                CancellationToken cancellationToken)
+            ProcessHandler([NotNull] IQuery query, [NotNull] IQueryHandler handler, CancellationToken cancellationToken)
         {
             using var span = Tracer.OpenSpan(handler.GetType(), SpanType.QueryHandler);
 
-            Logger.LogInformation("Query handler invocation {@OperationAction}.", "started");
+            if (Options.Logging.EnableNonErrorLogging)
+                Logger.LogDebug("Query handler invocation {@OperationAction}.", "started");
 
             try
             {
                 var result = await handler.HandleAsync(query, cancellationToken);
 
-                Logger.LogInformation("Query handler invocation {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Query handler invocation {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
 
                 return result;
             }
@@ -100,16 +106,12 @@ namespace GS.DecoupleIt.Operations.Internal
         [ItemCanBeNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<object>
 #else
             ValueTask<object>
 #endif
-            ProcessHandlers(
-                [NotNull] IQuery query,
-                [NotNull] [ItemNotNull]
-                IEnumerable<IQueryHandler> handlers,
-                CancellationToken cancellationToken)
+            ProcessHandlers([NotNull] IQuery query, [NotNull] [ItemNotNull] IEnumerable<IQueryHandler> handlers, CancellationToken cancellationToken)
         {
             object result = null;
 

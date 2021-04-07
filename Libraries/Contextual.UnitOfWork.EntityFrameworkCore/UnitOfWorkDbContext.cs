@@ -4,13 +4,19 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 
+#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP3_1
+using Microsoft.EntityFrameworkCore.Internal;
+#endif
+
 namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
 {
     /// <summary>
     ///     DbContext extended with default implementation of <see cref="IUnitOfWork" />.
     /// </summary>
-    public abstract class UnitOfWorkDbContext : DbContext, IUnitOfWork
+    public abstract class UnitOfWorkDbContext : DbContext, IPooledUnitOfWork
     {
+        public bool IsPooled { get; set; }
+
         public event Action<IUnitOfWork> Disposed;
 
         /// <inheritdoc />
@@ -19,14 +25,17 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))
                 return;
 
-            base.Dispose();
+            if (!IsPooled)
+            {
+                base.Dispose();
 
-            GC.SuppressFinalize(this);
+                GC.SuppressFinalize(this);
+            }
 
             Disposed?.Invoke(this);
         }
 
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CA1816")]
         public override async ValueTask DisposeAsync()
@@ -34,9 +43,12 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))
                 return;
 
-            await base.DisposeAsync();
+            if (!IsPooled)
+            {
+                await base.DisposeAsync();
 
-            GC.SuppressFinalize(this);
+                GC.SuppressFinalize(this);
+            }
 
             Disposed?.Invoke(this);
         }
@@ -53,7 +65,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
 
         /// <inheritdoc />
         public new
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -61,7 +73,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
             SaveChangesAsync(CancellationToken cancellationToken)
         {
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocation(this))
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                 return Task.CompletedTask!;
 #else
                 return new ValueTask();
@@ -75,5 +87,15 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore
 
         /// <inheritdoc />
         protected UnitOfWorkDbContext([NotNull] DbContextOptions options) : base(options) { }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "EF1001")]
+        void IPooledUnitOfWork.ResetState()
+        {
+#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP3_1
+            ((IDbContextDependencies) this).StateManager!.ResetState();
+#else
+            ChangeTracker!.Clear();
+#endif
+        }
     }
 }

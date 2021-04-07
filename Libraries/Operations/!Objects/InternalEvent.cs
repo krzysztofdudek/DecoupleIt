@@ -18,7 +18,7 @@ namespace GS.DecoupleIt.Operations
         public void Emit()
         {
             OperationDispatcher.DispatchInternalEventAsync(this, CancellationToken.None)
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
                                .AsTask()
 #endif
                                .GetAwaiter()
@@ -30,7 +30,7 @@ namespace GS.DecoupleIt.Operations
         /// </summary>
         [NotNull]
         public
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask

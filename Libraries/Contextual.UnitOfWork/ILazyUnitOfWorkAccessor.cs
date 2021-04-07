@@ -9,7 +9,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
     /// <typeparam name="TUnitOfWork">Type of unit of work.</typeparam>
     public interface ILazyUnitOfWorkAccessor<out TUnitOfWork>
         : IDisposable
-#if !(NETCOREAPP2_2 || NETSTANDARD2_0)
+#if !NETSTANDARD2_0
         , IAsyncDisposable
 #endif
         where TUnitOfWork : class, IUnitOfWork

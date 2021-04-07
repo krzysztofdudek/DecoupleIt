@@ -112,7 +112,7 @@ namespace GS.DecoupleIt.Tracing
         private readonly LoggerPropertiesOptions _loggerPropertiesOptions;
 
         [NotNull]
-        private Func<TracingId> _newTracingIdGenerator = () => (TracingId) Guid.NewGuid();
+        private Func<TracingId> _newTracingIdGenerator = () => Guid.NewGuid();
 
         [NotNull]
         private readonly AsyncLocal<ITracerSpan> _spanStorage = new();

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using DifferentNamespace;
 using GS.DecoupleIt.Shared;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -14,6 +15,8 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic.Tests
         public RegistrationTests()
         {
             var serviceCollection = new ServiceCollection();
+
+            serviceCollection.ConfigureAutomaticDependencyInjection(new ConfigurationBuilder().Build());
 
             serviceCollection.ScanAssemblyForImplementations(typeof(RegistrationTests).Assembly,
                                                              "GS.DecoupleIt.DependencyInjection.Automatic.Tests",

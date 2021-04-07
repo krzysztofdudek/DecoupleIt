@@ -8,7 +8,7 @@ namespace GS.DecoupleIt.Operations.Internal
     [RegisterManyTimes]
     internal interface ICommandWithResultHandler
     {
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
         [NotNull]
         [ItemCanBeNull]
         Task<object>

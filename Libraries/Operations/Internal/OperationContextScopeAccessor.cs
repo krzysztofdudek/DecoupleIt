@@ -30,7 +30,7 @@ namespace GS.DecoupleIt.Operations.Internal
         }
 
         public
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -39,7 +39,7 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             var task = OperationContext.CurrentScope?.DispatchOperationsAsync(dispatchOperations, cancellationToken);
 
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             return task ?? Task.CompletedTask.AsNotNull();
 #else
             return task ?? new ValueTask();

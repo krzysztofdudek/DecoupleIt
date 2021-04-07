@@ -27,7 +27,7 @@ namespace GS.DecoupleIt.Operations
         [NotNull]
         [ItemCanBeNull]
         protected abstract
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<TResult>
 #else
             ValueTask<TResult>
@@ -36,7 +36,7 @@ namespace GS.DecoupleIt.Operations
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<object>
 #else
             ValueTask<object>

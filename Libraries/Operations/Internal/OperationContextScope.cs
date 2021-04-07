@@ -36,7 +36,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
             var events = new List<InternalEvent>();
 
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -45,7 +45,7 @@ namespace GS.DecoupleIt.Operations.Internal
             {
                 // ReSharper disable once PossibleNullReferenceException
                 if (eventTypes.All(x => x != events.GetType()))
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                     return Task.CompletedTask;
 #else
                     return new ValueTask();
@@ -53,7 +53,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 events.Add(@event);
 
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                 return Task.CompletedTask;
 #else
                 return new ValueTask();
@@ -84,7 +84,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
             var events = new List<InternalEvent>();
 
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -93,7 +93,7 @@ namespace GS.DecoupleIt.Operations.Internal
             {
                 // ReSharper disable once PossibleNullReferenceException
                 if (eventTypes.All(x => x != events.GetType()))
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                     return Task.CompletedTask;
 #else
                     return new ValueTask();
@@ -101,7 +101,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 events.Add(@event);
 
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                 return Task.CompletedTask;
 #else
                 return new ValueTask();
@@ -125,7 +125,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -139,7 +139,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [ItemCanBeNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<object>
 #else
             ValueTask<object>
@@ -152,7 +152,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -163,7 +163,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
             var task = InternalEventEmitted?.Invoke(@event, cancellationToken);
 
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             return task ?? Task.CompletedTask;
 #else
             return task ?? new ValueTask();
@@ -171,7 +171,7 @@ namespace GS.DecoupleIt.Operations.Internal
         }
 
         public async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -184,7 +184,7 @@ namespace GS.DecoupleIt.Operations.Internal
             {
                 var task = dispatchOperations();
 
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                 if (task is null)
                     throw new InvalidOperationException("Dispatch operations delegate returned null instead of task.");
 #endif
@@ -211,7 +211,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [ItemCanBeNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task<object>
 #else
             ValueTask<object>

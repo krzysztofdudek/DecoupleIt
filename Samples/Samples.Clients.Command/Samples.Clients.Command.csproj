@@ -8,12 +8,12 @@
       <ProjectReference Include="..\Samples.Clients.Command.Contracts\Samples.Clients.Command.Contracts.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.0" />
+    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.14" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Services" />
+    <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+      <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.0" />
     </ItemGroup>
 
 </Project>

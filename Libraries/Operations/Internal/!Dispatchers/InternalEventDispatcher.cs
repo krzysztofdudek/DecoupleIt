@@ -8,6 +8,7 @@ using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace GS.DecoupleIt.Operations.Internal
 {
@@ -19,13 +20,15 @@ namespace GS.DecoupleIt.Operations.Internal
         public InternalEventDispatcher(
             [NotNull] IExtendedLoggerFactory extendedLoggerFactory,
             [NotNull] ITracer tracer,
-            [NotNull] IServiceProvider serviceProvider) : base(extendedLoggerFactory.Create<InternalEventDispatcher>(),
-                                                                                     tracer,
-                                                                                     serviceProvider) { }
+            [NotNull] IServiceProvider serviceProvider,
+            [NotNull] IOptions<Options> options) : base(extendedLoggerFactory.Create<InternalEventDispatcher>(),
+                                                        tracer,
+                                                        serviceProvider,
+                                                        options) { }
 
         [NotNull]
         public
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -40,7 +43,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         public
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -55,7 +58,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
         [NotNull]
         public
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -71,7 +74,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -97,7 +100,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AccessToDisposedClosure")]
         private async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -136,7 +139,8 @@ namespace GS.DecoupleIt.Operations.Internal
                 mode = "on failure";
             }
 
-            Logger.LogDebug("Dispatching event {@EventDispatchingMode} {@OperationAction}.", mode, "started");
+            if (Options.Logging.EnableNonErrorLogging)
+                Logger.LogDebug("Dispatching event {@EventDispatchingMode} {@OperationAction}.", mode, "started");
 
             try
             {
@@ -146,17 +150,19 @@ namespace GS.DecoupleIt.Operations.Internal
                                            mode,
                                            cancellationToken);
 
-                Logger.LogDebug("Dispatching event {@EventDispatchingMode} {@OperationAction} after {@OperationDuration}ms.",
-                                mode,
-                                "finished",
-                                span.Duration.Milliseconds);
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Dispatching event {@EventDispatchingMode} {@OperationAction} after {@OperationDuration}ms.",
+                                    mode,
+                                    "finished",
+                                    span.Duration.Milliseconds);
             }
             catch
             {
-                Logger.LogDebug("Dispatching event {@EventDispatchingMode} {@OperationAction} after {@OperationDuration}ms.",
-                                mode,
-                                "failed",
-                                span.Duration.Milliseconds);
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Dispatching event {@EventDispatchingMode} {@OperationAction} after {@OperationDuration}ms.",
+                                    mode,
+                                    "failed",
+                                    span.Duration.Milliseconds);
 
                 throw;
             }
@@ -165,7 +171,7 @@ namespace GS.DecoupleIt.Operations.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AccessToDisposedClosure")]
         private async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
@@ -179,7 +185,8 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             using var span = Tracer.OpenSpan(eventHandler.GetType(), SpanType.InternalEventHandler);
 
-            Logger.LogInformation("Event handler {@EventDispatchingMode} invocation {@OperationAction}.", mode, "started");
+            if (Options.Logging.EnableNonErrorLogging)
+                Logger.LogDebug("Event handler {@EventDispatchingMode} invocation {@OperationAction}.", mode, "started");
 
             try
             {
@@ -188,10 +195,11 @@ namespace GS.DecoupleIt.Operations.Internal
                                          exception,
                                          cancellationToken);
 
-                Logger.LogInformation("Event handler {@EventDispatchingMode} invocation {@OperationAction} after {@OperationDuration}ms.",
-                                      mode,
-                                      "finished",
-                                      span.Duration.Milliseconds);
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Event handler {@EventDispatchingMode} invocation {@OperationAction} after {@OperationDuration}ms.",
+                                    mode,
+                                    "finished",
+                                    span.Duration.Milliseconds);
             }
             catch (Exception caughtException)
             {
@@ -213,15 +221,14 @@ namespace GS.DecoupleIt.Operations.Internal
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async
-#if NETCOREAPP2_2 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             Task
 #else
             ValueTask
 #endif
             ProcessEventHandlers(
                 [NotNull] IInternalEvent @event,
-                [NotNull] [ItemNotNull]
-                IEnumerable<object> eventHandlers,
+                [NotNull] [ItemNotNull] IEnumerable<object> eventHandlers,
                 [CanBeNull] Exception exception,
                 [NotNull] string mode,
                 CancellationToken cancellationToken)
