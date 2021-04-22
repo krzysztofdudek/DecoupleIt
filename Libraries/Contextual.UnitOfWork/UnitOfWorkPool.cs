@@ -64,7 +64,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         public TUnitOfWork Rent<TUnitOfWork>()
             where TUnitOfWork : class, IUnitOfWork
         {
-            if (!_options.Pooling.Enabled)
+            if (!_options.Pooling.Enabled || !typeof(IPooledUnitOfWork).IsAssignableFrom(typeof(TUnitOfWork)))
                 return CreateAnInstanceOfUnitOfWork<TUnitOfWork>();
 
             var poolObject = GetPoolObject(typeof(TUnitOfWork));
@@ -86,7 +86,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Return(IUnitOfWork unitOfWork)
         {
-            if (!_options.Pooling.Enabled)
+            if (!_options.Pooling.Enabled || unitOfWork is not IPooledUnitOfWork)
                 unitOfWork.Dispose();
 
             var poolObject = GetPoolObject(unitOfWork.GetType());
