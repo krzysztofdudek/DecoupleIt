@@ -427,6 +427,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                       module.ConfigureSwaggerGen(context, options);
                               });
 
+                              if (JsonSerializer == JsonSerializerType.NewtonsoftJson)
+                                  collection.AddSwaggerGenNewtonsoftSupport();
+
                               // Configure cors.
                               collection.AddCors(options =>
                               {
