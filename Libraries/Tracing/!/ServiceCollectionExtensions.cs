@@ -24,6 +24,7 @@ namespace GS.DecoupleIt.Tracing
         public static Builder AddTracing([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
         {
             ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
+            ContractGuard.IfArgumentIsNull(nameof(configuration), configuration);
 
             serviceCollection.ScanAssemblyForImplementations(ThisAssembly);
             serviceCollection.ScanAssemblyForOptions(ThisAssembly, configuration);

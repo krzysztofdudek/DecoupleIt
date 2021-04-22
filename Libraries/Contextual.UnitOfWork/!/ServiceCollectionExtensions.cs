@@ -23,6 +23,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         public static Builder AddContextualUnitOfWork([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
         {
             ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
+            ContractGuard.IfArgumentIsNull(nameof(configuration), configuration);
 
             var assembly = typeof(ServiceCollectionExtensions).Assembly;
 

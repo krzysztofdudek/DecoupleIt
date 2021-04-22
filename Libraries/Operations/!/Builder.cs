@@ -22,6 +22,8 @@ namespace GS.DecoupleIt.Operations
         [NotNull]
         public Builder WithConfiguration([NotNull] Action<Options> configureOptions)
         {
+            ContractGuard.IfArgumentIsNull(nameof(configureOptions), configureOptions);
+
             ServiceCollection.PostConfigure(configureOptions);
 
             return this;

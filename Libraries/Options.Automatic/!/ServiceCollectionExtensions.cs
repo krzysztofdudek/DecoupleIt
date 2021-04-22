@@ -32,6 +32,10 @@ namespace GS.DecoupleIt.Options.Automatic
             [NotNull] Assembly assembly,
             [NotNull] IConfiguration configuration)
         {
+            ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
+            ContractGuard.IfArgumentIsNull(nameof(assembly), assembly);
+            ContractGuard.IfArgumentIsNull(nameof(configuration), configuration);
+
             serviceCollection.AddOptions();
 
             var optionsTypes = assembly.GetTypes()

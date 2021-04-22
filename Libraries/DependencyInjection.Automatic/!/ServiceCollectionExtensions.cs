@@ -27,6 +27,8 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
             [NotNull] IConfiguration configuration,
             [CanBeNull] Action<Options> configure = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
+
             var options = new Options();
 
             configuration.GetSection(typeof(ServiceCollectionExtensions).Namespace!.Replace(".", ":"))
@@ -73,6 +75,9 @@ namespace GS.DecoupleIt.DependencyInjection.Automatic
             [CanBeNull] [ItemNotNull] Type[] ignoredBaseTypes = default,
             [CanBeNull] [ItemNotNull] Type[] registerAsManyTypes = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
+            ContractGuard.IfArgumentIsNull(nameof(assembly), assembly);
+
             ignoredTypes        ??= new Type[0];
             ignoredBaseTypes    ??= new Type[0];
             registerAsManyTypes ??= new Type[0];

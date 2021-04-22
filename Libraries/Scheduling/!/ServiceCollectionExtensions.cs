@@ -32,6 +32,9 @@ namespace GS.DecoupleIt.Scheduling
             [NotNull] IConfiguration configuration,
             [CanBeNull] Action<Options> configureOptions = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
+            ContractGuard.IfArgumentIsNull(nameof(configuration), configuration);
+
             serviceCollection.ScanAssemblyForOptions(typeof(ServiceCollectionExtensions).Assembly, configuration);
 
             if (configureOptions is not null)
@@ -55,6 +58,9 @@ namespace GS.DecoupleIt.Scheduling
         [PublicAPI]
         public static IServiceCollection ScanAssemblyForJobs([NotNull] [ItemNotNull] this IServiceCollection serviceCollection, [NotNull] Assembly assembly)
         {
+            ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
+            ContractGuard.IfArgumentIsNull(nameof(assembly), assembly);
+
             serviceCollection.ScanAssemblyForImplementations(typeof(ServiceCollectionExtensions).Assembly);
 
             var jobs = GetJobs(assembly);

@@ -20,7 +20,7 @@ namespace GS.DecoupleIt.AspNetCore.Service.Operations
         {
             using var scope = _operationContext.OpenScope();
 
-            await scope.DispatchOperationsAsync(() => next(context)!.AsValueTask(), context.RequestAborted);
+            await scope.DispatchOperationsAsync(() => next(context)!.AsValueTask(), cancellationToken: context.RequestAborted);
         }
 
         [NotNull]

@@ -13,12 +13,12 @@ namespace GS.DecoupleIt.Operations.Internal
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     internal sealed class OperationContextScope : IOperationContextScope
     {
-        public IReadOnlyCollection<InternalEvent> InternalEvents => _internalEvents;
-
         [CanBeNull]
         public OperationContextScope Parent { get; }
 
         public event OnOperationContextScopeClosedEventHandlerDelegate Closed;
+
+        public event InternalEventEmittedAsyncDelegate InternalEventEmitted;
 
         public OperationContextScope([NotNull] IServiceProvider serviceProvider, [CanBeNull] OperationContextScope parent = default)
         {
@@ -41,7 +41,7 @@ namespace GS.DecoupleIt.Operations.Internal
 #else
             ValueTask
 #endif
-                OnEventEmitted(InternalEvent @event, CancellationToken cancellationToken)
+                OnInternalEventEmitted(InternalEvent @event, CancellationToken cancellationToken)
             {
                 // ReSharper disable once PossibleNullReferenceException
                 if (eventTypes.All(x => x != events.GetType()))
@@ -60,7 +60,7 @@ namespace GS.DecoupleIt.Operations.Internal
 #endif
             }
 
-            InternalEventEmitted += OnEventEmitted;
+            InternalEventEmitted += OnInternalEventEmitted;
 
             try
             {
@@ -68,7 +68,7 @@ namespace GS.DecoupleIt.Operations.Internal
             }
             finally
             {
-                InternalEventEmitted -= OnEventEmitted;
+                InternalEventEmitted -= OnInternalEventEmitted;
             }
 
             processAggregateEventsMethod(events);
@@ -89,7 +89,7 @@ namespace GS.DecoupleIt.Operations.Internal
 #else
             ValueTask
 #endif
-                OnEventEmitted(InternalEvent @event, CancellationToken cancellationToken)
+                OnInternalEventEmitted(InternalEvent @event, CancellationToken cancellationToken)
             {
                 // ReSharper disable once PossibleNullReferenceException
                 if (eventTypes.All(x => x != events.GetType()))
@@ -108,7 +108,7 @@ namespace GS.DecoupleIt.Operations.Internal
 #endif
             }
 
-            InternalEventEmitted += OnEventEmitted;
+            InternalEventEmitted += OnInternalEventEmitted;
 
             try
             {
@@ -116,7 +116,7 @@ namespace GS.DecoupleIt.Operations.Internal
             }
             finally
             {
-                InternalEventEmitted -= OnEventEmitted;
+                InternalEventEmitted -= OnInternalEventEmitted;
             }
 
             await processAggregateEventsMethod(events)!;
@@ -159,8 +159,6 @@ namespace GS.DecoupleIt.Operations.Internal
 #endif
             DispatchInternalEventAsync([NotNull] InternalEvent @event, CancellationToken cancellationToken = default)
         {
-            _internalEvents.Add(@event);
-
             var task = InternalEventEmitted?.Invoke(@event, cancellationToken);
 
 #if NETSTANDARD2_0
@@ -176,9 +174,30 @@ namespace GS.DecoupleIt.Operations.Internal
 #else
             ValueTask
 #endif
-            DispatchOperationsAsync(DispatchOperationsDelegate dispatchOperations, CancellationToken cancellationToken = default)
+            DispatchOperationsAsync(
+                DispatchOperationsDelegate dispatchOperations,
+                List<InternalEvent> internalEvents = default,
+                CancellationToken cancellationToken = default)
         {
-            InternalEventEmitted += InternalEventDispatcher.DispatchOnEmissionAsync;
+            ContractGuard.IfArgumentIsNull(nameof(dispatchOperations), dispatchOperations);
+
+            internalEvents ??= new List<InternalEvent>();
+
+            [NotNull]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if NETSTANDARD2_0
+            Task
+#else
+            ValueTask
+#endif
+                OnInternalEventEmitted([NotNull] IInternalEvent @event, CancellationToken innerCancellationToken)
+            {
+                internalEvents.Add((InternalEvent) @event);
+
+                return InternalEventDispatcher.DispatchOnEmissionAsync(@event, innerCancellationToken);
+            }
+
+            InternalEventEmitted += OnInternalEventEmitted;
 
             try
             {
@@ -191,19 +210,19 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 await task;
 
-                foreach (var @event in _internalEvents)
-                    await InternalEventDispatcher.DispatchOnSuccessAsync(@event, cancellationToken);
+                foreach (var @event in internalEvents)
+                    await InternalEventDispatcher.DispatchOnSuccessAsync(@event!, cancellationToken);
             }
             catch (Exception exception)
             {
-                foreach (var @event in _internalEvents)
-                    await InternalEventDispatcher.DispatchOnFailureAsync(@event, exception, cancellationToken);
+                foreach (var @event in internalEvents)
+                    await InternalEventDispatcher.DispatchOnFailureAsync(@event!, exception, cancellationToken);
 
                 throw;
             }
             finally
             {
-                InternalEventEmitted -= InternalEventDispatcher.DispatchOnEmissionAsync;
+                InternalEventEmitted -= OnInternalEventEmitted;
             }
         }
 
@@ -227,10 +246,6 @@ namespace GS.DecoupleIt.Operations.Internal
         }
 
         [NotNull]
-        [ItemNotNull]
-        private readonly List<InternalEvent> _internalEvents = new();
-
-        [NotNull]
         [UsedImplicitly]
         private readonly IServiceProvider _serviceProvider;
 
@@ -245,7 +260,5 @@ namespace GS.DecoupleIt.Operations.Internal
         [NotNull]
         [UsedImplicitly]
         private QueryDispatcher QueryDispatcher => _serviceProvider.GetRequiredService<QueryDispatcher>()!;
-
-        private event InternalEventEmittedAsyncDelegate InternalEventEmitted;
     }
 }

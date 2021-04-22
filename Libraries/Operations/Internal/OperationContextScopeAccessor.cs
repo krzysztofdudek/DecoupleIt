@@ -10,7 +10,19 @@ namespace GS.DecoupleIt.Operations.Internal
     [Singleton]
     internal sealed class OperationContextScopeAccessor : IOperationContextScope
     {
-        public IReadOnlyCollection<InternalEvent> InternalEvents => OperationContext.CurrentScope!.InternalEvents;
+        public event InternalEventEmittedAsyncDelegate InternalEventEmitted
+        {
+            add
+            {
+                if (OperationContext.CurrentScope is not null)
+                    OperationContext.CurrentScope.InternalEventEmitted += value;
+            }
+            remove
+            {
+                if (OperationContext.CurrentScope is not null)
+                    OperationContext.CurrentScope.InternalEventEmitted -= value;
+            }
+        }
 
         public void AggregateEvents(
             IOperationContextScope.AggregateEventsDelegate aggregateEventsMethod,
@@ -35,9 +47,12 @@ namespace GS.DecoupleIt.Operations.Internal
 #else
             ValueTask
 #endif
-            DispatchOperationsAsync(DispatchOperationsDelegate dispatchOperations, CancellationToken cancellationToken = default)
+            DispatchOperationsAsync(
+                DispatchOperationsDelegate dispatchOperations,
+                List<InternalEvent> internalEvents = default,
+                CancellationToken cancellationToken = default)
         {
-            var task = OperationContext.CurrentScope?.DispatchOperationsAsync(dispatchOperations, cancellationToken);
+            var task = OperationContext.CurrentScope?.DispatchOperationsAsync(dispatchOperations, internalEvents, cancellationToken);
 
 #if NETSTANDARD2_0
             return task ?? Task.CompletedTask.AsNotNull();

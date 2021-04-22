@@ -1,7 +1,7 @@
-using System;
 using System.Reflection;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Options.Automatic;
+using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,19 +19,15 @@ namespace GS.DecoupleIt.Operations
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
         /// <param name="configuration">Configuration.</param>
-        /// <param name="configureOptions">Configure options delegate.</param>
         /// <returns>Builder.</returns>
         [NotNull]
-        public static Builder AddOperations(
-            [NotNull] this IServiceCollection serviceCollection,
-            [NotNull] IConfiguration configuration,
-            [CanBeNull] Action<Options> configureOptions = default)
+        public static Builder AddOperations([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
         {
+            ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
+            ContractGuard.IfArgumentIsNull(nameof(configuration), configuration);
+
             serviceCollection.ScanAssemblyForImplementations(ThisAssembly);
             serviceCollection.ScanAssemblyForOptions(ThisAssembly, configuration);
-
-            if (configureOptions is not null)
-                serviceCollection.PostConfigure(configureOptions);
 
             return new Builder(serviceCollection, configuration);
         }

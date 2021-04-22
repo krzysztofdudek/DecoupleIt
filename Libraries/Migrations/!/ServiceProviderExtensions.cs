@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.Contextual.UnitOfWork;
+using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,8 @@ namespace GS.DecoupleIt.Migrations
         /// <param name="serviceProvider">Service provider.</param>
         public static void ExecuteMigrations([NotNull] this IServiceProvider serviceProvider)
         {
+            ContractGuard.IfArgumentIsNull(nameof(serviceProvider), serviceProvider);
+
             if (serviceProvider.GetService<DbContextOptions<MigrationsDbContext>>() is null)
                 return;
 
@@ -39,6 +42,8 @@ namespace GS.DecoupleIt.Migrations
         /// <param name="cancellationToken">Cancellation token.</param>
         public static async ValueTask ExecuteMigrationsAsync([NotNull] this IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(serviceProvider), serviceProvider);
+
             if (serviceProvider.GetService<DbContextOptions<MigrationsDbContext>>() is null)
                 return;
 

@@ -21,6 +21,8 @@ namespace GS.DecoupleIt.HttpAbstraction
         [NotNull]
         public Builder UseRequestBodySerializer([NotNull] RequestBodySerializer requestBodySerializer)
         {
+            ContractGuard.IfArgumentIsNull(nameof(requestBodySerializer), requestBodySerializer);
+
             ServiceCollection.AddSingleton(requestBodySerializer);
 
             return this;
@@ -35,6 +37,8 @@ namespace GS.DecoupleIt.HttpAbstraction
         [NotNull]
         public Builder UseResponseDeserializer([NotNull] ResponseDeserializer responseDeserializer)
         {
+            ContractGuard.IfArgumentIsNull(nameof(responseDeserializer), responseDeserializer);
+
             ServiceCollection.AddSingleton(responseDeserializer);
 
             return this;

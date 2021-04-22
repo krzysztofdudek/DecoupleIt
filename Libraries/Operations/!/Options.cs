@@ -13,6 +13,11 @@ namespace GS.DecoupleIt.Operations
     public sealed class Options
     {
         /// <summary>
+        ///     Disables creating scopes by commands. It can be used for testing purposes, to access internal events emitted by tested operation. It's disabled by default.
+        /// </summary>
+        public bool CommandDoNotCreateOwnScope { get; set; }
+
+        /// <summary>
         ///     Logging.
         /// </summary>
         [NotNull]

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -127,15 +128,26 @@ namespace GS.DecoupleIt.Operations.Internal
 
             foreach (var commandHandler in OperationHandlerFactory.GetCommandHandlers(serviceProvider, typedCommand))
             {
-                var       tracerSpan            = Tracer.OpenSpan(commandHandler.GetType(), SpanType.CommandHandler);
-                using var operationContextScope = _operationContext.OpenScope();
+                var tracerSpan = Tracer.OpenSpan(commandHandler.GetType(), SpanType.CommandHandler);
+
+                IOperationContextScope operationContextScope = default;
+
+                if (!Options.CommandDoNotCreateOwnScope)
+                    operationContextScope = _operationContext.OpenScope();
 
                 if (Options.Logging.EnableNonErrorLogging)
                     Logger.LogDebug("Command handler invocation {@OperationAction}.", "started");
 
+                var internalEvents = new List<InternalEvent>();
+
                 try
                 {
-                    await operationContextScope.DispatchOperationsAsync(() => commandHandler.HandleAsync(typedCommand, cancellationToken), cancellationToken);
+                    if (!Options.CommandDoNotCreateOwnScope)
+                        await operationContextScope!.DispatchOperationsAsync(() => commandHandler.HandleAsync(typedCommand, cancellationToken),
+                                                                             internalEvents,
+                                                                             cancellationToken);
+                    else
+                        await commandHandler.HandleAsync(typedCommand, cancellationToken);
 
                     if (Options.Logging.EnableNonErrorLogging)
                         Logger.LogDebug("Command handler invocation {@OperationAction} after {@OperationDuration}ms.",
@@ -151,7 +163,7 @@ namespace GS.DecoupleIt.Operations.Internal
                         try
                         {
                             await postCommandHandler.PostHandleAsync(typedCommand,
-                                                                     operationContextScope.InternalEvents,
+                                                                     internalEvents,
                                                                      null,
                                                                      cancellationToken);
                         }
@@ -177,7 +189,7 @@ namespace GS.DecoupleIt.Operations.Internal
                         try
                         {
                             await postCommandHandler.PostHandleAsync(typedCommand,
-                                                                     operationContextScope.InternalEvents,
+                                                                     internalEvents,
                                                                      commandHandlerException,
                                                                      cancellationToken);
                         }
@@ -195,6 +207,7 @@ namespace GS.DecoupleIt.Operations.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "FunctionComplexityOverflow")]
         private async Task<object> InvokeCommandWithResultHandler(
             [NotNull] ICommandWithResult typedCommand,
             [NotNull] IServiceProvider serviceProvider,
@@ -222,18 +235,28 @@ namespace GS.DecoupleIt.Operations.Internal
 
             foreach (var commandHandler in OperationHandlerFactory.GetCommandHandlersWithResult(serviceProvider, typedCommand))
             {
-                var       tracerSpan            = Tracer.OpenSpan(commandHandler.GetType(), SpanType.CommandHandler);
-                using var operationContextScope = _operationContext.OpenScope();
-                object    tempResult            = null;
+                var    tracerSpan = Tracer.OpenSpan(commandHandler.GetType(), SpanType.CommandHandler);
+                object tempResult = null;
+
+                IOperationContextScope operationContextScope = default;
+
+                if (!Options.CommandDoNotCreateOwnScope)
+                    operationContextScope = _operationContext.OpenScope();
 
                 if (Options.Logging.EnableNonErrorLogging)
                     Logger.LogDebug("Command handler invocation {@OperationAction}.", "started");
 
+                var internalEvents = new List<InternalEvent>();
+
                 try
                 {
-                    await operationContextScope.DispatchOperationsAsync(
-                        async () => tempResult = await commandHandler.HandleAsync(typedCommand, cancellationToken),
-                        cancellationToken);
+                    if (!Options.CommandDoNotCreateOwnScope)
+                        await operationContextScope!.DispatchOperationsAsync(
+                            async () => tempResult = await commandHandler.HandleAsync(typedCommand, cancellationToken),
+                            internalEvents,
+                            cancellationToken);
+                    else
+                        tempResult = await commandHandler.HandleAsync(typedCommand, cancellationToken);
 
                     if (Options.Logging.EnableNonErrorLogging)
                         Logger.LogDebug("Command handler invocation {@OperationAction} after {@OperationDuration}ms.",
@@ -250,7 +273,7 @@ namespace GS.DecoupleIt.Operations.Internal
                         {
                             await postCommandHandler.PostHandleAsync(typedCommand,
                                                                      tempResult,
-                                                                     operationContextScope.InternalEvents,
+                                                                     internalEvents,
                                                                      null,
                                                                      cancellationToken);
                         }
@@ -279,7 +302,7 @@ namespace GS.DecoupleIt.Operations.Internal
                         {
                             await postCommandHandler.PostHandleAsync(typedCommand,
                                                                      tempResult,
-                                                                     operationContextScope.InternalEvents,
+                                                                     internalEvents,
                                                                      commandHandlerException,
                                                                      cancellationToken);
                         }

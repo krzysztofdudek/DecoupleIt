@@ -2,10 +2,12 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("GS.DecoupleIt.AspNetCore.Service")]
 [assembly: InternalsVisibleTo("GS.DecoupleIt.HttpAbstraction")]
+[assembly: InternalsVisibleTo("GS.DecoupleIt.Options.Automatic")]
 [assembly: InternalsVisibleTo("GS.DecoupleIt.DependencyInjection.Automatic")]
 [assembly: InternalsVisibleTo("GS.DecoupleIt.BuildingBlocks.CommandLayer")]
 [assembly: InternalsVisibleTo("GS.DecoupleIt.Operations")]
 [assembly: InternalsVisibleTo("GS.DecoupleIt.Migrations")]
+[assembly: InternalsVisibleTo("GS.DecoupleIt.Operations")]
 [assembly: InternalsVisibleTo("GS.DecoupleIt.Operations.Tests")]
 [assembly: InternalsVisibleTo("GS.DecoupleIt.Tracing")]
 [assembly: InternalsVisibleTo("GS.DecoupleIt.Scheduling")]

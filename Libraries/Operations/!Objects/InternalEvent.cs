@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.Operations.Internal;
@@ -13,10 +14,20 @@ namespace GS.DecoupleIt.Operations
     public abstract class InternalEvent : Operation, IInternalEvent
     {
         /// <summary>
+        ///     Indicates if event was already emitted.
+        /// </summary>
+        public bool WasEmitted { get; private set; }
+
+        /// <summary>
         ///     Emits this event.
         /// </summary>
         public void Emit()
         {
+            if (WasEmitted)
+                throw new EventWasAlreadyEmitted();
+
+            WasEmitted = true;
+
             OperationDispatcher.DispatchInternalEventAsync(this, CancellationToken.None)
 #if !NETSTANDARD2_0
                                .AsTask()
@@ -37,7 +48,17 @@ namespace GS.DecoupleIt.Operations
 #endif
             EmitAsync(CancellationToken cancellationToken = default)
         {
+            if (WasEmitted)
+                throw new EventWasAlreadyEmitted();
+
+            WasEmitted = true;
+
             return OperationDispatcher.DispatchInternalEventAsync(this, CancellationToken.None);
         }
+
+        /// <summary>
+        ///     Event thrown, when an instance of event was already emitted and next attempt of emission occurs.
+        /// </summary>
+        public sealed class EventWasAlreadyEmitted : Exception { }
     }
 }

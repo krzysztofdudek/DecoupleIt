@@ -1,4 +1,3 @@
-using System;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Operations;
 using GS.DecoupleIt.Shared;
@@ -19,17 +18,13 @@ namespace GS.DecoupleIt.AspNetCore.Service.Operations
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
         /// <param name="configuration">Configuration.</param>
-        /// <param name="configureOptions">Configure options delegate.</param>
         /// <returns>Operations builder.</returns>
         [NotNull]
-        public static Builder AddOperationsForAspNetCore(
-            [NotNull] this IServiceCollection serviceCollection,
-            [NotNull] IConfiguration configuration,
-            [CanBeNull] Action<DecoupleIt.Operations.Options> configureOptions = default)
+        public static Builder AddOperationsForAspNetCore([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
         {
             ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
 
-            var builder = serviceCollection.AddOperations(configuration, configureOptions);
+            var builder = serviceCollection.AddOperations(configuration);
 
             serviceCollection.ScanAssemblyForImplementations(typeof(ServiceCollectionExtensions).Assembly);
 

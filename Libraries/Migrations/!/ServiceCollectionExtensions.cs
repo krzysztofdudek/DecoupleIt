@@ -1,6 +1,7 @@
 ﻿using System;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.Options.Automatic;
+using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +24,9 @@ namespace GS.DecoupleIt.Migrations
         [NotNull]
         public static Builder AddMigrations([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
         {
+            ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
+            ContractGuard.IfArgumentIsNull(nameof(configuration), configuration);
+
             var assembly = typeof(ServiceCollectionExtensions).Assembly;
 
             serviceCollection.ScanAssemblyForImplementations(assembly);
@@ -30,7 +34,7 @@ namespace GS.DecoupleIt.Migrations
 
             serviceCollection.AddTransient<Func<MigrationsDbContext>>(serviceProvider => () =>
                                                                           new MigrationsDbContext(
-                                                                              serviceProvider.GetRequiredService<DbContextOptions<MigrationsDbContext>>()!,
+                                                                              serviceProvider!.GetRequiredService<DbContextOptions<MigrationsDbContext>>()!,
                                                                               serviceProvider!,
                                                                               serviceProvider.GetService<ModelBuilderConfigurator>()
                                                                                              ?.ConfigureModelBuilder));

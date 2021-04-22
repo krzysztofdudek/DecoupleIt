@@ -48,6 +48,9 @@ namespace GS.DecoupleIt.HttpAbstraction
 
         public static void ScanAssemblyForHttpClients([NotNull] this IServiceCollection serviceCollection, [NotNull] Assembly assembly)
         {
+            ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
+            ContractGuard.IfArgumentIsNull(nameof(assembly), assembly);
+
             var httpClientInterfaces = assembly.GetTypes()
                                                .Where(x => x.GetCustomAttributes<HttpClientAttribute>()
                                                             .Any() && x.IsInterface)

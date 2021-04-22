@@ -13,6 +13,8 @@ namespace GS.DecoupleIt.Tracing
         [NotNull]
         public Builder WithLoggerPropertiesConfiguration([NotNull] Action<LoggerPropertiesOptions> configure)
         {
+            ContractGuard.IfArgumentIsNull(nameof(configure), configure);
+
             ServiceCollection.PostConfigure(configure);
 
             return this;

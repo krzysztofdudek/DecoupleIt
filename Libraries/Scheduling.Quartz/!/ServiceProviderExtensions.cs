@@ -7,6 +7,7 @@ using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Quartz;
 using Quartz.Impl;
 
@@ -31,6 +32,8 @@ namespace GS.DecoupleIt.Scheduling.Quartz
             [NotNull] this IServiceProvider serviceProvider,
             [CanBeNull] Action<QuartzSchedulerBuilder> configure = default)
         {
+            ContractGuard.IfArgumentIsNull(nameof(serviceProvider), serviceProvider);
+
             var builder = new QuartzSchedulerBuilder();
 
             configure?.Invoke(builder);
@@ -82,17 +85,22 @@ namespace GS.DecoupleIt.Scheduling.Quartz
                 var logger = serviceProvider.GetRequiredService<ILogger<BaseQuartzJob>>()
                                             .AsNotNull();
 
+                var options = serviceProvider.GetRequiredService<IOptions<Options>>()!.Value.AsNotNull();
+
                 using (var tracerSpan = tracer.OpenSpan(jobType, SpanType.Job))
                 {
                     using var operationContextScope = operationContext.OpenScope();
 
                     try
                     {
-                        logger.LogDebug("Job executing {@OperationAction}.", "started");
+                        if (options.Logging.EnableNonErrorLogging)
+                            logger.LogDebug("Job executing {@OperationAction}.", "started");
 
-                        await operationContextScope.DispatchOperationsAsync(() => job.ExecuteAsync(context.CancellationToken), context.CancellationToken);
+                        await operationContextScope.DispatchOperationsAsync(() => job.ExecuteAsync(context.CancellationToken),
+                                                                            cancellationToken: context.CancellationToken);
 
-                        logger.LogDebug("Job executing {@OperationAction} after {@OperationDuration}ms.", "finished", tracerSpan.Duration.Milliseconds);
+                        if (options.Logging.EnableNonErrorLogging)
+                            logger.LogDebug("Job executing {@OperationAction} after {@OperationDuration}ms.", "finished", tracerSpan.Duration.Milliseconds);
                     }
                     catch (Exception exception)
                     {

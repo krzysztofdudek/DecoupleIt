@@ -116,7 +116,7 @@ namespace GS.DecoupleIt.Scheduling.Implementation
                         var job = (IJob) _serviceProvider.GetRequiredService(jobEntry.JobType)
                                                          .AsNotNull();
 
-                        await operationsContextScope.DispatchOperationsAsync(() => job.ExecuteAsync(cancellationToken), cancellationToken);
+                        await operationsContextScope.DispatchOperationsAsync(() => job.ExecuteAsync(cancellationToken), cancellationToken: cancellationToken);
 
                         lastIterationDuration = tracerSpan.Duration;
 
