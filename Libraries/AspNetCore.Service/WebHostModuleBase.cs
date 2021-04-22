@@ -16,6 +16,7 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using GS.DecoupleIt.HttpAbstraction;
 using Newtonsoft.Json;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace GS.DecoupleIt.AspNetCore.Service
 {
@@ -26,6 +27,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
     {
         /// <inheritdoc />
         public virtual void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder builder) { }
+
+        /// <inheritdoc />
+        public virtual void ConfigureConfiguration(IConfigurationBuilder configurationBuilder) { }
 
         /// <inheritdoc />
         public virtual void ConfigureCors(WebHostBuilderContext context, CorsOptions options) { }

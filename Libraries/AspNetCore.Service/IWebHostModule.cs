@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Serilog;
@@ -26,6 +27,12 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// <param name="context">Web host builder context.</param>
         /// <param name="builder">Application builder.</param>
         void ConfigureApplication([NotNull] WebHostBuilderContext context, [NotNull] IApplicationBuilder builder);
+
+        /// <summary>
+        ///     Configures <see cref="ConfigurationBuilder" />.
+        /// </summary>
+        /// <param name="configurationBuilder">Configuration builder.</param>
+        void ConfigureConfiguration([NotNull] IConfigurationBuilder configurationBuilder);
 
         /// <summary>
         ///     Configures <see cref="CorsOptions" />.
