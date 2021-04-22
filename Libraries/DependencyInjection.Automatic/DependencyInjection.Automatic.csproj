@@ -3,7 +3,7 @@
     <Import Project="../libraries.core.props" />
 
     <PropertyGroup>
-        <VersionPrefix>6.0.0-alpha.0</VersionPrefix>
+        <VersionPrefix>6.0.0-alpha.1</VersionPrefix>
         <Title>DecoupleIt - Automatic registration for Microsoft.Extensions.DependencyInjection</Title>
         <Description>Are you fed up with manual dependency registrations? This package resolves this problem by allowing Microsoft.Extensions.DependencyInjection to be more automatic by registering dependencies with attributes.</Description>
     </PropertyGroup>

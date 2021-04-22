@@ -3,7 +3,7 @@
     <Import Project="../libraries.core.props" />
 
     <PropertyGroup>
-        <VersionPrefix>6.0.0-alpha.0</VersionPrefix>
+        <VersionPrefix>6.0.0-alpha.1</VersionPrefix>
         <Title>DecoupleIt - Automatic configuration of Options for Microsoft.Extensions.Options</Title>
         <Description>A proper segregation of configuration can lead to a headache. Maybe we can do it simpler. Let's namespaces and attributes do it for us.</Description>
     </PropertyGroup>

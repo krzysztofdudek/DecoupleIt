@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>6.0.0-alpha.0</VersionPrefix>
+        <VersionPrefix>6.0.0-alpha.1</VersionPrefix>
         <Title>DecoupleIt - Migrations</Title>
         <Description>Implementation migrations mechanism allowing to perform those across many nodes and with ability to rollback failed one.</Description>
     </PropertyGroup>
