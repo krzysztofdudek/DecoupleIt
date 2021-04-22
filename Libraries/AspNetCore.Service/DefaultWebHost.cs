@@ -264,6 +264,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
                               builder.AddEnvironmentVariables("DOTNET_");
                               builder.AddCommandLine(args);
+
+                              ConfigureConfiguration(builder);
+
+                              foreach (var module in modules)
+                                  module.ConfigureConfiguration(builder);
                           })
                           .ConfigureServices((context, collection) =>
                           {
