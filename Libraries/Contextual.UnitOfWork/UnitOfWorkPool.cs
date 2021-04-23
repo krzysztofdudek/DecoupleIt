@@ -86,26 +86,29 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Return(IUnitOfWork unitOfWork)
         {
-            if (!_options.Pooling.Enabled || unitOfWork is not IPooledUnitOfWork)
+            if (!_options.Pooling.Enabled || unitOfWork is not IPooledUnitOfWork pooledUnitOfWork)
+            {
                 unitOfWork.Dispose();
 
-            var poolObject = GetPoolObject(unitOfWork.GetType());
+                return;
+            }
+
+            var poolObject = GetPoolObject(pooledUnitOfWork.GetType());
 
             if (Interlocked.Increment(ref poolObject.Count) <= poolObject.MaxPoolSize)
             {
-                if (unitOfWork is IPooledUnitOfWork resettableUnitOfWork)
-                    resettableUnitOfWork.ResetState();
+                pooledUnitOfWork.ResetState();
 
-                poolObject.Queue.Enqueue(unitOfWork);
+                poolObject.Queue.Enqueue(pooledUnitOfWork);
 
                 return;
             }
 
             Interlocked.Decrement(ref poolObject.Count);
 
-            ((IPooledUnitOfWork) unitOfWork).IsPooled = false;
+            pooledUnitOfWork.IsPooled = false;
 
-            unitOfWork.Dispose();
+            pooledUnitOfWork.Dispose();
         }
 
         [NotNull]
