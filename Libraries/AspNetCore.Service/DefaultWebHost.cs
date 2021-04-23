@@ -149,6 +149,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
         }
 
         /// <inheritdoc />
+        public override void ConfigureServices(WebHostBuilderContext context, IServiceCollection serviceCollection) { }
+
+        /// <inheritdoc />
         public override void ConfigureSwaggerGen(WebHostBuilderContext context, SwaggerGenOptions options)
         {
             options.SwaggerDoc("v1",
@@ -270,7 +273,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               foreach (var module in modules)
                                   module.ConfigureConfiguration(builder);
                           })
-                          .ConfigureServices((context, collection) =>
+                          .ConfigureServices((context, serviceCollection) =>
                           {
                               var hostIdentifier = Environment.GetEnvironmentVariable("ASPNETCORE_HOSTIDENTIFIER")
                                                               ?.ToLower() == "default"
@@ -292,27 +295,27 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                                                     hostVersion,
                                                                     hostEnvironment);
 
-                              collection.Add(ServiceDescriptor.Singleton(typeof(IHostInformation), HostInformation));
+                              serviceCollection.Add(ServiceDescriptor.Singleton(typeof(IHostInformation), HostInformation));
 
                               // Configure automatic dependency injection.
-                              collection.ConfigureAutomaticDependencyInjection(context.Configuration,
-                                                                               options =>
-                                                                               {
-                                                                                   options.Environment = context.HostingEnvironment.EnvironmentName;
-                                                                               });
+                              serviceCollection.ConfigureAutomaticDependencyInjection(context.Configuration,
+                                                                                      options =>
+                                                                                      {
+                                                                                          options.Environment = context.HostingEnvironment.EnvironmentName;
+                                                                                      });
 
                               // Configure scheduling.
-                              collection.ConfigureJobs(context.Configuration,
-                                                       options =>
-                                                       {
-                                                           ConfigureScheduling(context, options);
+                              serviceCollection.ConfigureJobs(context.Configuration,
+                                                              options =>
+                                                              {
+                                                                  ConfigureScheduling(context, options);
 
-                                                           foreach (var module in modules)
-                                                               module.ConfigureScheduling(context, options);
-                                                       });
+                                                                  foreach (var module in modules)
+                                                                      module.ConfigureScheduling(context, options);
+                                                              });
 
                               // Configure unit of work.
-                              var unitOfWorkBuilder = collection.AddContextualUnitOfWork(context.Configuration.AsNotNull());
+                              var unitOfWorkBuilder = serviceCollection.AddContextualUnitOfWork(context.Configuration.AsNotNull());
 
                               ConfigureUnitOfWork(context, unitOfWorkBuilder);
 
@@ -320,10 +323,10 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   module.ConfigureUnitOfWork(context, unitOfWorkBuilder);
 
                               // Configure tracing.
-                              collection.AddTracingForAspNetCore(context.Configuration.AsNotNull());
+                              serviceCollection.AddTracingForAspNetCore(context.Configuration.AsNotNull());
 
                               // Configure operations.
-                              var operationsBuilder = collection.AddOperationsForAspNetCore(context.Configuration.AsNotNull());
+                              var operationsBuilder = serviceCollection.AddOperationsForAspNetCore(context.Configuration.AsNotNull());
 
                               ConfigureOperations(context, operationsBuilder);
 
@@ -349,7 +352,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               }
 
                               // Configure http clients.
-                              var httpClientBuilder = collection.AddHttpClients(context.Configuration.AsNotNull());
+                              var httpClientBuilder = serviceCollection.AddHttpClients(context.Configuration.AsNotNull());
 
                               switch (JsonSerializer)
                               {
@@ -368,7 +371,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               }
 
                               // Configure MVC.
-                              var mvcBuilder = collection.AddControllersWithViews();
+                              var mvcBuilder = serviceCollection.AddControllersWithViews();
 
                               switch (JsonSerializer)
                               {
@@ -402,7 +405,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   module.ConfigureMvcBuilder(context, mvcBuilder);
 
                               // Configure swagger.
-                              collection.AddSwaggerGen(options =>
+                              serviceCollection.AddSwaggerGen(options =>
                               {
                                   options.OperationFilter<OperationNameFilter>();
 
@@ -433,10 +436,10 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               });
 
                               if (JsonSerializer == JsonSerializerType.NewtonsoftJson)
-                                  collection.AddSwaggerGenNewtonsoftSupport();
+                                  serviceCollection.AddSwaggerGenNewtonsoftSupport();
 
                               // Configure cors.
-                              collection.AddCors(options =>
+                              serviceCollection.AddCors(options =>
                               {
                                   ConfigureCors(context, options);
 
@@ -445,7 +448,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               });
 
                               // Configure routing.
-                              collection.AddRouting(options =>
+                              serviceCollection.AddRouting(options =>
                               {
                                   ConfigureRoute(context, options);
 
@@ -456,7 +459,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               // Configure migrations.
                               if (UseMigrations)
                               {
-                                  var migrationsBuilder = collection.AddMigrations(context.Configuration);
+                                  var migrationsBuilder = serviceCollection.AddMigrations(context.Configuration);
 
                                   ConfigureMigrations(context, migrationsBuilder);
 
@@ -465,21 +468,37 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               }
 
                               // Configure services.
-                              collection.ScanAssemblyForImplementations(typeof(DefaultWebHost).Assembly);
-                              collection.ScanAssemblyForOptions(typeof(DefaultWebHost).Assembly, context.Configuration);
+                              foreach (var assembly in new[]
+                                  {
+                                      GetType()
+                                          .Assembly
+                                  }.Concat(GetType()
+                                           .GetAllBaseTypes()
+                                           .Select(x => x.Assembly))
+                                   .Distinct())
+                              {
+                                  serviceCollection.ScanAssemblyForImplementations(assembly);
+                                  serviceCollection.ScanAssemblyForOptions(assembly, context.Configuration.AsNotNull());
+                                  serviceCollection.ScanAssemblyForJobs(assembly);
+                                  serviceCollection.ScanAssemblyForHttpClients(assembly);
+                              }
 
-                              ConfigureServices(context, collection);
+                              ConfigureServices(context, serviceCollection);
 
                               foreach (var module in modules)
-                                  module.ConfigureServices(context, collection);
+                                  module.ConfigureServices(context, serviceCollection);
 
                               if (ValidateServices)
-                                  ValidateServicesIfArePossibleToInstantiate(collection);
+                                  ValidateServicesIfArePossibleToInstantiate(serviceCollection);
                           })
                           .Configure((context, applicationBuilder) =>
                           {
                               context            = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
+
+                              // Get options.
+                              var options = applicationBuilder.ApplicationServices.GetRequiredService<IOptions<Options>>()
+                                                              .Value;
 
                               // Log information about running application.
                               var logger = applicationBuilder.ApplicationServices.GetRequiredService<ILoggerFactory>()
@@ -525,40 +544,41 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   }
                               });
 
-                              applicationBuilder.UseSwagger(options =>
+                              applicationBuilder.UseSwagger(swaggerOptions =>
                               {
-                                  options = options.AsNotNull();
+                                  swaggerOptions = swaggerOptions.AsNotNull();
 
-                                  ConfigureSwagger(context, options);
+                                  ConfigureSwagger(context, swaggerOptions);
 
                                   foreach (var module in modules)
-                                      module.ConfigureSwagger(context, options);
+                                      module.ConfigureSwagger(context, swaggerOptions);
                               });
 
-                              applicationBuilder.UseSwaggerUI(options =>
+                              applicationBuilder.UseSwaggerUI(swaggerUIOptions =>
                               {
-                                  options = options.AsNotNull();
+                                  swaggerUIOptions = swaggerUIOptions.AsNotNull();
 
-                                  options.RoutePrefix = "swagger";
+                                  swaggerUIOptions.RoutePrefix = "swagger";
 
-                                  ConfigureSwaggerUI(context, options);
+                                  ConfigureSwaggerUI(context, swaggerUIOptions);
 
                                   foreach (var module in modules)
-                                      module.ConfigureSwaggerUI(context, options);
+                                      module.ConfigureSwaggerUI(context, swaggerUIOptions);
                               });
 
                               applicationBuilder.UseRouting();
 
-                              applicationBuilder.UseCors(builder =>
+                              applicationBuilder.UseCors(corsPolicyBuilder =>
                               {
-                                  builder = builder.AsNotNull();
+                                  corsPolicyBuilder = corsPolicyBuilder.AsNotNull();
 
-                                  ConfigureCorsPolicyBuilder(context, builder);
+                                  ConfigureCorsPolicyBuilder(context, corsPolicyBuilder);
                               });
 
                               applicationBuilder.UseTracing();
 
-                              applicationBuilder.UseMiddleware<LoggingMiddleware>();
+                              if (options.Logging.Enabled)
+                                  applicationBuilder.UseMiddleware<LoggingMiddleware>();
 
                               applicationBuilder.MaintainStorageOfContextualUnitOfWork();
 
@@ -569,16 +589,16 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               foreach (var module in modules)
                                   module.ConfigureApplication(context, applicationBuilder);
 
-                              applicationBuilder.UseEndpoints(builder =>
+                              applicationBuilder.UseEndpoints(endpointRouteBuilder =>
                               {
-                                  builder = builder.AsNotNull();
+                                  endpointRouteBuilder = endpointRouteBuilder.AsNotNull();
 
-                                  builder.MapControllers();
+                                  endpointRouteBuilder.MapControllers();
 
-                                  ConfigureEndpoints(context, builder);
+                                  ConfigureEndpoints(context, endpointRouteBuilder);
 
                                   foreach (var module in modules)
-                                      module.ConfigureEndpoints(context, builder);
+                                      module.ConfigureEndpoints(context, endpointRouteBuilder);
                               });
 
                               if (UseMigrations)

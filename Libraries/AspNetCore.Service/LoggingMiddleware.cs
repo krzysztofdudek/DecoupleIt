@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Controllers;
 
 namespace GS.DecoupleIt.AspNetCore.Service
@@ -24,7 +25,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "LogMessageIsSentenceProblem")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "TemplateIsNotCompileTimeConstantProblem")]
-    public sealed class LoggingMiddleware : IMiddleware
+    internal sealed class LoggingMiddleware : IMiddleware
     {
         public LoggingMiddleware([NotNull] ILogger<LoggingMiddleware> logger, [NotNull] IOptions<Options> serviceOptions, [NotNull] ITracer tracer)
         {
@@ -32,27 +33,29 @@ namespace GS.DecoupleIt.AspNetCore.Service
             _tracer  = tracer;
             _options = serviceOptions.Value;
 
-            var blockSize                 = 1024;
-            var largeBufferMultiple       = 1024 * 1024;
-            var maximumBufferSize         = 16 * largeBufferMultiple;
-            var maximumFreeLargePoolBytes = maximumBufferSize * 4;
-            var maximumFreeSmallPoolBytes = 250 * blockSize;
-
-            _recyclableMemoryStreamManager = new RecyclableMemoryStreamManager(blockSize, largeBufferMultiple, maximumBufferSize)
+            _recyclableMemoryStreamManager = new RecyclableMemoryStreamManager(_options.Logging.Middleware.SmallBufferBlockSize,
+                                                                               _options.Logging.Middleware.LargeBufferBlockSizeMultiple,
+                                                                               _options.Logging.Middleware.MaximumSingleBufferSize)
             {
                 AggressiveBufferReturn    = true,
                 GenerateCallStacks        = false,
-                MaximumFreeLargePoolBytes = maximumFreeLargePoolBytes,
-                MaximumFreeSmallPoolBytes = maximumFreeSmallPoolBytes
+                MaximumFreeSmallPoolBytes = _options.Logging.Middleware.SmallBufferMaximumPoolBytes,
+                MaximumFreeLargePoolBytes = _options.Logging.Middleware.LargeBufferMaximumPoolBytes
             };
+
+            _logStartTemplate = "External request handling {@OperationAction}.\nMethod: {@Method}\nPath: {@Path}\nQuery string: {@Query}" +
+                                (_options.Logging.LogRequestsHeaders ? "\nHeaders: {@Headers}" : string.Empty) +
+                                (_options.Logging.LogRequestsBodies ? "\nBody: {@OperationContent:l}" : string.Empty);
+
+            _logFinishTemplate = "External request handling {@OperationAction} after {@OperationDuration}ms.\nStatus code: {@StatusCode}" +
+                                 (_options.Logging.LogResponsesHeaders ? "\nHeaders: {@Headers}" : string.Empty) +
+                                 (_options.Logging.LogResponsesBodies ? "\nBody: {@OperationContent:l}" : string.Empty);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ConvertToUsingDeclaration")]
         public async Task InvokeAsync([NotNull] HttpContext context, [NotNull] RequestDelegate next)
         {
-            context.Request.EnableBuffering();
-
             var endpoint = context.GetEndpoint();
 
             if (endpoint is null)
@@ -62,59 +65,33 @@ namespace GS.DecoupleIt.AspNetCore.Service
                 return;
             }
 
-            var controllerActionDescriptor = endpoint.Metadata.OfType<ControllerActionDescriptor>()
-                                                     .Single();
-
-            var controllerName = controllerActionDescriptor.ControllerTypeInfo.FullName;
-            var actionName     = controllerActionDescriptor.ActionName;
-
-            using var scope = _tracer.OpenSpan($"{controllerName}.{actionName}", SpanType.ExternalRequestHandler);
-
-            context.Request.Body.Position = 0;
-
-            var requestBody = await ReadStreamAsync(context.Request.Body);
+            using var span = OpenTracerSpanForRoute(endpoint);
 
             if (_options.Logging.LogRequests)
-                LogStart(context, requestBody);
-
-            await using (var memoryStream = (RecyclableMemoryStream) _recyclableMemoryStreamManager.GetStream())
             {
-                var originalResponseBodyStream = context.Response.Body;
-                context.Response.Body = memoryStream;
+                if (_options.Logging.LogRequestsBodies)
+                    await LogRequestWithBody(context);
+                else
+                    LogStart(context, null);
+            }
 
-                Exception exception = default;
-
-                try
-                {
-                    await next(context)
-                        .AsNotNull();
-                }
-                catch (Exception exception2)
-                {
-                    exception = exception2;
-                }
-
-                var length = memoryStream.Position;
-
-                memoryStream.Seek(0, SeekOrigin.Begin);
-
-                var responseBody = memoryStream.GetMemory()[..(int) length];
-
-                await originalResponseBodyStream.WriteAsync(responseBody, context.RequestAborted);
-
-                context.Response.Body          = originalResponseBodyStream;
-                context.Response.ContentLength = memoryStream.Position;
-
-                if (_options.Logging.LogResponses)
-                    LogFinish(context,
-                              responseBody,
-                              scope.Duration,
-                              exception);
+            if (_options.Logging.LogResponses)
+            {
+                if (_options.Logging.LogResponsesBodies)
+                    await LogResponseWithBody(context, next, span);
+                else
+                    await LogResponseWithoutBody(context, next, span);
+            }
+            else
+            {
+                await next(context)
+                    .AsNotNull();
             }
         }
 
         [NotNull]
         [ItemNotNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static async Task<string> ReadStreamAsync([NotNull] Stream stream)
         {
             using var reader = new StreamReader(stream,
@@ -131,7 +108,13 @@ namespace GS.DecoupleIt.AspNetCore.Service
         }
 
         [NotNull]
+        private readonly string _logFinishTemplate;
+
+        [NotNull]
         private readonly ILogger<LoggingMiddleware> _logger;
+
+        [NotNull]
+        private readonly string _logStartTemplate;
 
         [NotNull]
         private readonly Options _options;
@@ -142,57 +125,147 @@ namespace GS.DecoupleIt.AspNetCore.Service
         [NotNull]
         private readonly ITracer _tracer;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "TemplateFormatStringProblem")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void LogFinish(
             [NotNull] HttpContext context,
-            ReadOnlyMemory<byte> responseBody,
+            [CanBeNull] ReadOnlySequence<byte>? responseBody,
             TimeSpan duration,
             [CanBeNull] Exception exception)
         {
-            const string message =
-                "External request handling {@OperationAction} after {@OperationDuration}ms.\nStatus code: {@StatusCode}\nHeaders: {@Headers}\nBody: {@Body:l}";
-
             var wasHandled = exception is not null && exception.Data.Contains("WasHandled") && exception.Data["WasHandled"] is true;
 
             var args = ArrayPool<object>.Shared.Rent(5);
+            var i    = 0;
 
-            args[0] = wasHandled || exception is null ? "finished" : "failed";
-            args[1] = (int) duration.TotalMilliseconds;
-            args[2] = context.Response.StatusCode;
-            args[3] = context.Request.Headers.ToDictionary(entry => entry.Key, entry => entry.Value);
-            args[4] = _options.Logging.LogResponsesBodies ? Encoding.UTF8.GetString(responseBody.Span) : string.Empty;
+            args[i++] = wasHandled || exception is null ? "finished" : "failed";
+            args[i++] = (int) duration.TotalMilliseconds;
+            args[i++] = context.Response.StatusCode;
+
+            if (_options.Logging.LogResponsesHeaders)
+                args[i++] = context.Request.Headers.ToDictionary(entry => entry.Key, entry => entry.Value);
+
+            if (_options.Logging.LogResponsesBodies)
+                args[i] = responseBody is null ? null : Encoding.UTF8.GetString(responseBody.Value.FirstSpan);
 
             if (wasHandled || exception is null)
-                _logger.LogInformation(message, args);
+                _logger.LogInformation(_logFinishTemplate, args);
             else
-                _logger.LogInformation(exception, message, args);
+                _logger.LogInformation(exception, _logFinishTemplate, args);
 
-            for (var i = 0; i < 5; i++)
-                args[i] = default;
+            for (var j = 0; j < i; j++)
+                args[j] = default;
 
             ArrayPool<object>.Shared.Return(args);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private async Task LogRequestWithBody([NotNull] HttpContext context)
+        {
+            context.Request.EnableBuffering();
+
+            context.Request.Body.Position = 0;
+
+            var requestBody = await ReadStreamAsync(context.Request.Body);
+
+            LogStart(context, requestBody);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private async Task LogResponseWithBody([NotNull] HttpContext context, [NotNull] RequestDelegate next, [NotNull] ITracerSpan span)
+        {
+            await using var memoryStream               = (RecyclableMemoryStream) _recyclableMemoryStreamManager.GetStream();
+            var             originalResponseBodyStream = context.Response.Body;
+
+            context.Response.Body = memoryStream;
+
+            Exception exception = default;
+
+            try
+            {
+                await next(context)
+                    .AsNotNull();
+            }
+            catch (Exception exception2)
+            {
+                exception = exception2;
+            }
+
+            memoryStream.Seek(0, SeekOrigin.Begin);
+
+            var responseBody = memoryStream.GetReadOnlySequence();
+
+            foreach (var memory in responseBody)
+                await originalResponseBodyStream.WriteAsync(memory, context.RequestAborted);
+
+            context.Response.Body          = originalResponseBodyStream;
+            context.Response.ContentLength = memoryStream.Position;
+
+            LogFinish(context,
+                      responseBody,
+                      span.Duration,
+                      exception);
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private async Task LogResponseWithoutBody([NotNull] HttpContext context, [NotNull] RequestDelegate next, [NotNull] ITracerSpan span)
+        {
+            Exception exception = default;
+
+            try
+            {
+                await next(context)
+                    .AsNotNull();
+            }
+            catch (Exception exception2)
+            {
+                exception = exception2;
+            }
+
+            LogFinish(context,
+                      null,
+                      span.Duration,
+                      exception);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void LogStart([NotNull] HttpContext context, [CanBeNull] string requestBody)
         {
-            const string message =
-                "External request handling {@OperationAction}.\nMethod: {@Method}\nPath: {@Path}\nQuery string: {@Query}\nHeaders: {@Headers}\nBody: {@Body:l}";
-
             var args = ArrayPool<object>.Shared.Rent(6);
+            var i    = 0;
 
-            args[0] = "started";
-            args[1] = context.Request.Method;
-            args[2] = context.Request.Path.Value;
-            args[3] = context.Request.QueryString.Value;
-            args[4] = context.Request.Headers.ToDictionary(entry => entry.Key, entry => entry.Value);
-            args[5] = _options.Logging.LogRequestsBodies ? requestBody : string.Empty;
+            args[i++] = "started";
+            args[i++] = context.Request.Method;
+            args[i++] = context.Request.Path.Value;
+            args[i++] = context.Request.QueryString.Value;
 
-            _logger.LogInformation(message, args);
+            if (_options.Logging.LogRequestsHeaders)
+                args[i++] = context.Request.Headers.ToDictionary(entry => entry.Key, entry => entry.Value);
 
-            for (var i = 0; i < 6; i++)
-                args[i] = default;
+            if (_options.Logging.LogRequestsBodies)
+                args[i] = requestBody;
+
+            _logger.LogInformation(_logStartTemplate, args);
+
+            for (var j = 0; j < i; j++)
+                args[j] = default;
 
             ArrayPool<object>.Shared.Return(args);
+        }
+
+        [NotNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ITracerSpan OpenTracerSpanForRoute([NotNull] Endpoint endpoint)
+        {
+            var controllerActionDescriptor = endpoint.Metadata.OfType<ControllerActionDescriptor>()
+                                                     .Single();
+
+            var controllerName = controllerActionDescriptor.ControllerTypeInfo.FullName;
+            var actionName     = controllerActionDescriptor.ActionName;
+
+            var span = _tracer.OpenSpan($"{controllerName}.{actionName}", SpanType.ExternalRequestHandler);
+
+            return span;
         }
     }
 }
