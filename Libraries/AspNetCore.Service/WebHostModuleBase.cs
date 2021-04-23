@@ -59,6 +59,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
         public virtual void ConfigureOperations(WebHostBuilderContext context, DecoupleIt.Operations.Builder builder) { }
 
         /// <inheritdoc />
+        public virtual void ConfigureRoute(WebHostBuilderContext context, RouteOptions options) { }
+
+        /// <inheritdoc />
         public virtual void ConfigureScheduling(WebHostBuilderContext context, DecoupleIt.Scheduling.Options options) { }
 
         /// <inheritdoc />

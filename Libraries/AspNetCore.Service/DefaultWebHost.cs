@@ -444,6 +444,15 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                       module.ConfigureCors(context, options);
                               });
 
+                              // Configure routing.
+                              collection.AddRouting(options =>
+                              {
+                                  ConfigureRoute(context, options);
+
+                                  foreach (var module in modules)
+                                      module.ConfigureRoute(context, options);
+                              });
+
                               // Configure migrations.
                               if (UseMigrations)
                               {

@@ -91,6 +91,13 @@ namespace GS.DecoupleIt.AspNetCore.Service
         void ConfigureOperations([NotNull] WebHostBuilderContext context, [NotNull] DecoupleIt.Operations.Builder builder);
 
         /// <summary>
+        ///     Configures route options <see cref="RouteOptions" />.
+        /// </summary>
+        /// <param name="context">Web host builder context.</param>
+        /// <param name="options">Route options.</param>
+        void ConfigureRoute([NotNull] WebHostBuilderContext context, [NotNull] RouteOptions options);
+
+        /// <summary>
         ///     Configures <see cref="DecoupleIt.Scheduling.Options" />.
         /// </summary>
         /// <param name="context">Web host builder context.</param>
