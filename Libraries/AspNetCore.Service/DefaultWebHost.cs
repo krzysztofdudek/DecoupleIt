@@ -481,13 +481,21 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               context            = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
 
+                              // Log information about running application.
+                              var logger = applicationBuilder.ApplicationServices.GetRequiredService<ILoggerFactory>()
+                                                             .CreateLogger(GetType())
+                                                             .AsNotNull();
+
+                              // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
+                              logger.LogInformation(
+                                  $"Host(Identifier: {HostInformation.Identifier}, Name: {HostInformation.Name}, Version: {HostInformation.Version}, Environment: {HostInformation.Environment})");
+
+                              // Perform configuration of application.
                               if (UseHttpsRedirection)
                                   applicationBuilder.UseHttpsRedirection();
 
                               applicationBuilder.Use(async (context2, next) =>
                               {
-                                  var logger = context2.RequestServices.GetRequiredService<ILogger<DefaultWebHost>>();
-
                                   var httpAbstractionOptions = context2.RequestServices.GetRequiredService<IOptions<DecoupleIt.HttpAbstraction.Options>>()
                                                                        .Value;
 
