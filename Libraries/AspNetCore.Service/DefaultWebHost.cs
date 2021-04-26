@@ -444,7 +444,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               {
                                   options.OperationFilter<OperationNameFilter>();
 
-                                  options.DocumentFilter<DocumentFilter>(hostIdentifier, hostVersion);
+                                  options.DocumentFilter<DocumentFilter>(hostVersion);
 
                                   foreach (var file in Directory.EnumerateFiles(Path.GetDirectoryName(GetType()
                                                                                                       .Assembly.Location)
