@@ -1,9 +1,3 @@
-using System.Reflection;
-using GS.DecoupleIt.DependencyInjection.Automatic;
-using GS.DecoupleIt.Options.Automatic;
-using GS.DecoupleIt.Scheduling;
-using GS.DecoupleIt.Shared;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
@@ -13,7 +7,6 @@ using Serilog;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
-using GS.DecoupleIt.HttpAbstraction;
 using Newtonsoft.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
@@ -47,10 +40,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         public virtual void ConfigureMigrations(WebHostBuilderContext context, DecoupleIt.Migrations.Builder builder) { }
 
         /// <inheritdoc />
-        public virtual void ConfigureMvcBuilder(WebHostBuilderContext context, IMvcBuilder builder)
-        {
-            builder.AddApplicationPart(ThisAssembly);
-        }
+        public virtual void ConfigureMvcBuilder(WebHostBuilderContext context, IMvcBuilder builder) { }
 
         /// <inheritdoc />
         public virtual void ConfigureNewtonsoftJson(WebHostBuilderContext context, JsonSerializerSettings options) { }
@@ -65,13 +55,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         public virtual void ConfigureScheduling(WebHostBuilderContext context, DecoupleIt.Scheduling.Options options) { }
 
         /// <inheritdoc />
-        public virtual void ConfigureServices(WebHostBuilderContext context, IServiceCollection serviceCollection)
-        {
-            serviceCollection.ScanAssemblyForImplementations(ThisAssembly);
-            serviceCollection.ScanAssemblyForOptions(ThisAssembly, context.Configuration.AsNotNull());
-            serviceCollection.ScanAssemblyForJobs(ThisAssembly);
-            serviceCollection.ScanAssemblyForHttpClients(ThisAssembly);
-        }
+        public virtual void ConfigureServices(WebHostBuilderContext context, IServiceCollection serviceCollection) { }
 
         /// <inheritdoc />
         public virtual void ConfigureSwagger(WebHostBuilderContext context, SwaggerOptions options) { }
@@ -90,14 +74,5 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
         /// <inheritdoc />
         public virtual void ConfigureWebHostBuilder(IWebHostBuilder webHostBuilder) { }
-
-        /// <summary>
-        ///     Assembly that contains this module.
-        /// </summary>
-        [NotNull]
-        [PublicAPI]
-        protected Assembly ThisAssembly =>
-            GetType()
-                .Assembly.AsNotNull();
     }
 }

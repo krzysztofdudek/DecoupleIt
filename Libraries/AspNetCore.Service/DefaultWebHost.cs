@@ -439,15 +439,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               {
                                   options.OperationFilter<OperationNameFilter>();
 
-                                  options.CustomSchemaIds(x =>
-                                  {
-                                      if (x.FullName.Contains('+'))
-                                          return x.FullName.Substring(x.FullName.LastIndexOf('.') + 1)
-                                                  .Replace("+", "");
-
-                                      return x.Name;
-                                  });
-
                                   options.DocumentFilter<DocumentFilter>(hostIdentifier, hostVersion);
 
                                   foreach (var file in Directory.EnumerateFiles(Path.GetDirectoryName(GetType()
