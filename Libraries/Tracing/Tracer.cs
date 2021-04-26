@@ -131,7 +131,7 @@ namespace GS.DecoupleIt.Tracing
             if (_loggerPropertiesOptions is null)
                 return new Dictionary<string, object>();
 
-            var dictionary = new SelfDescribingDictionary<string, object>();
+            var dictionary = new Dictionary<string, object>();
 
             for (var index = 0; index < _loggerPropertiesOptions.TraceId.Count; index++)
             {

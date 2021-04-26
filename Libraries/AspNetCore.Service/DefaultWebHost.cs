@@ -81,16 +81,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
         [CanBeNull]
         public IHostInformation HostInformation { get; private set; }
 
-        /// <summary>
-        ///     If this flag is set, https is enforced.
-        /// </summary>
-        public bool UseHttpsRedirection { get; set; }
-
-        /// <summary>
-        ///     If this flag is set, migration engine is enabled.
-        /// </summary>
-        public bool UseMigrations { get; set; }
-
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         public override void ConfigureLogging(WebHostBuilderContext context, LoggerConfiguration configuration)
@@ -183,22 +173,32 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
         /// <inheritdoc cref="WebHostExtensions.Run" />
         /// <param name="args">Arguments.</param>
-        public void Run([CanBeNull] [ItemCanBeNull] params string[] args)
+        /// <param name="configureWebHostBuilder">Configure web host builder delegate.</param>
+        public void Run([CanBeNull] [ItemCanBeNull] string[] args, [CanBeNull] Action<IWebHostBuilder> configureWebHostBuilder = default)
         {
-            var webHost = CreateWebHost(args);
+            var webHostBuilder = ConfigureWebHostBuilder(args);
 
-            webHost.Run();
+            configureWebHostBuilder?.Invoke(webHostBuilder);
+
+            var webHost = webHostBuilder.Build();
+
+            webHost!.Run();
         }
 
         /// <inheritdoc cref="IWebHost.Start" />
         /// <param name="args">Arguments.</param>
+        /// <param name="configureWebHostBuilder">Configure web host builder delegate.</param>
         /// <returns>Web host.</returns>
         [NotNull]
-        public IWebHost Start([CanBeNull] [ItemCanBeNull] params string[] args)
+        public IWebHost Start([CanBeNull] [ItemCanBeNull] string[] args, [CanBeNull] Action<IWebHostBuilder> configureWebHostBuilder = default)
         {
-            var webHost = CreateWebHost(args);
+            var webHostBuilder = ConfigureWebHostBuilder(args);
 
-            webHost.Start();
+            configureWebHostBuilder?.Invoke(webHostBuilder);
+
+            var webHost = webHostBuilder.Build();
+
+            webHost!.Start();
 
             return webHost;
         }
@@ -215,12 +215,22 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// <summary>
         ///     Type of an json serializer used for whole pipeline.
         /// </summary>
-        protected virtual JsonSerializerType JsonSerializer { get; } = JsonSerializerType.SystemTextJson;
+        protected virtual JsonSerializerType JsonSerializer { get; set; } = JsonSerializerType.SystemTextJson;
+
+        /// <summary>
+        ///     If this flag is set, https is enforced.
+        /// </summary>
+        protected virtual bool UseHttpsRedirection { get; set; }
+
+        /// <summary>
+        ///     If this flag is set, migration engine is enabled.
+        /// </summary>
+        protected virtual bool UseMigrations { get; set; }
 
         /// <summary>
         ///     If this flag is set, then web host will test all registered services if are possible to instantiate.
         /// </summary>
-        protected virtual bool ValidateServices { get; } = true;
+        protected virtual bool ValidateServices { get; set; } = true;
 
         /// <summary>
         ///     Gets modules.
@@ -230,17 +240,17 @@ namespace GS.DecoupleIt.AspNetCore.Service
         [ItemNotNull]
         protected virtual IReadOnlyCollection<IWebHostModule> GetModules()
         {
-            return new IWebHostModule[0];
+            return Array.Empty<IWebHostModule>();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CognitiveComplexity")]
         [NotNull]
-        private IWebHost CreateWebHost(string[] args)
+        private IWebHostBuilder ConfigureWebHostBuilder(string[] args)
         {
             args = args?.Where(x => x != null)
-                       .ToArray() ?? new string[0];
+                       .ToArray() ?? Array.Empty<string>();
 
             var modules = GetModules();
 
@@ -509,6 +519,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               context            = context.AsNotNull();
                               applicationBuilder = applicationBuilder.AsNotNull();
 
+                              var tracer = applicationBuilder.ApplicationServices.GetRequiredService<ITracer>()
+                                                             .AsNotNull();
+
+                              using var tracerSpan = tracer.OpenSpan(GetType(), SpanType.InternalProcess);
+
                               // Get options.
                               var options = applicationBuilder.ApplicationServices.GetRequiredService<IOptions<Options>>()
                                                               .Value;
@@ -520,42 +535,15 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
                               // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
                               logger.LogInformation(
-                                  $"Host(Identifier: {HostInformation.Identifier}, Name: {HostInformation.Name}, Version: {HostInformation.Version}, Environment: {HostInformation.Environment})");
+                                  "Host started.\nIdentifier: {@HostIdentifier}\nName: {HostName}\nVersion: {HostVersion}\nEnvironment: {HostEnvironment}",
+                                  HostInformation.Identifier,
+                                  HostInformation.Name,
+                                  HostInformation.Version,
+                                  HostInformation.Environment);
 
                               // Perform configuration of application.
                               if (UseHttpsRedirection)
                                   applicationBuilder.UseHttpsRedirection();
-
-                              applicationBuilder.Use(async (context2, next) =>
-                              {
-                                  var httpAbstractionOptions = context2.RequestServices.GetRequiredService<IOptions<DecoupleIt.HttpAbstraction.Options>>()
-                                                                       .Value;
-
-                                  context2.Response.OnStarting(() =>
-                                  {
-                                      context2.Response.Headers.Add(httpAbstractionOptions.HostIdentifierHeaderName, HostInformation.Identifier.ToString());
-                                      context2.Response.Headers.Add(httpAbstractionOptions.HostNameHeaderName, HostInformation.Name);
-                                      context2.Response.Headers.Add(httpAbstractionOptions.HostVersionHeaderName, HostInformation.Version);
-
-                                      return Task.CompletedTask;
-                                  });
-
-                                  using (logger.BeginScope(new SelfDescribingDictionary<string, object>
-                                  {
-                                      {
-                                          "HostIdentifier", HostInformation.Identifier
-                                      },
-                                      {
-                                          "HostName", HostInformation.Name
-                                      },
-                                      {
-                                          "HostVersion", HostInformation.Version
-                                      }
-                                  }))
-                                  {
-                                      await next();
-                                  }
-                              });
 
                               applicationBuilder.UseSwagger(swaggerOptions =>
                               {
@@ -586,6 +574,26 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   corsPolicyBuilder = corsPolicyBuilder.AsNotNull();
 
                                   ConfigureCorsPolicyBuilder(context, corsPolicyBuilder);
+                              });
+
+                              applicationBuilder.Use(async (context2, next) =>
+                              {
+                                  var httpAbstractionOptions = context2.RequestServices.GetRequiredService<IOptions<DecoupleIt.HttpAbstraction.Options>>()
+                                                                       .Value;
+
+                                  context2.Response.OnStarting(() =>
+                                  {
+                                      context2.Response.Headers.Add(httpAbstractionOptions.HostIdentifierHeaderName, HostInformation.Identifier.ToString());
+                                      context2.Response.Headers.Add(httpAbstractionOptions.HostNameHeaderName, HostInformation.Name);
+                                      context2.Response.Headers.Add(httpAbstractionOptions.HostVersionHeaderName, HostInformation.Version);
+
+                                      return Task.CompletedTask;
+                                  });
+
+                                  using (logger.BeginScope(HostInformation))
+                                  {
+                                      await next();
+                                  }
                               });
 
                               applicationBuilder.UseTracing();
@@ -632,10 +640,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
             foreach (var module in modules)
                 module.ConfigureWebHostBuilder(webHostBuilder);
 
-            var webHost = webHostBuilder.Build()
-                                        .AsNotNull();
-
-            return webHost;
+            return webHostBuilder;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
