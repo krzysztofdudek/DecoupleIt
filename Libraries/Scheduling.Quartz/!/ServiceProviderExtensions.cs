@@ -28,7 +28,7 @@ namespace GS.DecoupleIt.Scheduling.Quartz
         /// <param name="configure">Configure builder delegate.</param>
         /// <returns>Service provider.</returns>
         [NotNull]
-        public static IServiceProvider UseQuartzScheduling(
+        public static IServiceProvider UseQuartzJobScheduling(
             [NotNull] this IServiceProvider serviceProvider,
             [CanBeNull] Action<QuartzSchedulerBuilder> configure = default)
         {

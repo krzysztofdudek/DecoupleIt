@@ -19,7 +19,7 @@ namespace GS.DecoupleIt.Scheduling.Implementation
         /// <param name="cancellationToken">Cancellation token stopping job execution.</param>
         /// <returns>Service provider.</returns>
         [NotNull]
-        public static IServiceProvider UseDefaultScheduling([NotNull] this IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
+        public static IServiceProvider UseDefaultJobScheduling([NotNull] this IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
         {
             var jobsCollection = serviceProvider.GetService<IRegisteredJobs>();
 

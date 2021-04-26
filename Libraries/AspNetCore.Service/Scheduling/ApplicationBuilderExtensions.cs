@@ -19,7 +19,7 @@ namespace GS.DecoupleIt.AspNetCore.Service.Scheduling
         /// <param name="builder">Application builder.</param>
         /// <returns>Application builder.</returns>
         [NotNull]
-        public static IApplicationBuilder UseDefaultScheduling([NotNull] this IApplicationBuilder builder)
+        public static IApplicationBuilder UseDefaultJobScheduling([NotNull] this IApplicationBuilder builder)
         {
             ContractGuard.IfArgumentIsNull(nameof(builder), builder);
 
@@ -28,7 +28,7 @@ namespace GS.DecoupleIt.AspNetCore.Service.Scheduling
                                .ApplicationStopping;
 
             builder.ApplicationServices.AsNotNull()
-                   .UseDefaultScheduling(token);
+                   .UseDefaultJobScheduling(token);
 
             return builder;
         }

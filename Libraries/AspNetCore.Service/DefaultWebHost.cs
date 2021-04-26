@@ -223,6 +223,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
         protected virtual bool UseHttpsRedirection { get; set; }
 
         /// <summary>
+        ///     If this flag is set, jobs engine is enabled.
+        /// </summary>
+        protected virtual bool UseJobs { get; set; }
+
+        /// <summary>
         ///     If this flag is set, migration engine is enabled.
         /// </summary>
         protected virtual bool UseMigrations { get; set; }
@@ -616,7 +621,8 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               if (UseMigrations)
                                   applicationBuilder.ExecuteMigrations();
 
-                              applicationBuilder.UseDefaultScheduling();
+                              if (UseJobs)
+                                  applicationBuilder.UseDefaultJobScheduling();
                           })
                           .UseSerilog((context, configuration) =>
                           {
