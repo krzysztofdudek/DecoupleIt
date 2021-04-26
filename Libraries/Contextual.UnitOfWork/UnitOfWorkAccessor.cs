@@ -247,14 +247,15 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             {
                 entry.UnitOfWork.Disposed -= OnInstanceDisposed;
 
-                _unitOfWorkPool.Return(entry.UnitOfWork);
+                if (entry.UnitOfWork is IPooledUnitOfWork pooledUnitOfWork)
+                    _unitOfWorkPool.Return(pooledUnitOfWork);
             }
             else if (entry.LazyUnitOfWorkAccessor != null)
             {
                 entry.LazyUnitOfWorkAccessor.Value.Disposed -= OnInstanceDisposed;
 
-                if (entry.LazyUnitOfWorkAccessor.HasValueLoaded)
-                    _unitOfWorkPool.Return(entry.LazyUnitOfWorkAccessor.Value);
+                if (entry.LazyUnitOfWorkAccessor.HasValueLoaded && entry.UnitOfWork is IPooledUnitOfWork pooledUnitOfWork)
+                    _unitOfWorkPool.Return(pooledUnitOfWork);
             }
         }
 

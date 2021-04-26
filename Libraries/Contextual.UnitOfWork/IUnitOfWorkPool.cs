@@ -24,7 +24,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// <summary>
         ///     Returns an unit of work to pool.
         /// </summary>
-        /// <param name="unitOfWork">Instance.</param>
-        public void Return([NotNull] IUnitOfWork unitOfWork);
+        /// <param name="pooledUnitOfWork">Instance.</param>
+        public void Return([NotNull] IPooledUnitOfWork pooledUnitOfWork);
     }
 }

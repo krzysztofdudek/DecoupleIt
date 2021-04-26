@@ -84,11 +84,13 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Return(IUnitOfWork unitOfWork)
+        public void Return(IPooledUnitOfWork pooledUnitOfWork)
         {
-            if (!_options.Pooling.Enabled || unitOfWork is not IPooledUnitOfWork pooledUnitOfWork)
+            if (!_options.Pooling.Enabled)
             {
-                unitOfWork.Dispose();
+                pooledUnitOfWork.IsPooled = false;
+
+                pooledUnitOfWork.Dispose();
 
                 return;
             }

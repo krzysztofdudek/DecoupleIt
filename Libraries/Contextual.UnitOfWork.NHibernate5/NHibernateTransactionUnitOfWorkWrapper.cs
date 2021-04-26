@@ -108,9 +108,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
 
             Session.Dispose();
 
-            Disposed?.Invoke(this);
-
             GC.SuppressFinalize(this);
+
+            Disposed?.Invoke(this);
         }
 
 #if !NETSTANDARD2_0
@@ -164,8 +164,6 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         {
             return CommitAsync(cancellationToken)!.AsValueTask();
         }
-
-        protected bool CleanupSessionOnDisposalOfUncommittedTransaction { get; set; }
 
         [NotNull]
         private readonly Options _options;
