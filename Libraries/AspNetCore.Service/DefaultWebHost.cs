@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GS.DecoupleIt.AspNetCore.Service.HttpAbstraction;
@@ -243,6 +244,22 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
             var modules = GetModules();
 
+            static IReadOnlyCollection<Assembly> GetAssembliesFromTypeInheritanceStack([NotNull] Type type)
+            {
+                return new[]
+                    {
+                        type.Assembly
+                    }.Concat(type.GetAllBaseTypes()
+                                 .Select(x => x.Assembly))
+                     .ToList();
+            }
+
+            var allApplicationAssemblies = GetAssembliesFromTypeInheritanceStack(GetType())
+                                           .Concat(modules.Select(x => GetAssembliesFromTypeInheritanceStack(x.GetType()))
+                                                          .SelectMany(x => x))
+                                           .Distinct()
+                                           .ToList();
+
             var webHostBuilder = new WebHostBuilder();
 
             webHostBuilder.UseKestrel()
@@ -404,6 +421,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               foreach (var module in modules)
                                   module.ConfigureMvcBuilder(context, mvcBuilder);
 
+                              foreach (var assembly in allApplicationAssemblies)
+                                  mvcBuilder.AddApplicationPart(assembly);
+
                               // Configure swagger.
                               serviceCollection.AddSwaggerGen(options =>
                               {
@@ -468,14 +488,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               }
 
                               // Configure services.
-                              foreach (var assembly in new[]
-                                  {
-                                      GetType()
-                                          .Assembly
-                                  }.Concat(GetType()
-                                           .GetAllBaseTypes()
-                                           .Select(x => x.Assembly))
-                                   .Distinct())
+                              foreach (var assembly in allApplicationAssemblies)
                               {
                                   serviceCollection.ScanAssemblyForImplementations(assembly);
                                   serviceCollection.ScanAssemblyForOptions(assembly, context.Configuration.AsNotNull());
