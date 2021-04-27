@@ -15,6 +15,7 @@ using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.HttpAbstraction;
 using GS.DecoupleIt.Migrations;
+using GS.DecoupleIt.Options.Automatic;
 using GS.DecoupleIt.Scheduling;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
@@ -481,6 +482,13 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   foreach (var module in modules)
                                       module.ConfigureMigrations(context, migrationsBuilder);
                               }
+
+                              var thisAssembly = typeof(DefaultWebHost).Assembly;
+
+                              serviceCollection.ScanAssemblyForImplementations(thisAssembly);
+                              serviceCollection.ScanAssemblyForOptions(thisAssembly, context.Configuration.AsNotNull());
+                              serviceCollection.ScanAssemblyForJobs(thisAssembly);
+                              serviceCollection.ScanAssemblyForHttpClients(thisAssembly);
 
                               // Configure services.
                               foreach (var module in modules)
