@@ -218,19 +218,19 @@ namespace GS.DecoupleIt.AspNetCore.Service
         protected virtual JsonSerializerType JsonSerializer { get; set; } = JsonSerializerType.SystemTextJson;
 
         /// <summary>
-        ///     If this flag is set, https is enforced.
+        ///     If this flag is set, https is enforced. It's disabled by default.
         /// </summary>
         protected virtual bool UseHttpsRedirection { get; set; }
 
         /// <summary>
-        ///     If this flag is set, jobs engine is enabled.
+        ///     If this flag is set, jobs engine is enabled. It's enabled by default.
         /// </summary>
-        protected virtual bool UseJobs { get; set; }
+        protected virtual bool UseJobs { get; set; } = true;
 
         /// <summary>
-        ///     If this flag is set, migration engine is enabled.
+        ///     If this flag is set, migration engine is enabled. It's enabled by default.
         /// </summary>
-        protected virtual bool UseMigrations { get; set; }
+        protected virtual bool UseMigrations { get; set; } = true;
 
         /// <summary>
         ///     If this flag is set, then web host will test all registered services if are possible to instantiate.

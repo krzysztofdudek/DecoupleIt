@@ -20,7 +20,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
     /// <summary>
     ///     Middleware logging requests and responses.
     /// </summary>
-    [Transient]
+    [Singleton]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "LogMessageIsSentenceProblem")]
@@ -173,8 +173,12 @@ namespace GS.DecoupleIt.AspNetCore.Service
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task LogResponseWithBody([NotNull] HttpContext context, [NotNull] RequestDelegate next, [NotNull] ITracerSpan span)
         {
-            await using var memoryStream               = (RecyclableMemoryStream) _recyclableMemoryStreamManager.GetStream();
-            var             originalResponseBodyStream = context.Response.Body;
+            await using var memoryStream =
+                (RecyclableMemoryStream) _recyclableMemoryStreamManager.GetStream(Guid.NewGuid(),
+                                                                                  nameof(LoggingMiddleware),
+                                                                                  _options.Logging.Middleware.SmallBufferBlockSize);
+
+            var originalResponseBodyStream = context.Response.Body;
 
             context.Response.Body = memoryStream;
 

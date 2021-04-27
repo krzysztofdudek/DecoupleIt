@@ -205,6 +205,10 @@ namespace GS.DecoupleIt.Operations.Internal
 
                     throw;
                 }
+                finally
+                {
+                    ArrayPool<InternalEvent>.Shared.Return(internalEvents);
+                }
             }
         }
 
@@ -321,6 +325,10 @@ namespace GS.DecoupleIt.Operations.Internal
                         commandHandlerException.Data.Add("WasHandled", true);
 
                     throw;
+                }
+                finally
+                {
+                    ArrayPool<InternalEvent>.Shared.Return(internalEvents);
                 }
             }
 

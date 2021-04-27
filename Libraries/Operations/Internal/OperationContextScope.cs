@@ -233,6 +233,8 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 for (var i = 0; i < numberOfEvents && internalEvents[i] is not null; i++)
                     internalEvents[i] = null;
+
+                ArrayPool<InternalEvent>.Shared.Return(internalEvents);
             }
         }
 
