@@ -13,6 +13,7 @@ namespace GS.DecoupleIt.Operations
     /// </summary>
     /// <typeparam name="TEvent">Event type.</typeparam>
     [Singleton]
+    [RegisterManyTimes]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "UnusedParameter.Global")]
     public abstract class InternalEventHandlerBase<TEvent> : IOnEmissionInternalEventHandler, IOnSuccessInternalEventHandler, IOnFailureInternalEventHandler
@@ -93,7 +94,7 @@ namespace GS.DecoupleIt.Operations
 #endif
             IOnEmissionInternalEventHandler.HandleAsync(IInternalEvent @event, CancellationToken cancellationToken)
         {
-            if (!(@event is TEvent typedEvent))
+            if (@event is not TEvent typedEvent)
                 throw new ArgumentException("Event is of invalid type.", nameof(@event));
 
             return HandleOnEmissionAsync(typedEvent, cancellationToken);
@@ -107,7 +108,7 @@ namespace GS.DecoupleIt.Operations
 #endif
             IOnSuccessInternalEventHandler.HandleAsync(IInternalEvent @event, CancellationToken cancellationToken)
         {
-            if (!(@event is TEvent typedEvent))
+            if (@event is not TEvent typedEvent)
                 throw new ArgumentException("Event is of invalid type.", nameof(@event));
 
             return HandleOnSuccessAsync(typedEvent, cancellationToken);
@@ -121,7 +122,7 @@ namespace GS.DecoupleIt.Operations
 #endif
             IOnFailureInternalEventHandler.HandleAsync(IInternalEvent @event, Exception exception, CancellationToken cancellationToken)
         {
-            if (!(@event is TEvent typedEvent))
+            if (@event is not TEvent typedEvent)
                 throw new ArgumentException("Event is of invalid type.", nameof(@event));
 
             return HandleOnFailureAsync(typedEvent, exception, cancellationToken);

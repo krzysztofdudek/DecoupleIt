@@ -14,6 +14,7 @@ namespace GS.DecoupleIt.Operations
     /// </summary>
     /// <typeparam name="TCommand">Command type.</typeparam>
     [Singleton]
+    [RegisterManyTimes]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     public abstract class PostCommandHandlerBase<TCommand> : IPostCommandHandler
         where TCommand : Command
@@ -51,7 +52,7 @@ namespace GS.DecoupleIt.Operations
                 Exception exception,
                 CancellationToken cancellationToken)
         {
-            if (!(command is TCommand typedCommand))
+            if (command is not TCommand typedCommand)
                 throw new ArgumentException("Command is of invalid type.", nameof(command));
 
             return PostHandleAsync(typedCommand,
@@ -67,6 +68,7 @@ namespace GS.DecoupleIt.Operations
     /// <typeparam name="TCommand">Command type.</typeparam>
     /// <typeparam name="TResult">Result type.</typeparam>
     [Singleton]
+    [RegisterManyTimes]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     public abstract class PostCommandHandlerBase<TCommand, TResult> : IPostCommandWithResultHandler
         where TCommand : Command<TResult>
@@ -107,7 +109,7 @@ namespace GS.DecoupleIt.Operations
                 Exception exception,
                 CancellationToken cancellationToken)
         {
-            if (!(command is TCommand typedCommand))
+            if (command is not TCommand typedCommand)
                 throw new ArgumentException("Command is of invalid type.", nameof(command));
 
             return PostHandleAsync(typedCommand,

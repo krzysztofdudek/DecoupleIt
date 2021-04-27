@@ -14,6 +14,7 @@ namespace GS.DecoupleIt.Operations
     /// <typeparam name="TQuery">Command type.</typeparam>
     /// <typeparam name="TResult">Result type.</typeparam>
     [Singleton]
+    [RegisterManyTimes]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     public abstract class QueryHandlerBase<TQuery, TResult> : IQueryHandler
         where TQuery : Query<TResult>
@@ -43,7 +44,7 @@ namespace GS.DecoupleIt.Operations
 #endif
             IQueryHandler.HandleAsync(IQuery query, CancellationToken cancellationToken)
         {
-            if (!(query is TQuery typedQuery))
+            if (query is not TQuery typedQuery)
                 throw new ArgumentException("Query is of invalid type.", nameof(query));
 
             return await HandleAsync(typedQuery, cancellationToken);

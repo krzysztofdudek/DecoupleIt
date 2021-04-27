@@ -13,6 +13,7 @@ namespace GS.DecoupleIt.Operations
     /// </summary>
     /// <typeparam name="TCommand">Command type.</typeparam>
     [Singleton]
+    [RegisterManyTimes]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     public abstract class PreCommandHandlerBase<TCommand> : IPreCommandHandler
         where TCommand : Command
@@ -40,7 +41,7 @@ namespace GS.DecoupleIt.Operations
 #endif
             IPreCommandHandler.PreHandleAsync(ICommand command, CancellationToken cancellationToken)
         {
-            if (!(command is TCommand typedCommand))
+            if (command is not TCommand typedCommand)
                 throw new ArgumentException("Command is of invalid type.", nameof(command));
 
             return PreHandleAsync(typedCommand, cancellationToken);
@@ -53,6 +54,7 @@ namespace GS.DecoupleIt.Operations
     /// <typeparam name="TCommand">Command type.</typeparam>
     /// <typeparam name="TResult">Result type.</typeparam>
     [Singleton]
+    [RegisterManyTimes]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyAtValueType")]
     public abstract class PreCommandHandlerBase<TCommand, TResult> : IPreCommandWithResultHandler
         where TCommand : Command<TResult>
@@ -80,7 +82,7 @@ namespace GS.DecoupleIt.Operations
 #endif
             IPreCommandWithResultHandler.PreHandleAsync(ICommandWithResult command, CancellationToken cancellationToken)
         {
-            if (!(command is TCommand typedCommand))
+            if (command is not TCommand typedCommand)
                 throw new ArgumentException("Command is of invalid type.", nameof(command));
 
             return PreHandleAsync(typedCommand, cancellationToken);
