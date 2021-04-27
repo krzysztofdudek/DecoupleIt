@@ -15,7 +15,6 @@ using GS.DecoupleIt.Contextual.UnitOfWork;
 using GS.DecoupleIt.DependencyInjection.Automatic;
 using GS.DecoupleIt.HttpAbstraction;
 using GS.DecoupleIt.Migrations;
-using GS.DecoupleIt.Options.Automatic;
 using GS.DecoupleIt.Scheduling;
 using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
@@ -257,7 +256,12 @@ namespace GS.DecoupleIt.AspNetCore.Service
             args = args?.Where(x => x != null)
                        .ToArray() ?? Array.Empty<string>();
 
-            var modules = GetModules();
+            var modules = GetModules()
+                          .Concat(new[]
+                          {
+                              this
+                          })
+                          .ToList();
 
             static IReadOnlyCollection<Assembly> GetAssembliesFromTypeInheritanceStack([NotNull] Type type)
             {
@@ -302,8 +306,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
                               builder.AddEnvironmentVariables("DOTNET_");
                               builder.AddCommandLine(args);
-
-                              ConfigureConfiguration(builder);
 
                               foreach (var module in modules)
                                   module.ConfigureConfiguration(builder);
@@ -352,8 +354,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               // Configure unit of work.
                               var unitOfWorkBuilder = serviceCollection.AddContextualUnitOfWork(context.Configuration.AsNotNull());
 
-                              ConfigureUnitOfWork(context, unitOfWorkBuilder);
-
                               foreach (var module in modules)
                                   module.ConfigureUnitOfWork(context, unitOfWorkBuilder);
 
@@ -362,8 +362,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
                               // Configure operations.
                               var operationsBuilder = serviceCollection.AddOperationsForAspNetCore(context.Configuration.AsNotNull());
-
-                              ConfigureOperations(context, operationsBuilder);
 
                               foreach (var module in modules)
                                   module.ConfigureOperations(context, operationsBuilder);
@@ -375,11 +373,13 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               switch (JsonSerializer)
                               {
                                   case JsonSerializerType.NewtonsoftJson:
-                                      ConfigureNewtonsoftJson(context, jsonSerializerSettings);
+                                      foreach (var module in modules)
+                                          module.ConfigureNewtonsoftJson(context, jsonSerializerSettings);
 
                                       break;
                                   case JsonSerializerType.SystemTextJson:
-                                      ConfigureSystemTextJson(context, jsonSerializerOptions);
+                                      foreach (var module in modules)
+                                          module.ConfigureSystemTextJson(context, jsonSerializerOptions);
 
                                       break;
                                   default:
@@ -413,8 +413,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   case JsonSerializerType.NewtonsoftJson:
                                       mvcBuilder.AddNewtonsoftJson(options =>
                                       {
-                                          ConfigureNewtonsoftJson(context, options.SerializerSettings);
-
                                           foreach (var module in modules)
                                               module.ConfigureNewtonsoftJson(context, options.SerializerSettings);
                                       });
@@ -423,8 +421,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   case JsonSerializerType.SystemTextJson:
                                       mvcBuilder.AddJsonOptions(options =>
                                       {
-                                          ConfigureSystemTextJson(context, options.JsonSerializerOptions);
-
                                           foreach (var module in modules)
                                               module.ConfigureSystemTextJson(context, options.JsonSerializerOptions);
                                       });
@@ -433,8 +429,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   default:
                                       throw new ArgumentOutOfRangeException();
                               }
-
-                              ConfigureMvcBuilder(context, mvcBuilder);
 
                               foreach (var module in modules)
                                   module.ConfigureMvcBuilder(context, mvcBuilder);
@@ -458,8 +452,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                                                              .EndsWith(".xml")))
                                       options.IncludeXmlComments(file);
 
-                                  ConfigureSwaggerGen(context, options);
-
                                   foreach (var module in modules)
                                       module.ConfigureSwaggerGen(context, options);
                               });
@@ -470,8 +462,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               // Configure cors.
                               serviceCollection.AddCors(options =>
                               {
-                                  ConfigureCors(context, options);
-
                                   foreach (var module in modules)
                                       module.ConfigureCors(context, options);
                               });
@@ -479,8 +469,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               // Configure routing.
                               serviceCollection.AddRouting(options =>
                               {
-                                  ConfigureRoute(context, options);
-
                                   foreach (var module in modules)
                                       module.ConfigureRoute(context, options);
                               });
@@ -490,23 +478,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               {
                                   var migrationsBuilder = serviceCollection.AddMigrations(context.Configuration);
 
-                                  ConfigureMigrations(context, migrationsBuilder);
-
                                   foreach (var module in modules)
                                       module.ConfigureMigrations(context, migrationsBuilder);
                               }
 
                               // Configure services.
-                              foreach (var assembly in allApplicationAssemblies)
-                              {
-                                  serviceCollection.ScanAssemblyForImplementations(assembly);
-                                  serviceCollection.ScanAssemblyForOptions(assembly, context.Configuration.AsNotNull());
-                                  serviceCollection.ScanAssemblyForJobs(assembly);
-                                  serviceCollection.ScanAssemblyForHttpClients(assembly);
-                              }
-
-                              ConfigureServices(context, serviceCollection);
-
                               foreach (var module in modules)
                                   module.ConfigureServices(context, serviceCollection);
 
@@ -548,8 +524,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               {
                                   swaggerOptions = swaggerOptions.AsNotNull();
 
-                                  ConfigureSwagger(context, swaggerOptions);
-
                                   foreach (var module in modules)
                                       module.ConfigureSwagger(context, swaggerOptions);
                               });
@@ -559,8 +533,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   swaggerUIOptions = swaggerUIOptions.AsNotNull();
 
                                   swaggerUIOptions.RoutePrefix = "swagger";
-
-                                  ConfigureSwaggerUI(context, swaggerUIOptions);
 
                                   foreach (var module in modules)
                                       module.ConfigureSwaggerUI(context, swaggerUIOptions);
@@ -572,7 +544,8 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               {
                                   corsPolicyBuilder = corsPolicyBuilder.AsNotNull();
 
-                                  ConfigureCorsPolicyBuilder(context, corsPolicyBuilder);
+                                  foreach (var module in modules)
+                                      module.ConfigureCorsPolicyBuilder(context, corsPolicyBuilder);
                               });
 
                               applicationBuilder.Use(async (context2, next) =>
@@ -604,8 +577,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
                               applicationBuilder.UseOperations();
 
-                              ConfigureApplication(context, applicationBuilder);
-
                               foreach (var module in modules)
                                   module.ConfigureApplication(context, applicationBuilder);
 
@@ -614,8 +585,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   endpointRouteBuilder = endpointRouteBuilder.AsNotNull();
 
                                   endpointRouteBuilder.MapControllers();
-
-                                  ConfigureEndpoints(context, endpointRouteBuilder);
 
                                   foreach (var module in modules)
                                       module.ConfigureEndpoints(context, endpointRouteBuilder);
@@ -629,8 +598,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
                           })
                           .UseSerilog((context, configuration) =>
                           {
-                              ConfigureLogging(context, configuration);
-
                               foreach (var module in modules)
                                   module.ConfigureLogging(context, configuration);
                           });

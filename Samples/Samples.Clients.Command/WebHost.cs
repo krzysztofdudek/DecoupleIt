@@ -1,10 +1,16 @@
 using GS.DecoupleIt.AspNetCore.Service;
 using GS.DecoupleIt.AspNetCore.Service.UnitOfWork;
 using GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore;
+using GS.DecoupleIt.DependencyInjection.Automatic;
+using GS.DecoupleIt.HttpAbstraction;
+using GS.DecoupleIt.Options.Automatic;
+using GS.DecoupleIt.Scheduling;
+using GS.DecoupleIt.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Samples.Clients.Command.Model;
 using Builder = GS.DecoupleIt.Contextual.UnitOfWork.Builder;
 
@@ -44,6 +50,18 @@ namespace Samples.Clients.Command
                     warningsConfigurationBuilder!.Ignore(InMemoryEventId.TransactionIgnoredWarning);
                 });
             });
+        }
+
+        public override void ConfigureServices(WebHostBuilderContext context, IServiceCollection serviceCollection)
+        {
+            base.ConfigureServices(context, serviceCollection);
+
+            var assembly = typeof(WebHost).Assembly;
+
+            serviceCollection.ScanAssemblyForImplementations(assembly);
+            serviceCollection.ScanAssemblyForOptions(assembly, context.Configuration.AsNotNull());
+            serviceCollection.ScanAssemblyForJobs(assembly);
+            serviceCollection.ScanAssemblyForHttpClients(assembly);
         }
 
         public override void ConfigureUnitOfWork(WebHostBuilderContext context, Builder builder)
