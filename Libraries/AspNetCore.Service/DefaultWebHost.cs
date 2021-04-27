@@ -272,11 +272,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
                            .ToList();
             }
 
-            var allApplicationAssemblies = GetAssembliesFromTypeInheritanceStack(GetType())
-                                           .Concat(modules.Select(x => GetAssembliesFromTypeInheritanceStack(x.GetType()))
-                                                          .SelectMany(x => x))
-                                           .Distinct()
-                                           .ToList();
+            var allApplicationAssemblies = modules.Select(x => GetAssembliesFromTypeInheritanceStack(x.GetType()))
+                                                  .SelectMany(x => x)
+                                                  .Concat(GetAssembliesFromTypeInheritanceStack(GetType()))
+                                                  .Distinct()
+                                                  .ToList();
 
             var webHostBuilder = new WebHostBuilder();
 
