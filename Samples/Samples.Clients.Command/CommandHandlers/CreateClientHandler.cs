@@ -31,7 +31,7 @@ namespace Samples.Clients.Command.CommandHandlers
             if (!_clientValidator.IsNameValid(command.Name))
                 throw new InvalidClientName();
 
-            var unitOfWork = _unitOfWorkAccessor.Get<ClientsDbContext>();
+            await using var unitOfWork = _unitOfWorkAccessor.Get<ClientsDbContext>();
 
             var client = await Client.CreateAsync(command.Name);
 

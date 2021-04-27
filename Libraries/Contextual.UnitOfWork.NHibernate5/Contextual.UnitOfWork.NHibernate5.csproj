@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>6.0.0-alpha.4</VersionPrefix>
+        <VersionPrefix>6.0.0-alpha.5</VersionPrefix>
         <Title>DecoupleIt - Contextual Unit of Work for NHibernate 5</Title>
         <Description>Package adds support of contextual unit of work for NHibernate 5.</Description>
     </PropertyGroup>

@@ -149,8 +149,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
                 if (storageEntry.LazyUnitOfWorkAccessor is not null)
                 {
-                    if (storageEntry.LazyUnitOfWorkAccessor.HasValueLoaded)
-                        storageEntry.Level++;
+                    storageEntry.Level++;
 
                     return (TUnitOfWork) storageEntry.LazyUnitOfWorkAccessor.Value;
                 }
@@ -254,7 +253,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             {
                 entry.LazyUnitOfWorkAccessor.Value.Disposed -= OnInstanceDisposed;
 
-                if (entry.LazyUnitOfWorkAccessor.HasValueLoaded && entry.UnitOfWork is IPooledUnitOfWork pooledUnitOfWork)
+                if (entry.LazyUnitOfWorkAccessor.HasValueLoaded && entry.LazyUnitOfWorkAccessor.Value is IPooledUnitOfWork pooledUnitOfWork)
                     _unitOfWorkPool.Return(pooledUnitOfWork);
             }
         }
