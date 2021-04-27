@@ -261,12 +261,15 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
             static IReadOnlyCollection<Assembly> GetAssembliesFromTypeInheritanceStack([NotNull] Type type)
             {
-                return new[]
-                    {
-                        type.Assembly
-                    }.Concat(type.GetAllBaseTypes()
-                                 .Select(x => x.Assembly))
-                     .ToList();
+                return type.GetAllBaseTypes()
+                           .Reverse()
+                           .Concat(new[]
+                           {
+                               type
+                           })
+                           .Select(x => x.Assembly)
+                           .Distinct()
+                           .ToList();
             }
 
             var allApplicationAssemblies = GetAssembliesFromTypeInheritanceStack(GetType())
