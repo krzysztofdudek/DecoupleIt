@@ -1,9 +1,10 @@
 using System;
-using System.Collections.Generic;
+using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
+using GS.DecoupleIt.Shared;
 using GS.DecoupleIt.Tracing;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
@@ -138,7 +139,8 @@ namespace GS.DecoupleIt.Operations.Internal
                 if (Options.Logging.EnableNonErrorLogging)
                     Logger.LogDebug("Command handler invocation {@OperationAction}.", "started");
 
-                var internalEvents = new List<InternalEvent>();
+                var internalEvents = ArrayPool<InternalEvent>.Shared!.Rent(Options.InternalEventsPoolSize)
+                                                             .AsNotNull();
 
                 try
                 {
@@ -246,7 +248,8 @@ namespace GS.DecoupleIt.Operations.Internal
                 if (Options.Logging.EnableNonErrorLogging)
                     Logger.LogDebug("Command handler invocation {@OperationAction}.", "started");
 
-                var internalEvents = new List<InternalEvent>();
+                var internalEvents = ArrayPool<InternalEvent>.Shared!.Rent(Options.InternalEventsPoolSize)
+                                                             .AsNotNull();
 
                 try
                 {
@@ -312,7 +315,10 @@ namespace GS.DecoupleIt.Operations.Internal
                         }
                     }
 
-                    commandHandlerException.Data.Add("WasHandled", true);
+                    if (commandHandlerException.Data.Contains("WasHandled"))
+                        commandHandlerException.Data["WasHandled"] = true;
+                    else
+                        commandHandlerException.Data.Add("WasHandled", true);
 
                     throw;
                 }

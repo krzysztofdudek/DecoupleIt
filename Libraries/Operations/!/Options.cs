@@ -18,6 +18,11 @@ namespace GS.DecoupleIt.Operations
         public bool CommandDoNotCreateOwnScope { get; set; }
 
         /// <summary>
+        ///     Internal events pool size. It's 100 by default.
+        /// </summary>
+        public int InternalEventsPoolSize { get; set; } = 100;
+
+        /// <summary>
         ///     Logging.
         /// </summary>
         [NotNull]

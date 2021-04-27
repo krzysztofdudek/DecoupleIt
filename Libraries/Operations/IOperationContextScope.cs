@@ -57,7 +57,7 @@ namespace GS.DecoupleIt.Operations
 #endif
             DispatchOperationsAsync(
                 [NotNull] DispatchOperationsDelegate dispatchOperations,
-                [CanBeNull] List<InternalEvent> internalEvents = default,
+                [CanBeNull] InternalEvent[] internalEvents = default,
                 CancellationToken cancellationToken = default);
 
         /// <summary>

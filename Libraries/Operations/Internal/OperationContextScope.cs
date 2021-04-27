@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace GS.DecoupleIt.Operations.Internal
 {
@@ -23,6 +25,7 @@ namespace GS.DecoupleIt.Operations.Internal
         public OperationContextScope([NotNull] IServiceProvider serviceProvider, [CanBeNull] OperationContextScope parent = default)
         {
             _serviceProvider = serviceProvider;
+            _options         = serviceProvider.GetRequiredService<IOptions<Options>>()!.Value!;
             Parent           = parent;
         }
 
@@ -168,6 +171,7 @@ namespace GS.DecoupleIt.Operations.Internal
 #endif
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ForCanBeConvertedToForeach")]
         public async
 #if NETSTANDARD2_0
             Task
@@ -176,12 +180,15 @@ namespace GS.DecoupleIt.Operations.Internal
 #endif
             DispatchOperationsAsync(
                 DispatchOperationsDelegate dispatchOperations,
-                List<InternalEvent> internalEvents = default,
+                InternalEvent[] internalEvents = default,
                 CancellationToken cancellationToken = default)
         {
             ContractGuard.IfArgumentIsNull(nameof(dispatchOperations), dispatchOperations);
 
-            internalEvents ??= new List<InternalEvent>();
+            internalEvents ??= ArrayPool<InternalEvent>.Shared!.Rent(_options.InternalEventsPoolSize)
+                                                       .AsNotNull();
+
+            var numberOfEvents = 0;
 
             [NotNull]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -192,7 +199,7 @@ namespace GS.DecoupleIt.Operations.Internal
 #endif
                 OnInternalEventEmitted([NotNull] IInternalEvent @event, CancellationToken innerCancellationToken)
             {
-                internalEvents.Add((InternalEvent) @event);
+                internalEvents[numberOfEvents++] = (InternalEvent) @event;
 
                 return InternalEventDispatcher.DispatchOnEmissionAsync(@event, innerCancellationToken);
             }
@@ -210,19 +217,22 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 await task;
 
-                foreach (var @event in internalEvents)
-                    await InternalEventDispatcher.DispatchOnSuccessAsync(@event!, cancellationToken);
+                for (var i = 0; i < numberOfEvents; i++)
+                    await InternalEventDispatcher.DispatchOnSuccessAsync(internalEvents[i]!, cancellationToken);
             }
             catch (Exception exception)
             {
-                foreach (var @event in internalEvents)
-                    await InternalEventDispatcher.DispatchOnFailureAsync(@event!, exception, cancellationToken);
+                for (var i = 0; i < numberOfEvents; i++)
+                    await InternalEventDispatcher.DispatchOnFailureAsync(internalEvents[i]!, exception, cancellationToken);
 
                 throw;
             }
             finally
             {
                 InternalEventEmitted -= OnInternalEventEmitted;
+
+                for (var i = 0; i < numberOfEvents && internalEvents[i] is not null; i++)
+                    internalEvents[i] = null;
             }
         }
 
@@ -244,6 +254,9 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             Closed?.Invoke(this);
         }
+
+        [NotNull]
+        private readonly Options _options;
 
         [NotNull]
         [UsedImplicitly]

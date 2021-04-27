@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using GS.DecoupleIt.DependencyInjection.Automatic;
@@ -49,7 +48,7 @@ namespace GS.DecoupleIt.Operations.Internal
 #endif
             DispatchOperationsAsync(
                 DispatchOperationsDelegate dispatchOperations,
-                List<InternalEvent> internalEvents = default,
+                InternalEvent[] internalEvents = default,
                 CancellationToken cancellationToken = default)
         {
             var task = OperationContext.CurrentScope?.DispatchOperationsAsync(dispatchOperations, internalEvents, cancellationToken);
