@@ -185,8 +185,15 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             ContractGuard.IfArgumentIsNull(nameof(dispatchOperations), dispatchOperations);
 
-            internalEvents ??= ArrayPool<InternalEvent>.Shared!.Rent(_options.InternalEventsPoolSize)
-                                                       .AsNotNull();
+            var wasPooled = false;
+
+            if (internalEvents is null)
+            {
+                internalEvents = ArrayPool<InternalEvent>.Shared!.Rent(_options.InternalEventsPoolSize)
+                                                           .AsNotNull();
+
+                wasPooled = true;
+            }
 
             var numberOfEvents = 0;
 
@@ -231,10 +238,13 @@ namespace GS.DecoupleIt.Operations.Internal
             {
                 InternalEventEmitted -= OnInternalEventEmitted;
 
-                for (var i = 0; i < numberOfEvents && internalEvents[i] is not null; i++)
-                    internalEvents[i] = null;
+                if (wasPooled)
+                {
+                    for (var i = 0; i < numberOfEvents && internalEvents[i] is not null; i++)
+                        internalEvents[i] = null;
 
-                ArrayPool<InternalEvent>.Shared.Return(internalEvents);
+                    ArrayPool<InternalEvent>.Shared.Return(internalEvents);
+                }
             }
         }
 
