@@ -25,11 +25,6 @@ namespace Samples.Clients.Command
             return Main<WebHost>(args);
         }
 
-        public WebHost()
-        {
-            UseMigrations = true;
-        }
-
         public override void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder builder)
         {
             base.ConfigureApplication(context, builder);
@@ -72,5 +67,7 @@ namespace Samples.Clients.Command
 
             builder.WithContextMiddlewareFor<ClientsDbContext>();
         }
+
+        protected override bool UseMigrations => false;
     }
 }

@@ -85,48 +85,27 @@ namespace GS.DecoupleIt.AspNetCore.Service
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
         public override void ConfigureLogging(WebHostBuilderContext context, LoggerConfiguration configuration)
         {
-            var builder = configuration.MinimumLevel.Debug()
-                                       .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                                       .Filter.ByExcluding(logEvent =>
-                                       {
-                                           if (logEvent.Level >= LogEventLevel.Warning)
-                                               return false;
+            configuration.MinimumLevel.Debug()
+                         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                         .Filter.ByExcluding(x =>
+                         {
+                             x.RemovePropertyIfPresent("ActionId");
+                             x.RemovePropertyIfPresent("ActionName");
+                             x.RemovePropertyIfPresent("SourceContext");
 
-                                           logEvent.Properties.TryGetValue("SourceContext", out var sourceContextValue);
+                             x.RemovePropertyIfPresent("CorrelationId");
+                             x.RemovePropertyIfPresent("RequestPath");
+                             x.RemovePropertyIfPresent("ConnectionId");
+                             x.RemovePropertyIfPresent("RequestId");
+                             x.RemovePropertyIfPresent("EventId.Id");
 
-                                           var sourceContext = sourceContextValue?.ToString()
-                                                                                 .Trim('"');
-
-                                           if (sourceContext is null)
-                                               return false;
-
-                                           if (sourceContext.StartsWith("Microsoft.AspNetCore"))
-                                               return true;
-
-                                           if (sourceContext.StartsWith("Quartz"))
-                                               return true;
-
-                                           return false;
-                                       })
-                                       .Filter.ByExcluding(x =>
-                                       {
-                                           x.RemovePropertyIfPresent("ActionId");
-                                           x.RemovePropertyIfPresent("ActionName");
-                                           x.RemovePropertyIfPresent("SourceContext");
-
-                                           x.RemovePropertyIfPresent("CorrelationId");
-                                           x.RemovePropertyIfPresent("RequestPath");
-                                           x.RemovePropertyIfPresent("ConnectionId");
-                                           x.RemovePropertyIfPresent("RequestId");
-                                           x.RemovePropertyIfPresent("EventId.Id");
-
-                                           return false;
-                                       });
+                             return false;
+                         });
 
             var options = context.Configuration.GetValue<bool?>("GS:DecoupleIt:AspNetCore:Service:Logging:Console:Enabled");
 
             if (options != false)
-                builder.WriteTo.Console(
+                configuration.WriteTo.Console(
                     outputTemplate:
                     "[{Timestamp:HH:mm:ss:fff} {Level:u3} | {@SpanType} {@SpanName} | {@TraceId}:{@SpanId}:{@ParentSpanId}]\n{Message:lj}{NewLine}{Exception}");
         }
@@ -138,9 +117,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
             options.Converters.Add(new StringEnumConverter());
             options.NullValueHandling = NullValueHandling.Ignore;
         }
-
-        /// <inheritdoc />
-        public override void ConfigureServices(WebHostBuilderContext context, IServiceCollection serviceCollection) { }
 
         /// <inheritdoc />
         public override void ConfigureSwaggerGen(WebHostBuilderContext context, SwaggerGenOptions options)
@@ -213,29 +189,45 @@ namespace GS.DecoupleIt.AspNetCore.Service
         }
 
         /// <summary>
+        ///     Host name.
+        /// </summary>
+        protected virtual string HostName =>
+            GetType()
+                .Assembly.GetName()
+                .Name;
+
+        /// <summary>
+        ///     Host version.
+        /// </summary>
+        protected virtual string HostVersion =>
+            GetType()
+                .Assembly.GetName()
+                .Version?.ToString();
+
+        /// <summary>
         ///     Type of an json serializer used for whole pipeline.
         /// </summary>
-        protected virtual JsonSerializerType JsonSerializer { get; set; } = JsonSerializerType.SystemTextJson;
+        protected virtual JsonSerializerType JsonSerializer { get; } = JsonSerializerType.SystemTextJson;
 
         /// <summary>
         ///     If this flag is set, https is enforced. It's disabled by default.
         /// </summary>
-        protected virtual bool UseHttpsRedirection { get; set; }
+        protected virtual bool UseHttpsRedirection { get; }
 
         /// <summary>
         ///     If this flag is set, jobs engine is enabled. It's enabled by default.
         /// </summary>
-        protected virtual bool UseJobs { get; set; } = true;
+        protected virtual bool UseJobs { get; } = true;
 
         /// <summary>
         ///     If this flag is set, migration engine is enabled. It's enabled by default.
         /// </summary>
-        protected virtual bool UseMigrations { get; set; } = true;
+        protected virtual bool UseMigrations { get; } = true;
 
         /// <summary>
         ///     If this flag is set, then web host will test all registered services if are possible to instantiate.
         /// </summary>
-        protected virtual bool ValidateServices { get; set; } = true;
+        protected virtual bool ValidateServices { get; } = true;
 
         /// <summary>
         ///     Gets modules.
@@ -318,19 +310,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   ? Guid.Empty
                                   : Guid.NewGuid();
 
-                              var hostName = GetType()
-                                             .Assembly.GetName()
-                                             .Name;
-
-                              var hostVersion = GetType()
-                                                .Assembly.GetName()
-                                                .Version?.ToString() ?? "undefined";
-
                               var hostEnvironment = context.HostingEnvironment.EnvironmentName;
 
                               HostInformation = new HostInformation(hostIdentifier,
-                                                                    hostName,
-                                                                    hostVersion,
+                                                                    HostName,
+                                                                    HostVersion,
                                                                     hostEnvironment);
 
                               serviceCollection.Add(ServiceDescriptor.Singleton(typeof(IHostInformation), HostInformation));
@@ -442,7 +426,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               {
                                   options.OperationFilter<OperationNameFilter>();
 
-                                  options.DocumentFilter<DocumentFilter>(hostVersion);
+                                  options.DocumentFilter<DocumentFilter>(HostInformation.Version);
 
                                   foreach (var file in Directory.EnumerateFiles(Path.GetDirectoryName(GetType()
                                                                                                       .Assembly.Location)
@@ -527,6 +511,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
                               // Perform configuration of application.
                               if (UseHttpsRedirection)
                                   applicationBuilder.UseHttpsRedirection();
+
+                              foreach (var module in modules)
+                                  module.PreConfigureApplication(context, applicationBuilder);
 
                               applicationBuilder.UseSwagger(swaggerOptions =>
                               {

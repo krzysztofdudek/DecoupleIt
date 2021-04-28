@@ -151,5 +151,12 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// </summary>
         /// <param name="webHostBuilder">Web host builder.</param>
         void ConfigureWebHostBuilder([NotNull] IWebHostBuilder webHostBuilder);
+
+        /// <summary>
+        ///     Pre configures <see cref="IApplicationBuilder" /> allowing do add middlewares before any verification and other stuff.
+        /// </summary>
+        /// <param name="context">Web host builder context.</param>
+        /// <param name="builder">Application builder.</param>
+        void PreConfigureApplication([NotNull] WebHostBuilderContext context, [NotNull] IApplicationBuilder builder);
     }
 }

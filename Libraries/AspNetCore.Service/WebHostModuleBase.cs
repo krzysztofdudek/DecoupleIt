@@ -74,5 +74,8 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
         /// <inheritdoc />
         public virtual void ConfigureWebHostBuilder(IWebHostBuilder webHostBuilder) { }
+
+        /// <inheritdoc />
+        public void PreConfigureApplication(WebHostBuilderContext context, IApplicationBuilder builder) { }
     }
 }
