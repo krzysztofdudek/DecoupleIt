@@ -132,12 +132,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
             TimeSpan duration,
             [CanBeNull] Exception exception)
         {
-            var wasHandled = exception is not null && exception.Data.Contains("WasHandled") && exception.Data["WasHandled"] is true;
+            var wasHandled                    = exception is not null && exception.Data.Contains("WasHandled") && exception.Data["WasHandled"] is true;
+            var isOperationCancelledException = exception is OperationCanceledException;
+            var wasSuccessful                 = wasHandled || exception is null;
 
             var args = ArrayPool<object>.Shared.Rent(5);
             var i    = 0;
 
-            args[i++] = wasHandled || exception is null ? "finished" : "failed";
+            args[i++] = isOperationCancelledException ? "cancelled" : wasSuccessful ? "finished" : "failed";
             args[i++] = (int) duration.TotalMilliseconds;
             args[i++] = context.Response.StatusCode;
 
@@ -147,7 +149,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
             if (_options.Logging.LogResponsesBodies)
                 args[i] = responseBody is null ? null : Encoding.UTF8.GetString(responseBody.Value.FirstSpan);
 
-            if (wasHandled || exception is null)
+            if (wasSuccessful || isOperationCancelledException)
                 _logger.LogInformation(_logFinishTemplate, args);
             else
                 _logger.LogInformation(exception, _logFinishTemplate, args);
@@ -198,8 +200,15 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
             var responseBody = memoryStream.GetReadOnlySequence();
 
-            foreach (var memory in responseBody)
-                await originalResponseBodyStream.WriteAsync(memory, context.RequestAborted);
+            try
+            {
+                foreach (var memory in responseBody)
+                    await originalResponseBodyStream.WriteAsync(memory, context.RequestAborted);
+            }
+            catch (OperationCanceledException exception2)
+            {
+                exception = exception2;
+            }
 
             context.Response.Body          = originalResponseBodyStream;
             context.Response.ContentLength = memoryStream.Position;

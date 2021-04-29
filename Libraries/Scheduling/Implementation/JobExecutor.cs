@@ -130,6 +130,13 @@ namespace GS.DecoupleIt.Scheduling.Implementation
                         if (_options.Logging.EnableNonErrorLogging)
                             _logger.LogDebug("Job executing {@OperationAction} after {@OperationDuration}ms.", "finished", lastIterationDuration.Milliseconds);
                     }
+                    catch (OperationCanceledException operationCanceledException)
+                    {
+                        lastIterationDuration = tracerSpan.Duration;
+
+                        if (_options.Logging.EnableNonErrorLogging)
+                            _logger.LogDebug(operationCanceledException, "Job execution has been {@OperationAction}.", "cancelled");
+                    }
                     catch (Exception exception)
                     {
                         lastIterationDuration = tracerSpan.Duration;

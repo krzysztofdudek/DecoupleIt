@@ -55,6 +55,13 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 return result;
             }
+            catch (OperationCanceledException)
+            {
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Dispatching query {@OperationAction} after {@OperationDuration}ms.", "cancelled", span.Duration.Milliseconds);
+
+                throw;
+            }
             catch
             {
                 if (Options.Logging.EnableNonErrorLogging)
@@ -62,6 +69,15 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 throw;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void MarkExceptionAsHandled([NotNull] Exception commandHandlerException)
+        {
+            if (commandHandlerException.Data.Contains("WasHandled"))
+                commandHandlerException.Data["WasHandled"] = true;
+            else
+                commandHandlerException.Data.Add("WasHandled", true);
         }
 
         [NotNull]
@@ -89,6 +105,18 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 return result;
             }
+            catch (OperationCanceledException operationCanceledException)
+            {
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug(operationCanceledException,
+                                    "Query handler invocation has been {@OperationAction} after {@OperationDuration}ms.",
+                                    "cancelled",
+                                    span.Duration.Milliseconds);
+
+                MarkExceptionAsHandled(operationCanceledException);
+
+                throw;
+            }
             catch (Exception exception)
             {
                 Logger.LogError(exception,
@@ -96,7 +124,7 @@ namespace GS.DecoupleIt.Operations.Internal
                                 "failed",
                                 span.Duration.Milliseconds);
 
-                exception.Data.Add("WasHandled", true);
+                MarkExceptionAsHandled(exception);
 
                 throw;
             }

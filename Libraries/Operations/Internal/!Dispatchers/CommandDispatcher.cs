@@ -56,6 +56,13 @@ namespace GS.DecoupleIt.Operations.Internal
                 if (Options.Logging.EnableNonErrorLogging)
                     Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "finished", span.Duration.Milliseconds);
             }
+            catch (OperationCanceledException)
+            {
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "cancelled", span.Duration.Milliseconds);
+
+                throw;
+            }
             catch
             {
                 if (Options.Logging.EnableNonErrorLogging)
@@ -91,6 +98,13 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 return result;
             }
+            catch (OperationCanceledException)
+            {
+                if (Options.Logging.EnableNonErrorLogging)
+                    Logger.LogDebug("Dispatching command {@OperationAction} after {@OperationDuration}ms.", "cancelled", span.Duration.Milliseconds);
+
+                throw;
+            }
             catch
             {
                 if (Options.Logging.EnableNonErrorLogging)
@@ -98,6 +112,15 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 throw;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void MarkExceptionAsHandled([NotNull] Exception commandHandlerException)
+        {
+            if (commandHandlerException.Data.Contains("WasHandled"))
+                commandHandlerException.Data["WasHandled"] = true;
+            else
+                commandHandlerException.Data.Add("WasHandled", true);
         }
 
         [NotNull]
@@ -117,11 +140,20 @@ namespace GS.DecoupleIt.Operations.Internal
                 {
                     await preCommandHandler.PreHandleAsync(typedCommand, cancellationToken);
                 }
+                catch (OperationCanceledException operationCanceledException)
+                {
+                    if (Options.Logging.EnableNonErrorLogging)
+                        Logger.LogDebug(operationCanceledException, "Pre command handler invocation has been {@OperationAction}.", "cancelled");
+
+                    MarkExceptionAsHandled(operationCanceledException);
+
+                    throw;
+                }
                 catch (Exception preCommandHandlerException)
                 {
                     Logger.LogError(preCommandHandlerException, "Pre command handler invocation {@OperationAction}.", "failed");
 
-                    preCommandHandlerException.Data.Add("WasHandled", true);
+                    MarkExceptionAsHandled(preCommandHandlerException);
 
                     throw;
                 }
@@ -169,11 +201,38 @@ namespace GS.DecoupleIt.Operations.Internal
                                                                      null,
                                                                      cancellationToken);
                         }
+                        catch (OperationCanceledException operationCanceledException)
+                        {
+                            if (Options.Logging.EnableNonErrorLogging)
+                                Logger.LogDebug(operationCanceledException, "Post command handler invocation has been {@OperationAction}.", "cancelled");
+
+                            MarkExceptionAsHandled(operationCanceledException);
+
+                            throw;
+                        }
                         catch (Exception postCommandHandlerException)
                         {
                             Logger.LogError(postCommandHandlerException, "Post command handler invocation {@OperationAction}.", "failed");
+
+                            MarkExceptionAsHandled(postCommandHandlerException);
+
+                            throw;
                         }
                     }
+                }
+                catch (OperationCanceledException operationCanceledException)
+                {
+                    if (Options.Logging.EnableNonErrorLogging)
+                        Logger.LogDebug(operationCanceledException,
+                                        "Command handler invocation has been {@OperationAction} after {@OperationDuration}ms.",
+                                        "cancelled",
+                                        tracerSpan.Duration.Milliseconds);
+
+                    tracerSpan.Dispose();
+
+                    MarkExceptionAsHandled(operationCanceledException);
+
+                    throw;
                 }
                 catch (Exception commandHandlerException)
                 {
@@ -195,13 +254,26 @@ namespace GS.DecoupleIt.Operations.Internal
                                                                      commandHandlerException,
                                                                      cancellationToken);
                         }
+                        catch (OperationCanceledException operationCanceledException)
+                        {
+                            if (Options.Logging.EnableNonErrorLogging)
+                                Logger.LogDebug(operationCanceledException, "Post command handler invocation has been {@OperationAction}.", "cancelled");
+
+                            MarkExceptionAsHandled(operationCanceledException);
+
+                            throw;
+                        }
                         catch (Exception postCommandHandlerException)
                         {
                             Logger.LogError(postCommandHandlerException, "Post command handler invocation {@OperationAction}.", "failed");
+
+                            MarkExceptionAsHandled(postCommandHandlerException);
+
+                            throw;
                         }
                     }
 
-                    commandHandlerException.Data.Add("WasHandled", true);
+                    MarkExceptionAsHandled(commandHandlerException);
 
                     throw;
                 }
@@ -229,11 +301,20 @@ namespace GS.DecoupleIt.Operations.Internal
                 {
                     await preCommandHandler.PreHandleAsync(typedCommand, cancellationToken);
                 }
+                catch (OperationCanceledException operationCanceledException)
+                {
+                    if (Options.Logging.EnableNonErrorLogging)
+                        Logger.LogDebug(operationCanceledException, "Pre command handler invocation has been {@OperationAction}.", "cancelled");
+
+                    MarkExceptionAsHandled(operationCanceledException);
+
+                    throw;
+                }
                 catch (Exception preCommandHandlerException)
                 {
                     Logger.LogError(preCommandHandlerException, "Pre command handler invocation {@OperationAction}.", "failed");
 
-                    preCommandHandlerException.Data.Add("WasHandled", true);
+                    MarkExceptionAsHandled(preCommandHandlerException);
 
                     throw;
                 }
@@ -284,13 +365,40 @@ namespace GS.DecoupleIt.Operations.Internal
                                                                      null,
                                                                      cancellationToken);
                         }
+                        catch (OperationCanceledException operationCanceledException)
+                        {
+                            if (Options.Logging.EnableNonErrorLogging)
+                                Logger.LogDebug(operationCanceledException, "Post command handler invocation has been {@OperationAction}.", "cancelled");
+
+                            MarkExceptionAsHandled(operationCanceledException);
+
+                            throw;
+                        }
                         catch (Exception postCommandHandlerException)
                         {
                             Logger.LogError(postCommandHandlerException, "Post command handler invocation {@OperationAction}.", "failed");
+
+                            MarkExceptionAsHandled(postCommandHandlerException);
+
+                            throw;
                         }
                     }
 
                     result = tempResult;
+                }
+                catch (OperationCanceledException commandHandlerException)
+                {
+                    if (Options.Logging.EnableNonErrorLogging)
+                        Logger.LogDebug(commandHandlerException,
+                                        "Command handler invocation has been {@OperationAction} after {@OperationDuration}ms.",
+                                        "cancelled",
+                                        tracerSpan.Duration.Milliseconds);
+
+                    tracerSpan.Dispose();
+
+                    MarkExceptionAsHandled(commandHandlerException);
+
+                    throw;
                 }
                 catch (Exception commandHandlerException)
                 {
@@ -313,16 +421,26 @@ namespace GS.DecoupleIt.Operations.Internal
                                                                      commandHandlerException,
                                                                      cancellationToken);
                         }
+                        catch (OperationCanceledException operationCanceledException)
+                        {
+                            if (Options.Logging.EnableNonErrorLogging)
+                                Logger.LogDebug(operationCanceledException, "Post command handler invocation has been {@OperationAction}.", "cancelled");
+
+                            MarkExceptionAsHandled(operationCanceledException);
+
+                            throw;
+                        }
                         catch (Exception postCommandHandlerException)
                         {
                             Logger.LogError(postCommandHandlerException, "Post command handler invocation {@OperationAction}.", "failed");
+
+                            MarkExceptionAsHandled(postCommandHandlerException);
+
+                            throw;
                         }
                     }
 
-                    if (commandHandlerException.Data.Contains("WasHandled"))
-                        commandHandlerException.Data["WasHandled"] = true;
-                    else
-                        commandHandlerException.Data.Add("WasHandled", true);
+                    MarkExceptionAsHandled(commandHandlerException);
 
                     throw;
                 }

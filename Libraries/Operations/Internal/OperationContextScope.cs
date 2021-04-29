@@ -190,7 +190,7 @@ namespace GS.DecoupleIt.Operations.Internal
             if (internalEvents is null)
             {
                 internalEvents = ArrayPool<InternalEvent>.Shared!.Rent(_options.InternalEventsPoolSize)
-                                                           .AsNotNull();
+                                                         .AsNotNull();
 
                 wasPooled = true;
             }
@@ -226,6 +226,10 @@ namespace GS.DecoupleIt.Operations.Internal
 
                 for (var i = 0; i < numberOfEvents; i++)
                     await InternalEventDispatcher.DispatchOnSuccessAsync(internalEvents[i]!, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception exception)
             {
