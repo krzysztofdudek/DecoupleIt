@@ -15,34 +15,49 @@ namespace GS.DecoupleIt.Tracing
         /// </summary>
         [NotNull]
         [ItemNotNull]
-        public List<string> ParentSpanId { get; set; } = new();
+        public List<string> ParentSpanId { get; set; } = new()
+        {
+            "ParentSpanId"
+        };
 
         /// <summary>
         ///     Properties for SpanId.
         /// </summary>
         [NotNull]
         [ItemNotNull]
-        public List<string> SpanId { get; set; } = new();
+        public List<string> SpanId { get; set; } = new()
+        {
+            "SpanId"
+        };
 
         /// <summary>
         ///     Properties for SpanName.
         /// </summary>
         [NotNull]
         [ItemNotNull]
-        public List<string> SpanName { get; set; } = new();
+        public List<string> SpanName { get; set; } = new()
+        {
+            "SpanName"
+        };
 
         /// <summary>
         ///     Properties for SpanType.
         /// </summary>
         [NotNull]
         [ItemNotNull]
-        public List<string> SpanType { get; set; } = new();
+        public List<string> SpanType { get; set; } = new()
+        {
+            "SpanType"
+        };
 
         /// <summary>
         ///     Properties for TraceId.
         /// </summary>
         [NotNull]
         [ItemNotNull]
-        public List<string> TraceId { get; set; } = new();
+        public List<string> TraceId { get; set; } = new()
+        {
+            "TraceId"
+        };
     }
 }
