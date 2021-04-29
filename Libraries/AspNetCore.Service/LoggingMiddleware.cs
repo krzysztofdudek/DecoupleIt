@@ -43,12 +43,12 @@ namespace GS.DecoupleIt.AspNetCore.Service
                 MaximumFreeLargePoolBytes = _options.Logging.Middleware.LargeBufferMaximumPoolBytes
             };
 
-            _logStartTemplate = "External request handling {@OperationAction}.\nMethod: {@Method}\nPath: {@Path}\nQuery string: {@Query}" +
-                                (_options.Logging.LogRequestsHeaders ? "\nHeaders: {@Headers}" : string.Empty) +
+            _logStartTemplate = "External request handling {@OperationAction}.\nMethod: {@HttpMethod}\nPath: {@HttpPath}\nQuery string: {@HttpQuery}" +
+                                (_options.Logging.LogRequestsHeaders ? "\nHeaders: {@OperationMetadata}" : string.Empty) +
                                 (_options.Logging.LogRequestsBodies ? "\nBody: {@OperationContent:l}" : string.Empty);
 
-            _logFinishTemplate = "External request handling {@OperationAction} after {@OperationDuration}ms.\nStatus code: {@StatusCode}" +
-                                 (_options.Logging.LogResponsesHeaders ? "\nHeaders: {@Headers}" : string.Empty) +
+            _logFinishTemplate = "External request handling {@OperationAction} after {@OperationDuration}ms.\nStatus code: {@HttpStatusCode}" +
+                                 (_options.Logging.LogResponsesHeaders ? "\nHeaders: {@OperationMetadata}" : string.Empty) +
                                  (_options.Logging.LogResponsesBodies ? "\nBody: {@OperationContent:l}" : string.Empty);
         }
 

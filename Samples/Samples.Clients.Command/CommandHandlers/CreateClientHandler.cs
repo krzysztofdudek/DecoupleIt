@@ -29,7 +29,7 @@ namespace Samples.Clients.Command.CommandHandlers
         protected override async ValueTask<CreateClientResult> HandleAsync(CreateClient command, CancellationToken cancellationToken = default)
         {
             if (!_clientValidator.IsNameValid(command.Name))
-                throw new InvalidClientName();
+                throw new InvalidClientName().WithCategory(ExceptionCategories.Business);
 
             await using var unitOfWork = _unitOfWorkAccessor.Get<ClientsDbContext>();
 

@@ -46,10 +46,12 @@ namespace GS.DecoupleIt.Operations
             if (exception is not null && exception.Data.Contains("Category") && exception.Data["Category"] is string category &&
                 _options.Logging.ExceptionCategoryRemap.ContainsKey(category))
             {
-                _logger.Log(_options.Logging.ExceptionCategoryRemap[category],
+                var level = _options.Logging.ExceptionCategoryRemap[category];
+
+                _logger.Log(level,
                             eventId,
                             state,
-                            exception,
+                            level > LogLevel.Information ? exception : null,
                             formatter);
 
                 return;

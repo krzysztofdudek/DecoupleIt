@@ -115,7 +115,7 @@ namespace GS.DecoupleIt.HttpAbstraction
             LogFinish([NotNull] HttpResponseMessage context, TimeSpan duration)
         {
             var message = new StringBuilder(
-                "Outgoing request handling {@OperationAction} after {@OperationDuration}ms.\nStatus code: {@StatusCode}\nHeaders: {@Headers}");
+                "Outgoing request handling {@OperationAction} after {@OperationDuration}ms.\nStatus code: {@HttpStatusCode}\nHeaders: {@OperationMetadata}");
 
             var args = new List<object>
             {
@@ -145,7 +145,8 @@ namespace GS.DecoupleIt.HttpAbstraction
 #endif
             LogStart([NotNull] HttpRequestMessage context)
         {
-            var message = new StringBuilder("Outgoing request handling {@OperationAction}.\nMethod: {@Method}\nPath: {@Path}\nHeaders: {@Headers}");
+            var message = new StringBuilder(
+                "Outgoing request handling {@OperationAction}.\nMethod: {@HttpMethod}\nPath: {@HttpPath}\nHeaders: {@OperationMetadata}");
 
             var args = new List<object>
             {
