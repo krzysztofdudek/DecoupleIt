@@ -102,6 +102,18 @@ namespace GS.DecoupleIt.AspNetCore.Service
                              return false;
                          });
 
+            if (HostIdentifierLoggerProperty is not null)
+                configuration.Enrich.WithProperty(HostIdentifierLoggerProperty, HostInformation.Identifier);
+
+            if (HostNameLoggerProperty is not null)
+                configuration.Enrich.WithProperty(HostNameLoggerProperty, HostInformation.Name);
+
+            if (HostVersionLoggerProperty is not null)
+                configuration.Enrich.WithProperty(HostVersionLoggerProperty, HostInformation.Version);
+
+            if (EnvironmentLoggerProperty is not null)
+                configuration.Enrich.WithProperty(EnvironmentLoggerProperty, HostInformation.Environment);
+
             var options = context.Configuration.GetValue<bool?>("GS:DecoupleIt:AspNetCore:Service:Logging:Console:Enabled");
 
             if (options != false)
@@ -189,6 +201,18 @@ namespace GS.DecoupleIt.AspNetCore.Service
         }
 
         /// <summary>
+        ///     Environment logger property name. If null, property is not added. It's null by default.
+        /// </summary>
+        [CanBeNull]
+        protected virtual string EnvironmentLoggerProperty { get; }
+
+        /// <summary>
+        ///     Host identifier logger property name. If null, property is not added. It's null by default.
+        /// </summary>
+        [CanBeNull]
+        protected virtual string HostIdentifierLoggerProperty { get; }
+
+        /// <summary>
         ///     Host name.
         /// </summary>
         protected virtual string HostName =>
@@ -197,12 +221,24 @@ namespace GS.DecoupleIt.AspNetCore.Service
                 .Name;
 
         /// <summary>
+        ///     Host name logger property name. If null, property is not added. It's null by default.
+        /// </summary>
+        [CanBeNull]
+        protected virtual string HostNameLoggerProperty { get; }
+
+        /// <summary>
         ///     Host version.
         /// </summary>
         protected virtual string HostVersion =>
             GetType()
                 .Assembly.GetName()
                 .Version?.ToString();
+
+        /// <summary>
+        ///     Host version logger property name. If null, property is not added. It's null by default.
+        /// </summary>
+        [CanBeNull]
+        protected virtual string HostVersionLoggerProperty { get; }
 
         /// <summary>
         ///     Type of an json serializer used for whole pipeline.
@@ -543,7 +579,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                       module.ConfigureCorsPolicyBuilder(context, corsPolicyBuilder);
                               });
 
-                              applicationBuilder.Use(async (context2, next) =>
+                              applicationBuilder.Use((context2, next) =>
                               {
                                   var httpAbstractionOptions = context2.RequestServices.GetRequiredService<IOptions<DecoupleIt.HttpAbstraction.Options>>()
                                                                        .Value;
@@ -557,10 +593,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                       return Task.CompletedTask;
                                   });
 
-                                  using (logger.BeginScope(HostInformation))
-                                  {
-                                      await next();
-                                  }
+                                  return next();
                               });
 
                               applicationBuilder.UseTracing();

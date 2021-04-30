@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.Shared
 {
     [PublicAPI]
-    public interface IHostInformation : IEnumerable<KeyValuePair<string, object>>
+    public interface IHostInformation
     {
         [CanBeNull]
         public string Environment { get; }

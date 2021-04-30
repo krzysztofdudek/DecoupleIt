@@ -172,6 +172,7 @@ namespace GS.DecoupleIt.Operations.Internal
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ForCanBeConvertedToForeach")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CognitiveComplexity")]
         public async
 #if NETSTANDARD2_0
             Task

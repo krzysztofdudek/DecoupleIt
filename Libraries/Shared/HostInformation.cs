@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.Shared
@@ -25,26 +23,6 @@ namespace GS.DecoupleIt.Shared
             Name        = name;
             Version     = version;
             Environment = environment;
-
-            _enumerable = new KeyValuePair<string, object>[]
-            {
-                new("HostName", name),
-                new("HostVersion", version),
-                new("HostIdentifier", identifier)
-            };
-        }
-
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
-        {
-            return _enumerable.GetEnumerator();
-        }
-
-        [NotNull]
-        private readonly IEnumerable<KeyValuePair<string, object>> _enumerable;
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }

@@ -24,15 +24,13 @@ namespace GS.DecoupleIt.Scheduling.Implementation
             [NotNull] ITracer tracer,
             [NotNull] IOperationContext operationContext,
             [NotNull] IServiceProvider serviceProvider,
-            [NotNull] IOptions<Options> options,
-            [NotNull] IHostInformation hostInformation)
+            [NotNull] IOptions<Options> options)
         {
             _registeredJobs   = registeredJobs;
             _logger           = logger;
             _tracer           = tracer;
             _operationContext = operationContext;
             _serviceProvider  = serviceProvider;
-            _hostInformation  = hostInformation;
             _options          = options.Value!;
         }
 
@@ -54,9 +52,6 @@ namespace GS.DecoupleIt.Scheduling.Implementation
 
             _threads = threads;
         }
-
-        [NotNull]
-        private readonly IHostInformation _hostInformation;
 
         [NotNull]
         private readonly ILogger<JobExecutor> _logger;
@@ -93,8 +88,6 @@ namespace GS.DecoupleIt.Scheduling.Implementation
                                                       attribute.Milliseconds);
 
             var lastIterationDuration = TimeSpan.Zero;
-
-            using var loggerScope = _logger.BeginScope(_hostInformation);
 
             while (true)
             {
