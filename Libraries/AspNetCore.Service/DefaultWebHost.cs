@@ -103,7 +103,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
                          });
 
             if (HostIdentifierLoggerProperty is not null)
-                configuration.Enrich.WithProperty(HostIdentifierLoggerProperty, HostInformation.Identifier);
+                configuration.Enrich.WithProperty(HostIdentifierLoggerProperty, HostInformation.Identifier.ToString());
 
             if (HostNameLoggerProperty is not null)
                 configuration.Enrich.WithProperty(HostNameLoggerProperty, HostInformation.Name);
