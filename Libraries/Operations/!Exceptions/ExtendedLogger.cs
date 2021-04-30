@@ -51,7 +51,7 @@ namespace GS.DecoupleIt.Operations
                 _logger.Log(level,
                             eventId,
                             state,
-                            level > LogLevel.Information ? exception : null,
+                            exception,
                             formatter);
 
                 return;
