@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>6.0.0-alpha.12</VersionPrefix>
+        <VersionPrefix>6.0.0-alpha.13</VersionPrefix>
         <Title>DecoupleIt - Scheduling</Title>
         <Description>Library implements scheduling abstraction based on annotating classes with attributes.</Description>
     </PropertyGroup>

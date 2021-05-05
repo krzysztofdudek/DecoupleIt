@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <VersionPrefix>6.0.0-alpha.12</VersionPrefix>
+        <VersionPrefix>6.0.0-alpha.13</VersionPrefix>
         <Title>DecoupleIt - Operations</Title>
         <Description>Implementation of operations like command, query, internal event.</Description>
     </PropertyGroup>

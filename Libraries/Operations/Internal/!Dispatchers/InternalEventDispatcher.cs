@@ -37,7 +37,7 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             return DispatchAsync(@event,
                                  null,
-                                 true,
+                                 DispatchingMode.OnEmission,
                                  cancellationToken);
         }
 
@@ -52,7 +52,7 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             return DispatchAsync(@event,
                                  exception,
-                                 false,
+                                 DispatchingMode.OnFailure,
                                  cancellationToken);
         }
 
@@ -67,7 +67,7 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             return DispatchAsync(@event,
                                  null,
-                                 false,
+                                 DispatchingMode.OnSuccess,
                                  cancellationToken);
         }
 
@@ -83,15 +83,20 @@ namespace GS.DecoupleIt.Operations.Internal
                 [NotNull] IInternalEvent @event,
                 [NotNull] object eventHandler,
                 [CanBeNull] Exception exception,
+                DispatchingMode dispatchingMode,
                 CancellationToken cancellationToken)
         {
             return eventHandler switch
             {
-                IOnSuccessInternalEventHandler onSuccessEventHandler   => onSuccessEventHandler.HandleAsync(@event, cancellationToken),
-                IOnEmissionInternalEventHandler onEmissionEventHandler => onEmissionEventHandler.HandleAsync(@event, cancellationToken),
-                IOnFailureInternalEventHandler onFailureEventHandler when exception != null => onFailureEventHandler.HandleAsync(
+                IOnSuccessInternalEventHandler onSuccessEventHandler when dispatchingMode == DispatchingMode.OnSuccess => onSuccessEventHandler.HandleAsync(
                     @event,
-                    exception,
+                    cancellationToken),
+                IOnEmissionInternalEventHandler onEmissionEventHandler when dispatchingMode == DispatchingMode.OnEmission => onEmissionEventHandler.HandleAsync(
+                    @event,
+                    cancellationToken),
+                IOnFailureInternalEventHandler onFailureEventHandler when dispatchingMode == DispatchingMode.OnFailure => onFailureEventHandler.HandleAsync(
+                    @event,
+                    exception!,
                     cancellationToken),
                 _ => throw new ArgumentOutOfRangeException(nameof(eventHandler), "Event handler is of invalid type.")
             };
@@ -108,7 +113,7 @@ namespace GS.DecoupleIt.Operations.Internal
             DispatchAsync(
                 [NotNull] IInternalEvent @event,
                 [CanBeNull] Exception exception,
-                bool onEmission,
+                DispatchingMode dispatchingMode,
                 CancellationToken cancellationToken = default)
         {
             var eventType = @event.GetType();
@@ -120,23 +125,28 @@ namespace GS.DecoupleIt.Operations.Internal
             IEnumerable<object> eventHandlers;
             string              mode;
 
-            if (onEmission)
+            switch (dispatchingMode)
             {
-                eventHandlers = OperationHandlerFactory.GetOnEmissionInternalEventHandlers(serviceProviderScope!.ServiceProvider!, @event);
+                case DispatchingMode.OnEmission:
+                    eventHandlers = OperationHandlerFactory.GetOnEmissionInternalEventHandlers(serviceProviderScope!.ServiceProvider!, @event);
 
-                mode = "on emission";
-            }
-            else if (exception is null)
-            {
-                eventHandlers = OperationHandlerFactory.GetOnSuccessInternalEventHandlers(serviceProviderScope!.ServiceProvider!, @event);
+                    mode = "on emission";
 
-                mode = "on success";
-            }
-            else
-            {
-                eventHandlers = OperationHandlerFactory.GetOnFailureInternalEventHandlers(serviceProviderScope!.ServiceProvider!, @event);
+                    break;
+                case DispatchingMode.OnSuccess:
+                    eventHandlers = OperationHandlerFactory.GetOnSuccessInternalEventHandlers(serviceProviderScope!.ServiceProvider!, @event);
 
-                mode = "on failure";
+                    mode = "on success";
+
+                    break;
+                case DispatchingMode.OnFailure:
+                    eventHandlers = OperationHandlerFactory.GetOnFailureInternalEventHandlers(serviceProviderScope!.ServiceProvider!, @event);
+
+                    mode = "on failure";
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(dispatchingMode), dispatchingMode, null);
             }
 
             if (Options.Logging.EnableNonErrorLogging)
@@ -148,6 +158,7 @@ namespace GS.DecoupleIt.Operations.Internal
                                            eventHandlers,
                                            exception,
                                            mode,
+                                           dispatchingMode,
                                            cancellationToken);
 
                 if (Options.Logging.EnableNonErrorLogging)
@@ -181,6 +192,7 @@ namespace GS.DecoupleIt.Operations.Internal
                 [CanBeNull] Exception exception,
                 [NotNull] object eventHandler,
                 [NotNull] string mode,
+                DispatchingMode dispatchingMode,
                 CancellationToken cancellationToken)
         {
             using var span = Tracer.OpenSpan(eventHandler.GetType(), SpanType.InternalEventHandler);
@@ -193,6 +205,7 @@ namespace GS.DecoupleIt.Operations.Internal
                 await InvokeEventHandler(@event,
                                          eventHandler,
                                          exception,
+                                         dispatchingMode,
                                          cancellationToken);
 
                 if (Options.Logging.EnableNonErrorLogging)
@@ -231,6 +244,7 @@ namespace GS.DecoupleIt.Operations.Internal
                 [NotNull] [ItemNotNull] IEnumerable<object> eventHandlers,
                 [CanBeNull] Exception exception,
                 [NotNull] string mode,
+                DispatchingMode dispatchingMode,
                 CancellationToken cancellationToken)
         {
             foreach (var eventHandler in eventHandlers)
@@ -238,7 +252,15 @@ namespace GS.DecoupleIt.Operations.Internal
                                           exception,
                                           eventHandler,
                                           mode,
+                                          dispatchingMode,
                                           cancellationToken);
+        }
+
+        private enum DispatchingMode
+        {
+            OnEmission,
+            OnSuccess,
+            OnFailure
         }
     }
 }
