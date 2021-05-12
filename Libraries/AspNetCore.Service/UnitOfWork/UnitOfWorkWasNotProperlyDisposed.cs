@@ -13,7 +13,8 @@ namespace GS.DecoupleIt.AspNetCore.Service.UnitOfWork
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
         public override string Message =>
             "Unit of work was not correctly disposed. It usually means that one of inner calls of IUnitOfWork " +
-            "that created instance of unit of work was called without disposal of such instance (missing Dispose call)." + $"\nStack trace:\n{_stackTrace}";
+            "that created instance of unit of work was called without disposal of such instance (missing Dispose call)." +
+            $"\nStack trace of \"Get\" method execution on unit of work accessor:\n{_stackTrace}";
 
         public UnitOfWorkWasNotProperlyDisposed([CanBeNull] string stackTrace)
         {

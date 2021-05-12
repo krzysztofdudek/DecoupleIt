@@ -6,12 +6,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GS.DecoupleIt.Tracing
 {
+    [PublicAPI]
     public sealed class Builder : ExtensionBuilderBase
     {
         public Builder([NotNull] IServiceCollection serviceCollection, [NotNull] IConfiguration configuration) : base(serviceCollection, configuration) { }
 
         [NotNull]
-        public Builder WithLoggerPropertiesConfiguration([NotNull] Action<LoggerPropertiesOptions> configure)
+        public Builder WithConfiguration([NotNull] Action<Options> configure)
         {
             ContractGuard.IfArgumentIsNull(nameof(configure), configure);
 

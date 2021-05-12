@@ -1,5 +1,8 @@
 using System;
 using GS.DecoupleIt.Shared;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using NSubstitute;
 using Xunit;
 
 namespace GS.DecoupleIt.Tracing.Tests
@@ -17,7 +20,11 @@ namespace GS.DecoupleIt.Tracing.Tests
         [JetBrains.Annotations.NotNull]
         private static ITracer CreateTracer()
         {
-            return new Tracer();
+            var options = Substitute.For<IOptions<Options>>();
+
+            options!.Value.Returns(new Options());
+
+            return new Tracer(Substitute.For<ILogger<Tracer>>()!, options);
         }
 
         [Fact]

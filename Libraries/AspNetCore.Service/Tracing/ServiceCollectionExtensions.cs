@@ -19,20 +19,21 @@ namespace GS.DecoupleIt.AspNetCore.Service.Tracing
         /// </summary>
         /// <param name="serviceCollection">Service collection.</param>
         /// <param name="configuration">Configuration.</param>
+        /// <returns>Builder.</returns>
         [NotNull]
-        public static IServiceCollection AddTracingForAspNetCore([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
+        public static Builder AddTracingForAspNetCore([NotNull] this IServiceCollection serviceCollection, [NotNull] IConfiguration configuration)
         {
             ContractGuard.IfArgumentIsNull(nameof(serviceCollection), serviceCollection);
             ContractGuard.IfArgumentIsNull(nameof(configuration), configuration);
 
             var assembly = typeof(ServiceCollectionExtensions).Assembly;
 
-            serviceCollection.AddTracing(configuration);
+            var builder = serviceCollection.AddTracing(configuration);
 
             serviceCollection.ScanAssemblyForImplementations(typeof(ServiceCollectionExtensions).Assembly);
             serviceCollection.ScanAssemblyForOptions(assembly, configuration);
 
-            return serviceCollection;
+            return builder;
         }
     }
 }

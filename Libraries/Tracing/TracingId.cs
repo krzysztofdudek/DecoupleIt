@@ -1,4 +1,5 @@
 ﻿using System;
+using GS.DecoupleIt.Shared;
 using JetBrains.Annotations;
 
 namespace GS.DecoupleIt.Tracing
@@ -15,9 +16,12 @@ namespace GS.DecoupleIt.Tracing
         ///     Creates an instance of <see cref="TracingId" />.
         /// </summary>
         /// <param name="value">Value.</param>
+        /// <exception cref="ArgumentNullException">Value is null.</exception>
         [PublicAPI]
         public TracingId([NotNull] string value)
         {
+            ContractGuard.IfArgumentIsNull(nameof(value), value);
+
             _value = value;
         }
 
@@ -42,11 +46,6 @@ namespace GS.DecoupleIt.Tracing
         public static implicit operator TracingId(Guid value)
         {
             return new(value.ToString("D"));
-        }
-
-        public static implicit operator TracingId([NotNull] string value)
-        {
-            return new(value);
         }
 
         public static implicit operator Guid(TracingId tracingId)

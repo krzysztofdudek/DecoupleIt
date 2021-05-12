@@ -166,6 +166,13 @@ namespace GS.DecoupleIt.AspNetCore.Service
             options.IgnoreNullValues         = true;
         }
 
+        /// <summary>
+        ///     Configures <see cref="GS.DecoupleIt.Tracing.Builder" />.
+        /// </summary>
+        /// <param name="context">Web host builder context.</param>
+        /// <param name="builder">Cors policy builder.</param>
+        public virtual void ConfigureTracing([NotNull] WebHostBuilderContext context, [NotNull] GS.DecoupleIt.Tracing.Builder builder) { }
+
         /// <inheritdoc cref="WebHostExtensions.Run" />
         /// <param name="args">Arguments.</param>
         /// <param name="configureWebHostBuilder">Configure web host builder delegate.</param>
@@ -376,7 +383,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
                                   module.ConfigureUnitOfWork(context, unitOfWorkBuilder);
 
                               // Configure tracing.
-                              serviceCollection.AddTracingForAspNetCore(context.Configuration.AsNotNull());
+                              var tracingBuilder = serviceCollection.AddTracingForAspNetCore(context.Configuration.AsNotNull());
+
+                              ConfigureTracing(context, tracingBuilder);
 
                               // Configure operations.
                               var operationsBuilder = serviceCollection.AddOperationsForAspNetCore(context.Configuration.AsNotNull());

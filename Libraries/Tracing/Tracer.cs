@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 
 namespace GS.DecoupleIt.Tracing
 {
-    [PublicAPI]
     [Singleton]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "LogMessageIsSentenceProblem")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "TemplateIsNotCompileTimeConstantProblem")]
@@ -17,25 +16,14 @@ namespace GS.DecoupleIt.Tracing
     {
         public ITracerSpan CurrentSpan => _spanStorage.Value;
 
-        public Func<TracingId> NewTracingIdGenerator
-        {
-            get => _newTracingIdGenerator;
-            set
-            {
-                ContractGuard.IfArgumentIsNull(nameof(value), value);
-
-                _newTracingIdGenerator = value;
-            }
-        }
-
         public event SpanClosedDelegate SpanClosed;
 
         public event SpanOpenedDelegate SpanOpened;
 
-        public Tracer([CanBeNull] ILogger<Tracer> logger = default, [CanBeNull] IOptions<LoggerPropertiesOptions> loggerPropertiesOptions = default)
+        public Tracer([NotNull] ILogger<Tracer> logger, [NotNull] IOptions<Options> options)
         {
-            _logger                  = logger;
-            _loggerPropertiesOptions = loggerPropertiesOptions?.Value.AsNotNull();
+            _logger  = logger;
+            _options = options.Value!;
         }
 
         public ITracerSpan OpenSpan(string name, SpanType type)
@@ -43,7 +31,7 @@ namespace GS.DecoupleIt.Tracing
             ContractGuard.IfArgumentIsNull(nameof(name), name);
             ContractGuard.IfEnumArgumentIsOutOfRange(nameof(type), type);
 
-            var spanId       = NewTracingIdGenerator();
+            var spanId       = _options.NewTracingIdGenerator();
             var traceId      = CurrentSpan?.Descriptor.TraceId ?? spanId;
             var parentSpanId = CurrentSpan?.Descriptor.Id;
 
@@ -80,9 +68,9 @@ namespace GS.DecoupleIt.Tracing
             var span = new TracerSpan(spanDescriptor,
                                       CurrentSpan,
                                       SpanOnClosed,
-                                      _logger?.BeginScope(GetLoggerProperties(spanDescriptor)));
+                                      _logger.BeginScope(GetLoggerProperties(spanDescriptor)));
 
-            CurrentSpanInternal = span;
+            _spanStorage.Value = span;
 
             InvokeSpanOpened(spanDescriptor);
 
@@ -105,70 +93,58 @@ namespace GS.DecoupleIt.Tracing
                             type);
         }
 
-        [CanBeNull]
+        [NotNull]
         private readonly ILogger<Tracer> _logger;
 
-        [CanBeNull]
-        private readonly LoggerPropertiesOptions _loggerPropertiesOptions;
-
         [NotNull]
-        private Func<TracingId> _newTracingIdGenerator = () => Guid.NewGuid();
+        private readonly Options _options;
 
         [NotNull]
         private readonly AsyncLocal<ITracerSpan> _spanStorage = new();
-
-        private TracerSpan? CurrentSpanInternal
-        {
-            get => (TracerSpan?) _spanStorage.Value;
-            set => _spanStorage.Value = value;
-        }
 
         [NotNull]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CognitiveComplexity")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "ForCanBeConvertedToForeach")]
         private IReadOnlyDictionary<string, object> GetLoggerProperties(SpanDescriptor descriptor)
         {
-            if (_loggerPropertiesOptions is null)
-                return new Dictionary<string, object>();
-
             var dictionary = new Dictionary<string, object>();
 
-            for (var index = 0; index < _loggerPropertiesOptions.TraceId.Count; index++)
+            for (var index = 0; index < _options.LoggerProperties.TraceId.Count; index++)
             {
-                var property = _loggerPropertiesOptions.TraceId[index];
+                var property = _options.LoggerProperties.TraceId[index];
 
                 if (!dictionary.ContainsKey(property))
                     dictionary.Add(property, descriptor.TraceId);
             }
 
-            for (var index = 0; index < _loggerPropertiesOptions.SpanId.Count; index++)
+            for (var index = 0; index < _options.LoggerProperties.SpanId.Count; index++)
             {
-                var property = _loggerPropertiesOptions.SpanId[index];
+                var property = _options.LoggerProperties.SpanId[index];
 
                 if (!dictionary.ContainsKey(property))
                     dictionary.Add(property, descriptor.Id);
             }
 
             if (descriptor.ParentId != null)
-                for (var index = 0; index < _loggerPropertiesOptions.ParentSpanId.Count; index++)
+                for (var index = 0; index < _options.LoggerProperties.ParentSpanId.Count; index++)
                 {
-                    var property = _loggerPropertiesOptions.ParentSpanId[index];
+                    var property = _options.LoggerProperties.ParentSpanId[index];
 
                     if (!dictionary.ContainsKey(property))
                         dictionary.Add(property, descriptor.ParentId);
                 }
 
-            for (var index = 0; index < _loggerPropertiesOptions.SpanName.Count; index++)
+            for (var index = 0; index < _options.LoggerProperties.SpanName.Count; index++)
             {
-                var property = _loggerPropertiesOptions.SpanName[index];
+                var property = _options.LoggerProperties.SpanName[index];
 
                 if (!dictionary.ContainsKey(property))
                     dictionary.Add(property, descriptor.Name);
             }
 
-            for (var index = 0; index < _loggerPropertiesOptions.SpanType.Count; index++)
+            for (var index = 0; index < _options.LoggerProperties.SpanType.Count; index++)
             {
-                var property = _loggerPropertiesOptions.SpanType[index];
+                var property = _options.LoggerProperties.SpanType[index];
 
                 if (!dictionary.ContainsKey(property))
                     dictionary.Add(property, descriptor.Type);
@@ -191,22 +167,22 @@ namespace GS.DecoupleIt.Tracing
         {
             if (CurrentSpan is null)
             {
-                _logger?.LogWarning("There is no span attached to current flow. Perhaps it was already closed before.");
+                _logger.LogWarning("There is no span attached to current flow. Perhaps it was already closed before.");
 
                 return;
             }
 
             if (!((TracerSpan) CurrentSpan).Equals(span))
             {
-                _logger?.LogWarning("Current tracer span is different than the one that is being closed.");
+                _logger.LogWarning("Current tracer span is different than the one that is being closed.");
 
                 return;
             }
 
             if (CurrentSpan.Parent != null)
-                CurrentSpanInternal = (TracerSpan) CurrentSpan.Parent;
+                _spanStorage.Value = (TracerSpan) CurrentSpan.Parent;
             else
-                CurrentSpanInternal = null;
+                _spanStorage.Value = null;
 
             InvokeSpanClosed(span.Descriptor, span.Duration);
         }

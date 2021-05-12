@@ -81,7 +81,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             if (entry == null)
                 return true;
 
-            return entry.Level == 1;
+            return entry.LazyUnitOfWorkAccessor is not null ? entry.Level == 2 : entry.Level == 1;
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             if (entry == null)
                 return true;
 
-            if (entry.Level == 1)
+            if (entry.LazyUnitOfWorkAccessor is not null ? entry.Level == 2 : entry.Level == 1)
                 return true;
 
             entry.Level--;
@@ -140,6 +140,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
             if (storageEntry != null)
             {
+                if (_options.LogStackTrace)
+                    storageEntry.StackTrace = Environment.StackTrace;
+
                 if (storageEntry.UnitOfWork is not null)
                 {
                     storageEntry.Level++;
@@ -182,6 +185,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             if (storageEntry != null)
             {
                 storageEntry.Level++;
+
+                if (_options.LogStackTrace)
+                    storageEntry.StackTrace = Environment.StackTrace;
 
                 return (ILazyUnitOfWorkAccessor<TUnitOfWork>) (storageEntry.LazyUnitOfWorkAccessor ??
                                                                new LazyUnitOfWorkAccessor<IUnitOfWork>(
@@ -265,7 +271,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             if (entry == null)
                 return;
 
-            if (entry.Level > 1)
+            if (entry.LazyUnitOfWorkAccessor is not null ? entry.Level > 2 : entry.Level > 1)
                 throw new Exception("Unit of work can be disposed only on the lowest level of usage within async flow.");
 
             lock (StorageEntries)
@@ -323,7 +329,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             public long Level = 1;
 
             [CanBeNull]
-            public readonly string StackTrace;
+            public string StackTrace;
 
             [CanBeNull]
             public readonly IUnitOfWork UnitOfWork;

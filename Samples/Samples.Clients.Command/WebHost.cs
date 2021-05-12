@@ -1,3 +1,4 @@
+using System;
 using GS.DecoupleIt.AspNetCore.Service;
 using GS.DecoupleIt.AspNetCore.Service.UnitOfWork;
 using GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using GS.DecoupleIt.HttpAbstraction;
 using GS.DecoupleIt.Options.Automatic;
 using GS.DecoupleIt.Scheduling;
 using GS.DecoupleIt.Shared;
+using GS.DecoupleIt.Tracing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +59,17 @@ namespace Samples.Clients.Command
             serviceCollection.ScanAssemblyForOptions(assembly, context.Configuration.AsNotNull());
             serviceCollection.ScanAssemblyForJobs(assembly);
             serviceCollection.ScanAssemblyForHttpClients(assembly);
+        }
+
+        public override void ConfigureTracing(WebHostBuilderContext context, GS.DecoupleIt.Tracing.Builder builder)
+        {
+            base.ConfigureTracing(context, builder);
+
+            builder.WithConfiguration(configuration =>
+            {
+                configuration!.NewTracingIdGenerator = () => new TracingId(Guid.NewGuid()
+                                                                               .ToString("N")[..16]!);
+            });
         }
 
         public override void ConfigureUnitOfWork(WebHostBuilderContext context, Builder builder)

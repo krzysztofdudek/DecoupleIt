@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using GS.DecoupleIt.DependencyInjection.Automatic;
@@ -69,7 +70,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
             var poolObject = GetPoolObject(typeof(TUnitOfWork));
 
-            if (poolObject.Queue.TryDequeue(out var unitOfWork))
+            if (poolObject is not null && poolObject.Queue.TryDequeue(out var unitOfWork))
             {
                 Interlocked.Decrement(ref poolObject.Count);
 
@@ -95,7 +96,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 return;
             }
 
-            var poolObject = GetPoolObject(pooledUnitOfWork.GetType());
+            var unitOfWorkType = pooledUnitOfWork.GetType();
+
+            var poolObject = GetPoolObject(unitOfWorkType) ?? CreatePoolObject(unitOfWorkType);
 
             if (Interlocked.Increment(ref poolObject.Count) <= poolObject.MaxPoolSize)
             {
@@ -142,19 +145,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private PoolObject GetPoolObject([NotNull] Type unitOfWorkType)
-        {
-            var poolObject = !_pool.ContainsKey(unitOfWorkType)
-                ? SetupNewPoolObject(unitOfWorkType)
-                : _pool[unitOfWorkType]
-                    .AsNotNull();
-
-            return poolObject;
-        }
-
-        [NotNull]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private PoolObject SetupNewPoolObject([NotNull] Type unitOfWorkType)
+        private PoolObject CreatePoolObject([NotNull] Type unitOfWorkType)
         {
             var unitOfWorkName = unitOfWorkType.FullName;
 
@@ -172,6 +163,19 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
                 poolObject = _pool[unitOfWorkType];
 
             return poolObject!;
+        }
+
+        [CanBeNull]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private PoolObject GetPoolObject([NotNull] Type unitOfWorkType)
+        {
+            var unitOfWorkFinalImplementationType = _pool.Keys.FirstOrDefault(unitOfWorkType.IsAssignableFrom);
+
+            if (unitOfWorkFinalImplementationType is null)
+                return null;
+
+            return _pool[unitOfWorkFinalImplementationType]
+                .AsNotNull();
         }
 
         private sealed class PoolObject

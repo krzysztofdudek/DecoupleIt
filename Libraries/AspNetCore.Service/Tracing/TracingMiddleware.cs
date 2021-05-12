@@ -13,10 +13,14 @@ namespace GS.DecoupleIt.AspNetCore.Service.Tracing
     [Transient]
     internal sealed class TracingMiddleware : IMiddleware
     {
-        public TracingMiddleware([NotNull] IOptions<HeadersOptions> options, [NotNull] ITracer tracer)
+        public TracingMiddleware(
+            [NotNull] IOptions<HeadersOptions> headersOptions,
+            [NotNull] IOptions<global::GS.DecoupleIt.Tracing.Options> options,
+            [NotNull] ITracer tracer)
         {
-            _tracer  = tracer;
-            _options = options.Value.AsNotNull();
+            _options        = options.Value!;
+            _tracer         = tracer;
+            _headersOptions = headersOptions.Value!;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "AnnotationRedundancyInHierarchy")]
@@ -24,17 +28,17 @@ namespace GS.DecoupleIt.AspNetCore.Service.Tracing
         {
             var request        = context.Request.AsNotNull();
             var requestHeaders = request.Headers.AsNotNull();
-            var traceIds       = requestHeaders.TryGetValue(_options.TraceIdHeaderName);
+            var traceIds       = requestHeaders.TryGetValue(_headersOptions.TraceIdHeaderName);
             var traceId        = traceIds.Count == 1 ? traceIds[0] : null;
-            var spanIds        = requestHeaders.TryGetValue(_options.SpanIdHeaderName);
+            var spanIds        = requestHeaders.TryGetValue(_headersOptions.SpanIdHeaderName);
             var spanId         = spanIds.Count == 1 ? spanIds[0] : null;
-            var spanNames      = requestHeaders.TryGetValue(_options.SpanNameHeaderName);
+            var spanNames      = requestHeaders.TryGetValue(_headersOptions.SpanNameHeaderName);
             var spanName       = spanNames.Count == 1 ? spanNames[0] : null;
-            var parentSpanIds  = requestHeaders.TryGetValue(_options.ParentSpanIdHeaderName);
+            var parentSpanIds  = requestHeaders.TryGetValue(_headersOptions.ParentSpanIdHeaderName);
             var parentSpanId   = parentSpanIds.Count == 1 ? parentSpanIds[0] : null;
 
-            if (traceId is null || spanId is null)
-                traceId = spanId = _tracer.NewTracingIdGenerator();
+            spanId  ??= _options.NewTracingIdGenerator();
+            traceId ??= spanId;
 
             context.Response.AsNotNull()
                    .OnStarting(httpContextObject =>
@@ -45,19 +49,19 @@ namespace GS.DecoupleIt.AspNetCore.Service.Tracing
                                                                     .Response.AsNotNull()
                                                                     .Headers.AsNotNull();
 
-                                   AddOrReplace(responseHeaders, _options.TraceIdHeaderName, traceId);
-                                   AddOrReplace(responseHeaders, _options.SpanIdHeaderName, spanId);
-                                   AddOrReplace(responseHeaders, _options.SpanNameHeaderName, spanName);
-                                   AddOrReplace(responseHeaders, _options.ParentSpanIdHeaderName, parentSpanId);
+                                   AddOrReplace(responseHeaders, _headersOptions.TraceIdHeaderName, traceId);
+                                   AddOrReplace(responseHeaders, _headersOptions.SpanIdHeaderName, spanId);
+                                   AddOrReplace(responseHeaders, _headersOptions.SpanNameHeaderName, spanName);
+                                   AddOrReplace(responseHeaders, _headersOptions.ParentSpanIdHeaderName, parentSpanId);
 
                                    return Task.CompletedTask;
                                },
                                context);
 
-            using var scope = _tracer.OpenSpan(traceId,
-                                               spanId,
+            using var scope = _tracer.OpenSpan(new TracingId(traceId),
+                                               new TracingId(spanId),
                                                spanName ?? "unknown",
-                                               parentSpanId,
+                                               parentSpanId is null ? null : new TracingId(parentSpanId),
                                                SpanType.ExternalRequest);
 
             await next(context)
@@ -73,7 +77,10 @@ namespace GS.DecoupleIt.AspNetCore.Service.Tracing
         }
 
         [NotNull]
-        private readonly HeadersOptions _options;
+        private readonly HeadersOptions _headersOptions;
+
+        [NotNull]
+        private readonly DecoupleIt.Tracing.Options _options;
 
         [NotNull]
         private readonly ITracer _tracer;

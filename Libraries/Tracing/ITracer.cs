@@ -17,12 +17,6 @@ namespace GS.DecoupleIt.Tracing
         ITracerSpan CurrentSpan { get; }
 
         /// <summary>
-        ///     Generator of new <see cref="TracingId" />.
-        /// </summary>
-        [NotNull]
-        Func<TracingId> NewTracingIdGenerator { get; set; }
-
-        /// <summary>
         ///     Event is invoked when any span is closed.
         /// </summary>
         [CanBeNull]

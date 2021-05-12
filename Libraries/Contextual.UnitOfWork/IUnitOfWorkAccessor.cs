@@ -19,6 +19,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         ///     Type of unit of work, it's base class or one of implemented interfaces.
         /// </typeparam>
         [NotNull]
+        [MustUseReturnValue]
         TUnitOfWork Get<TUnitOfWork>()
             where TUnitOfWork : class, IUnitOfWork;
 
@@ -32,6 +33,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         ///     Type of unit of work, it's base class or one of implemented interfaces.
         /// </typeparam>
         [NotNull]
+        [MustUseReturnValue]
         ILazyUnitOfWorkAccessor<TUnitOfWork> GetLazy<TUnitOfWork>()
             where TUnitOfWork : class, IUnitOfWork;
     }

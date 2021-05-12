@@ -10,7 +10,7 @@ namespace Samples.Clients.Command.Model
     [Transient]
     [ProvidesContext]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "NotNullMemberIsNotInitialized")]
-    public sealed class ClientsDbContext : UnitOfWorkDbContext
+    public sealed class ClientsDbContext : UnitOfWorkDbContext, IClientsUnitOfWork
     {
         [NotNull]
         [ItemNotNull]

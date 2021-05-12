@@ -11,14 +11,14 @@ namespace Samples.Clients.Command.InternalEventHandlers
 {
     internal sealed class ClientCreatedOnEmissionHandler : OnEmissionInternalEventHandlerBase<ClientCreated>
     {
-        public ClientCreatedOnEmissionHandler([NotNull] IUnitOfWorkAccessor accessor)
+        public ClientCreatedOnEmissionHandler([NotNull] IUnitOfWorkAccessor unitOfWorkAccessor)
         {
-            _accessor = accessor;
+            _unitOfWorkAccessor = unitOfWorkAccessor;
         }
 
         protected override async ValueTask HandleAsync(ClientCreated @event, CancellationToken cancellationToken = default)
         {
-            await using var context = _accessor.Get<ClientsDbContext>();
+            await using var context = _unitOfWorkAccessor.Get<ClientsDbContext>();
 
             var clientsBasket = new ClientsBasket(@event.ClientId);
 
@@ -28,6 +28,6 @@ namespace Samples.Clients.Command.InternalEventHandlers
         }
 
         [NotNull]
-        private readonly IUnitOfWorkAccessor _accessor;
+        private readonly IUnitOfWorkAccessor _unitOfWorkAccessor;
     }
 }
