@@ -300,9 +300,6 @@ namespace GS.DecoupleIt.AspNetCore.Service
         [NotNull]
         private IWebHostBuilder ConfigureWebHostBuilder(string[] args)
         {
-            args = args?.Where(x => x != null)
-                       .ToArray() ?? Array.Empty<string>();
-
             var modules = GetModules()
                           .Concat(new[]
                           {
