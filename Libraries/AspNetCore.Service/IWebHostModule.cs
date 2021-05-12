@@ -31,8 +31,9 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// <summary>
         ///     Configures <see cref="ConfigurationBuilder" />.
         /// </summary>
+        /// <param name="context">Web host builder context.</param>
         /// <param name="configurationBuilder">Configuration builder.</param>
-        void ConfigureConfiguration([NotNull] IConfigurationBuilder configurationBuilder);
+        void ConfigureConfiguration([NotNull] WebHostBuilderContext context, [NotNull] IConfigurationBuilder configurationBuilder);
 
         /// <summary>
         ///     Configures <see cref="CorsOptions" />.

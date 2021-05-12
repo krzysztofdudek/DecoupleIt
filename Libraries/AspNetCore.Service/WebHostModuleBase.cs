@@ -22,7 +22,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
         public virtual void ConfigureApplication(WebHostBuilderContext context, IApplicationBuilder builder) { }
 
         /// <inheritdoc />
-        public virtual void ConfigureConfiguration(IConfigurationBuilder configurationBuilder) { }
+        public virtual void ConfigureConfiguration(WebHostBuilderContext context, IConfigurationBuilder configurationBuilder) { }
 
         /// <inheritdoc />
         public virtual void ConfigureCors(WebHostBuilderContext context, CorsOptions options) { }

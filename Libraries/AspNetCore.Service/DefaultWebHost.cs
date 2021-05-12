@@ -35,7 +35,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 #if !NETSTANDARD2_0
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 
 #endif
@@ -80,6 +79,14 @@ namespace GS.DecoupleIt.AspNetCore.Service
         /// </summary>
         [CanBeNull]
         public IHostInformation HostInformation { get; private set; }
+
+        public override void ConfigureConfiguration(WebHostBuilderContext context, IConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder.AddJsonFile("appsettings.json", true, true);
+            configurationBuilder.AddJsonFile("appsettings.user.json", true, true);
+            configurationBuilder.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", true, true);
+            configurationBuilder.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.user.json", true, true);
+        }
 
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "PossibleNullReferenceException")]
@@ -266,6 +273,17 @@ namespace GS.DecoupleIt.AspNetCore.Service
         protected virtual bool ValidateServices { get; } = true;
 
         /// <summary>
+        ///     Configures <see cref="ServiceProviderOptions" />.
+        /// </summary>
+        /// <param name="context">Web host builder context.</param>
+        /// <param name="options">Service provider options.</param>
+        protected virtual void ConfigureServiceProvider([NotNull] WebHostBuilderContext context, [NotNull] ServiceProviderOptions options)
+        {
+            options.ValidateScopes  = true;
+            options.ValidateOnBuild = true;
+        }
+
+        /// <summary>
         ///     Gets modules.
         /// </summary>
         /// <returns>Modules.</returns>
@@ -315,29 +333,11 @@ namespace GS.DecoupleIt.AspNetCore.Service
 
             webHostBuilder.UseKestrel()
                           .UseContentRoot(Directory.GetCurrentDirectory())
-                          .UseDefaultServiceProvider((context, options) =>
-                          {
-                              var isDevelopment = context.AsNotNull()
-                                                         .HostingEnvironment.IsDevelopment();
-
-                              options.AsNotNull()
-                                     .ValidateScopes = isDevelopment;
-
-                              options.AsNotNull()
-                                     .ValidateOnBuild = isDevelopment;
-                          })
+                          .UseDefaultServiceProvider(ConfigureServiceProvider)
                           .ConfigureAppConfiguration((context, builder) =>
                           {
-                              builder.AddJsonFile("appsettings.json", true, true);
-                              builder.AddJsonFile("appsettings.user.json", true, true);
-                              builder.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", true, true);
-                              builder.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.user.json", true, true);
-
-                              builder.AddEnvironmentVariables("DOTNET_");
-                              builder.AddCommandLine(args);
-
                               foreach (var module in modules)
-                                  module.ConfigureConfiguration(builder);
+                                  module.ConfigureConfiguration(context, builder);
                           })
                           .ConfigureServices((context, serviceCollection) =>
                           {
