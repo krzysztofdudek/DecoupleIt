@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 #if NET5_0
 using Microsoft.EntityFrameworkCore.Query;
-
 #endif
 #if NETCOREAPP3_1 || NETSTANDARD2_1 || NETSTANDARD2_0
 using Microsoft.EntityFrameworkCore.Query.Internal;

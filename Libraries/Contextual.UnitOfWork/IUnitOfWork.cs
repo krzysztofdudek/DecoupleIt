@@ -11,10 +11,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
     /// </summary>
     [RegisterManyTimes]
     [PublicAPI]
-    public interface IUnitOfWork
-        : IDisposable
+    public interface IUnitOfWork : IDisposable
 #if !NETSTANDARD2_0
-        , IAsyncDisposable
+    , IAsyncDisposable
 #endif
     {
         /// <summary>

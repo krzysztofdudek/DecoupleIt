@@ -3,9 +3,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
-
 #if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP3_1
 using Microsoft.EntityFrameworkCore.Internal;
+
 #endif
 
 namespace GS.DecoupleIt.Contextual.UnitOfWork.EntityFrameworkCore

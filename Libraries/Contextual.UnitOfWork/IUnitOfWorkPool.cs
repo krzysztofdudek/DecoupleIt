@@ -6,10 +6,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
     /// <summary>
     ///     Represents pool of unit of work objects.
     /// </summary>
-    public interface IUnitOfWorkPool
-        : IDisposable
+    public interface IUnitOfWorkPool : IDisposable
 #if !NETSTANDARD2_0
-        , IAsyncDisposable
+    , IAsyncDisposable
 #endif
     {
         /// <summary>
