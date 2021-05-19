@@ -134,7 +134,7 @@ namespace GS.DecoupleIt.Operations.Internal
         {
             foreach (var preCommandHandler in OperationHandlerFactory.GetPreCommandHandlers(serviceProvider, typedCommand))
             {
-                using var tracerSpan = Tracer.OpenSpan(preCommandHandler.GetType(), SpanType.PreCommandHandler);
+                using var preCommandHandlerSpan = Tracer.OpenSpan(preCommandHandler.GetType(), SpanType.PreCommandHandler);
 
                 try
                 {
@@ -161,7 +161,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
             foreach (var commandHandler in OperationHandlerFactory.GetCommandHandlers(serviceProvider, typedCommand))
             {
-                var tracerSpan = Tracer.OpenSpan(commandHandler.GetType(), SpanType.CommandHandler);
+                using var commandHandlerSpan = Tracer.OpenSpan(commandHandler.GetType(), SpanType.CommandHandler);
 
                 IOperationContextScope operationContextScope = default;
 
@@ -186,13 +186,11 @@ namespace GS.DecoupleIt.Operations.Internal
                     if (Options.Logging.EnableNonErrorLogging)
                         Logger.LogDebug("Command handler invocation {@OperationAction} after {@OperationDuration}ms.",
                                         "finished",
-                                        tracerSpan.Duration.Milliseconds);
-
-                    tracerSpan.Dispose();
+                                        commandHandlerSpan.Duration.Milliseconds);
 
                     foreach (var postCommandHandler in OperationHandlerFactory.GetPostCommandHandlers(serviceProvider, typedCommand))
                     {
-                        using var _ = Tracer.OpenSpan(postCommandHandler.GetType(), SpanType.PostCommandHandler);
+                        using var postCommandHandlerSpan = Tracer.OpenSpan(postCommandHandler.GetType(), SpanType.PostCommandHandler);
 
                         try
                         {
@@ -204,19 +202,17 @@ namespace GS.DecoupleIt.Operations.Internal
                         catch (OperationCanceledException operationCanceledException)
                         {
                             if (Options.Logging.EnableNonErrorLogging)
-                                Logger.LogDebug(operationCanceledException, "Post command handler invocation has been {@OperationAction}.", "cancelled");
-
-                            MarkExceptionAsHandled(operationCanceledException);
-
-                            throw;
+                                Logger.LogDebug(operationCanceledException,
+                                                "Post command handler invocation has been {@OperationAction} after {@OperationDuration}ms.",
+                                                "cancelled",
+                                                postCommandHandlerSpan.Duration.Milliseconds);
                         }
                         catch (Exception postCommandHandlerException)
                         {
-                            Logger.LogError(postCommandHandlerException, "Post command handler invocation {@OperationAction}.", "failed");
-
-                            MarkExceptionAsHandled(postCommandHandlerException);
-
-                            throw;
+                            Logger.LogError(postCommandHandlerException,
+                                            "Post command handler invocation {@OperationAction} after {@OperationDuration}ms.",
+                                            "failed",
+                                            postCommandHandlerSpan.Duration.Milliseconds);
                         }
                     }
                 }
@@ -226,9 +222,7 @@ namespace GS.DecoupleIt.Operations.Internal
                         Logger.LogDebug(operationCanceledException,
                                         "Command handler invocation has been {@OperationAction} after {@OperationDuration}ms.",
                                         "cancelled",
-                                        tracerSpan.Duration.Milliseconds);
-
-                    tracerSpan.Dispose();
+                                        commandHandlerSpan.Duration.Milliseconds);
 
                     MarkExceptionAsHandled(operationCanceledException);
 
@@ -239,13 +233,11 @@ namespace GS.DecoupleIt.Operations.Internal
                     Logger.LogError(commandHandlerException,
                                     "Command handler invocation {@OperationAction} after {@OperationDuration}ms.",
                                     "failed",
-                                    tracerSpan.Duration.Milliseconds);
-
-                    tracerSpan.Dispose();
+                                    commandHandlerSpan.Duration.Milliseconds);
 
                     foreach (var postCommandHandler in OperationHandlerFactory.GetPostCommandHandlers(serviceProvider, typedCommand))
                     {
-                        using var _ = Tracer.OpenSpan(postCommandHandler.GetType(), SpanType.PostCommandHandler);
+                        using var postCommandHandlerSpan = Tracer.OpenSpan(postCommandHandler.GetType(), SpanType.PostCommandHandler);
 
                         try
                         {
@@ -257,19 +249,17 @@ namespace GS.DecoupleIt.Operations.Internal
                         catch (OperationCanceledException operationCanceledException)
                         {
                             if (Options.Logging.EnableNonErrorLogging)
-                                Logger.LogDebug(operationCanceledException, "Post command handler invocation has been {@OperationAction}.", "cancelled");
-
-                            MarkExceptionAsHandled(operationCanceledException);
-
-                            throw;
+                                Logger.LogDebug(operationCanceledException,
+                                                "Post command handler invocation has been {@OperationAction} after {@OperationDuration}ms.",
+                                                "cancelled",
+                                                postCommandHandlerSpan.Duration.Milliseconds);
                         }
                         catch (Exception postCommandHandlerException)
                         {
-                            Logger.LogError(postCommandHandlerException, "Post command handler invocation {@OperationAction}.", "failed");
-
-                            MarkExceptionAsHandled(postCommandHandlerException);
-
-                            throw;
+                            Logger.LogError(postCommandHandlerException,
+                                            "Post command handler invocation {@OperationAction} after {@OperationDuration}ms.",
+                                            "failed",
+                                            postCommandHandlerSpan.Duration.Milliseconds);
                         }
                     }
 
@@ -295,7 +285,7 @@ namespace GS.DecoupleIt.Operations.Internal
 
             foreach (var preCommandHandler in OperationHandlerFactory.GetPreCommandWithResultHandlers(serviceProvider, typedCommand))
             {
-                using var tracerSpan = Tracer.OpenSpan(preCommandHandler.GetType(), SpanType.PreCommandHandler);
+                using var preCommandHandlerSpan = Tracer.OpenSpan(preCommandHandler.GetType(), SpanType.PreCommandHandler);
 
                 try
                 {
@@ -322,8 +312,8 @@ namespace GS.DecoupleIt.Operations.Internal
 
             foreach (var commandHandler in OperationHandlerFactory.GetCommandHandlersWithResult(serviceProvider, typedCommand))
             {
-                var    tracerSpan = Tracer.OpenSpan(commandHandler.GetType(), SpanType.CommandHandler);
-                object tempResult = null;
+                using var commandHandlerSpan = Tracer.OpenSpan(commandHandler.GetType(), SpanType.CommandHandler);
+                object    tempResult         = null;
 
                 IOperationContextScope operationContextScope = default;
 
@@ -349,13 +339,11 @@ namespace GS.DecoupleIt.Operations.Internal
                     if (Options.Logging.EnableNonErrorLogging)
                         Logger.LogDebug("Command handler invocation {@OperationAction} after {@OperationDuration}ms.",
                                         "finished",
-                                        tracerSpan.Duration.Milliseconds);
-
-                    tracerSpan.Dispose();
+                                        commandHandlerSpan.Duration.Milliseconds);
 
                     foreach (var postCommandHandler in OperationHandlerFactory.GetPostCommandWithResultHandlers(serviceProvider, typedCommand))
                     {
-                        using var _ = Tracer.OpenSpan(postCommandHandler.GetType(), SpanType.PostCommandHandler);
+                        using var postCommandHandlerSpan = Tracer.OpenSpan(postCommandHandler.GetType(), SpanType.PostCommandHandler);
 
                         try
                         {
@@ -368,19 +356,17 @@ namespace GS.DecoupleIt.Operations.Internal
                         catch (OperationCanceledException operationCanceledException)
                         {
                             if (Options.Logging.EnableNonErrorLogging)
-                                Logger.LogDebug(operationCanceledException, "Post command handler invocation has been {@OperationAction}.", "cancelled");
-
-                            MarkExceptionAsHandled(operationCanceledException);
-
-                            throw;
+                                Logger.LogDebug(operationCanceledException,
+                                                "Post command handler invocation has been {@OperationAction} after {@OperationDuration}ms.",
+                                                "cancelled",
+                                                postCommandHandlerSpan.Duration.Milliseconds);
                         }
                         catch (Exception postCommandHandlerException)
                         {
-                            Logger.LogError(postCommandHandlerException, "Post command handler invocation {@OperationAction}.", "failed");
-
-                            MarkExceptionAsHandled(postCommandHandlerException);
-
-                            throw;
+                            Logger.LogError(postCommandHandlerException,
+                                            "Post command handler invocation {@OperationAction} after {@OperationDuration}ms.",
+                                            "failed",
+                                            postCommandHandlerSpan.Duration.Milliseconds);
                         }
                     }
 
@@ -392,9 +378,7 @@ namespace GS.DecoupleIt.Operations.Internal
                         Logger.LogDebug(commandHandlerException,
                                         "Command handler invocation has been {@OperationAction} after {@OperationDuration}ms.",
                                         "cancelled",
-                                        tracerSpan.Duration.Milliseconds);
-
-                    tracerSpan.Dispose();
+                                        commandHandlerSpan.Duration.Milliseconds);
 
                     MarkExceptionAsHandled(commandHandlerException);
 
@@ -405,13 +389,11 @@ namespace GS.DecoupleIt.Operations.Internal
                     Logger.LogError(commandHandlerException,
                                     "Command handler invocation {@OperationAction} after {@OperationDuration}ms.",
                                     "failed",
-                                    tracerSpan.Duration.Milliseconds);
-
-                    tracerSpan.Dispose();
+                                    commandHandlerSpan.Duration.Milliseconds);
 
                     foreach (var postCommandHandler in OperationHandlerFactory.GetPostCommandWithResultHandlers(serviceProvider, typedCommand))
                     {
-                        using var _ = Tracer.OpenSpan(postCommandHandler.GetType(), SpanType.PostCommandHandler);
+                        using var postCommandHandlerSpan = Tracer.OpenSpan(postCommandHandler.GetType(), SpanType.PostCommandHandler);
 
                         try
                         {
@@ -424,19 +406,17 @@ namespace GS.DecoupleIt.Operations.Internal
                         catch (OperationCanceledException operationCanceledException)
                         {
                             if (Options.Logging.EnableNonErrorLogging)
-                                Logger.LogDebug(operationCanceledException, "Post command handler invocation has been {@OperationAction}.", "cancelled");
-
-                            MarkExceptionAsHandled(operationCanceledException);
-
-                            throw;
+                                Logger.LogDebug(operationCanceledException,
+                                                "Post command handler invocation has been {@OperationAction} after {@OperationDuration}ms.",
+                                                "cancelled",
+                                                postCommandHandlerSpan.Duration.Milliseconds);
                         }
                         catch (Exception postCommandHandlerException)
                         {
-                            Logger.LogError(postCommandHandlerException, "Post command handler invocation {@OperationAction}.", "failed");
-
-                            MarkExceptionAsHandled(postCommandHandlerException);
-
-                            throw;
+                            Logger.LogError(postCommandHandlerException,
+                                            "Post command handler invocation {@OperationAction} after {@OperationDuration}ms.",
+                                            "failed",
+                                            postCommandHandlerSpan.Duration.Milliseconds);
                         }
                     }
 

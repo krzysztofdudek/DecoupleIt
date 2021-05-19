@@ -132,7 +132,7 @@ namespace GS.DecoupleIt.AspNetCore.Service
             TimeSpan duration,
             [CanBeNull] Exception exception)
         {
-            var wasHandled                    = exception is not null && exception.Data.Contains("WasHandled") && exception.Data["WasHandled"] is true;
+            var wasHandled                    = exception is not null && exception.Data.Contains("WasHandled") && (bool) exception.Data["WasHandled"]!;
             var isOperationCancelledException = exception is OperationCanceledException;
             var wasSuccessful                 = wasHandled || exception is null;
 
