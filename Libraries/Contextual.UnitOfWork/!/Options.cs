@@ -12,11 +12,6 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
     public sealed class Options
     {
         /// <summary>
-        ///     Logs stack trace for debugging purposes.
-        /// </summary>
-        public bool LogStackTrace { get; set; }
-
-        /// <summary>
         ///     Pooling options.
         /// </summary>
         [NotNull]

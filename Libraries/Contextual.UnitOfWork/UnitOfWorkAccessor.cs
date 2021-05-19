@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -49,21 +50,20 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         /// <typeparam name="TUnitOfWork">Type of a unit of work.</typeparam>
         /// <returns>Is available in storage.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsAvailable<TUnitOfWork>(out string stackTrace)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static bool IsAvailable<TUnitOfWork>()
             where TUnitOfWork : class, IUnitOfWork
         {
             var entry = GetEntry(typeof(TUnitOfWork));
 
-            if (entry is not null && (entry.UnitOfWork is not null || entry is {LazyUnitOfWorkAccessor: {HasValueLoaded: true}}))
+            return entry switch
             {
-                stackTrace = entry.StackTrace;
-
-                return true;
-            }
-
-            stackTrace = null;
-
-            return false;
+                // Non-lazy unit of work exists and is not disposed.
+                {UnitOfWork: { }, Level: >= 1} => true,
+                // Lazy unit of work accessor has value loaded and not disposed.
+                {LazyUnitOfWorkAccessor: {HasValueLoaded: true}, Level: >= 2} => true,
+                _                                                             => false
+            };
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             if (entry == null)
                 return true;
 
-            return entry.LazyUnitOfWorkAccessor is not null ? entry.Level == 2 : entry.Level == 1;
+            return entry is {LazyUnitOfWorkAccessor: {HasValueLoaded: true}} ? entry.Level == 2 : entry.Level == 1;
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             if (entry == null)
                 return true;
 
-            if (entry.LazyUnitOfWorkAccessor is not null ? entry.Level == 2 : entry.Level == 1)
+            if (entry.Level == 1)
                 return true;
 
             entry.Level--;
@@ -140,9 +140,6 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
             if (storageEntry != null)
             {
-                if (_options.LogStackTrace)
-                    storageEntry.StackTrace = Environment.StackTrace;
-
                 if (storageEntry.UnitOfWork is not null)
                 {
                     storageEntry.Level++;
@@ -166,10 +163,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
             lock (StorageEntries)
             {
-                (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(typeof(TUnitOfWork),
-                                                                                         instance,
-                                                                                         null,
-                                                                                         _options.LogStackTrace ? Environment.StackTrace : null));
+                (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(typeof(TUnitOfWork), instance, null));
             }
 
             return instance;
@@ -185,9 +179,6 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             if (storageEntry != null)
             {
                 storageEntry.Level++;
-
-                if (_options.LogStackTrace)
-                    storageEntry.StackTrace = Environment.StackTrace;
 
                 return (ILazyUnitOfWorkAccessor<TUnitOfWork>) (storageEntry.LazyUnitOfWorkAccessor ??
                                                                new LazyUnitOfWorkAccessor<IUnitOfWork>(
@@ -209,10 +200,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
 
             lock (StorageEntries)
             {
-                (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(typeof(TUnitOfWork),
-                                                                                         null,
-                                                                                         lazyUnitOfWorkAccessor,
-                                                                                         _options.LogStackTrace ? Environment.StackTrace : null));
+                (StorageEntries.Value ??= new List<StorageEntry>()).Add(new StorageEntry(typeof(TUnitOfWork), null, lazyUnitOfWorkAccessor));
             }
 
             return lazyUnitOfWorkAccessor;
@@ -271,7 +259,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             if (entry == null)
                 return;
 
-            if (entry.LazyUnitOfWorkAccessor is not null ? entry.Level > 2 : entry.Level > 1)
+            if (entry.Level > 1)
                 throw new Exception("Unit of work can be disposed only on the lowest level of usage within async flow.");
 
             lock (StorageEntries)
@@ -329,9 +317,6 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             public long Level = 1;
 
             [CanBeNull]
-            public string StackTrace;
-
-            [CanBeNull]
             public readonly IUnitOfWork UnitOfWork;
 
             [NotNull]
@@ -340,13 +325,11 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
             public StorageEntry(
                 [NotNull] Type unitOfWorkType,
                 [CanBeNull] IUnitOfWork unitOfWork,
-                [CanBeNull] ILazyUnitOfWorkAccessor<IUnitOfWork> lazyUnitOfWorkAccessor,
-                [CanBeNull] string stackTrace)
+                [CanBeNull] ILazyUnitOfWorkAccessor<IUnitOfWork> lazyUnitOfWorkAccessor)
             {
                 UnitOfWorkType         = unitOfWorkType;
                 UnitOfWork             = unitOfWork;
                 LazyUnitOfWorkAccessor = lazyUnitOfWorkAccessor;
-                StackTrace             = stackTrace;
             }
         }
     }

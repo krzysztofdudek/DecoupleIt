@@ -19,7 +19,7 @@ namespace GS.DecoupleIt.AspNetCore.Service.UnitOfWork
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CA2219")]
         public async Task InvokeAsync([NotNull] HttpContext context, [NotNull] RequestDelegate next)
         {
-            var _ = _unitOfWorkAccessor.GetLazy<TUnitOfWork>();
+            var lazyUnitOfWorkAccessor = _unitOfWorkAccessor.GetLazy<TUnitOfWork>();
 
             try
             {
@@ -28,8 +28,10 @@ namespace GS.DecoupleIt.AspNetCore.Service.UnitOfWork
             }
             finally
             {
-                if (UnitOfWorkAccessor.IsAvailable<TUnitOfWork>(out var stackTrace))
-                    throw new UnitOfWorkWasNotProperlyDisposed(stackTrace);
+                if (UnitOfWorkAccessor.IsAvailable<TUnitOfWork>())
+                    throw new UnitOfWorkWasNotProperlyDisposed();
+
+                await lazyUnitOfWorkAccessor.DisposeAsync();
             }
         }
 
