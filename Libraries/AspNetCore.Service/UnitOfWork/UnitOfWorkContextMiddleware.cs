@@ -16,15 +16,21 @@ namespace GS.DecoupleIt.AspNetCore.Service.UnitOfWork
             _unitOfWorkAccessor = unitOfWorkAccessor;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CA2219")]
         public async Task InvokeAsync([NotNull] HttpContext context, [NotNull] RequestDelegate next)
         {
             var _ = _unitOfWorkAccessor.GetLazy<TUnitOfWork>();
 
-            await next(context)
-                .AsNotNull();
-
-            if (UnitOfWorkAccessor.IsAvailable<TUnitOfWork>(out var stackTrace))
-                throw new UnitOfWorkWasNotProperlyDisposed(stackTrace);
+            try
+            {
+                await next(context)
+                    .AsNotNull();
+            }
+            finally
+            {
+                if (UnitOfWorkAccessor.IsAvailable<TUnitOfWork>(out var stackTrace))
+                    throw new UnitOfWorkWasNotProperlyDisposed(stackTrace);
+            }
         }
 
         [NotNull]

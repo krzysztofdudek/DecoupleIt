@@ -54,7 +54,7 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork
         {
             var entry = GetEntry(typeof(TUnitOfWork));
 
-            if (entry != null)
+            if (entry is not null && (entry.UnitOfWork is not null || entry is {LazyUnitOfWorkAccessor: {HasValueLoaded: true}}))
             {
                 stackTrace = entry.StackTrace;
 
