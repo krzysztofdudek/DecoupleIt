@@ -80,9 +80,6 @@ namespace GS.DecoupleIt.HttpAbstraction
                                                          .AsNotNull()
                                                          .Value.AsNotNull();
 
-                var serviceAssemblyName = typeof(TService).Assembly.GetName()
-                                                          .Name.AsNotNull();
-
                 var tracer = serviceProvider.GetRequiredService<ITracer>()
                                             .AsNotNull();
 
@@ -92,12 +89,19 @@ namespace GS.DecoupleIt.HttpAbstraction
                 var hostInformation = serviceProvider.GetRequiredService<IHostInformation>()
                                                      .AsNotNull();
 
-                var serviceName = serviceAssemblyName.EndsWith(".Contracts")
-                    ? serviceAssemblyName.Substring(0, serviceAssemblyName.LastIndexOf(".", StringComparison.Ordinal))
-                    : serviceAssemblyName;
+                var    serviceName = typeof(TService).FullName;
+                string uri;
 
-                if (!servicesUrisOptions.TryGetValue(serviceName, out var uri))
-                    throw new MissingServiceUriMapping(serviceName);
+                while (!servicesUrisOptions.TryGetValue(serviceName!, out uri))
+                {
+                    if (!serviceName.Contains('.'))
+                        break;
+
+                    serviceName = serviceName.Substring(0, serviceName.LastIndexOf('.'));
+                }
+
+                if (uri is null)
+                    throw new MissingServiceUriMapping(typeof(TService).FullName!);
 
                 var httpClient = new HttpClient(new WebRequestHandler(options))
                 {
