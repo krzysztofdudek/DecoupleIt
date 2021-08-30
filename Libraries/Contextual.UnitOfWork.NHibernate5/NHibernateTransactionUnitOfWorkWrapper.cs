@@ -50,8 +50,19 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         {
             Session = unitOfWorkAccessor.Get<NHibernateSessionUnitOfWorkWrapper>();
 
-            _transactionImplementation = Session.BeginTransaction(isolationLevel)
-                                                .AsNotNull();
+            var transaction = Session.GetCurrentTransaction();
+
+            if (transaction is not null)
+            {
+                _transactionImplementation = transaction;
+
+                _externalTransaction = true;
+            }
+            else
+            {
+                _transactionImplementation = Session.BeginTransaction(isolationLevel)
+                                                    .AsNotNull();
+            }
 
             _options = options.Value!;
         }
@@ -71,6 +82,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         /// <inheritdoc />
         public void Commit()
         {
+            if (_externalTransaction)
+                return;
+
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocation(this))
                 return;
 
@@ -80,6 +94,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         /// <inheritdoc />
         public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
+            if (_externalTransaction)
+                return;
+
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocation(this))
                 return;
 
@@ -93,18 +110,21 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))
                 return;
 
-            if (!_transactionImplementation.WasCommitted)
+            if (!_externalTransaction)
             {
-                if (_options.Transaction.SessionCleanupMode == SessionCleanupMode.FlushBeforeRollback)
-                    Session.Flush();
+                if (!_transactionImplementation.WasCommitted)
+                {
+                    if (_options.Transaction.SessionCleanupMode == SessionCleanupMode.FlushBeforeRollback)
+                        Session.Flush();
 
-                _transactionImplementation.Rollback();
+                    _transactionImplementation.Rollback();
 
-                if (_options.Transaction.SessionCleanupMode == SessionCleanupMode.Clear)
-                    Session.Clear();
+                    if (_options.Transaction.SessionCleanupMode == SessionCleanupMode.Clear)
+                        Session.Clear();
+                }
+
+                _transactionImplementation.Dispose();
             }
-
-            _transactionImplementation.Dispose();
 
             Session.Dispose();
 
@@ -138,12 +158,18 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         /// <inheritdoc />
         public void Rollback()
         {
+            if (_externalTransaction)
+                return;
+
             _transactionImplementation.Rollback();
         }
 
         /// <inheritdoc />
         public Task RollbackAsync(CancellationToken cancellationToken = new())
         {
+            if (_externalTransaction)
+                return Task.CompletedTask;
+
             return _transactionImplementation.RollbackAsync(cancellationToken);
         }
 
@@ -164,6 +190,8 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
         {
             return CommitAsync(cancellationToken)!.AsValueTask();
         }
+
+        private readonly bool _externalTransaction;
 
         [NotNull]
         private readonly Options _options;
