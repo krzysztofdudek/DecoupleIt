@@ -65,6 +65,7 @@ namespace GS.DecoupleIt.HttpAbstraction
                                                            });
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ReSharper", "CognitiveComplexity")]
         private static void For<TService>([NotNull] IServiceCollection serviceCollection)
             where TService : class
         {

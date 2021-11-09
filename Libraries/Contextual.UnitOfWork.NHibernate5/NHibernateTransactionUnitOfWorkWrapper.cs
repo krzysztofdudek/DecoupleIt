@@ -110,17 +110,26 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             if (!UnitOfWorkAccessor.IsLastLevelOfInvocationWithDecrease(this))
                 return;
 
+            Exception exception = null;
+
             if (!_externalTransaction)
             {
-                if (!_transactionImplementation.WasCommitted)
+                try
                 {
-                    if (_options.Transaction.SessionCleanupMode == SessionCleanupMode.FlushBeforeRollback)
-                        Session.Flush();
+                    if (!_transactionImplementation.WasCommitted)
+                    {
+                        if (_options.Transaction.SessionCleanupMode == SessionCleanupMode.FlushBeforeRollback)
+                            Session.Flush();
 
-                    _transactionImplementation.Rollback();
+                        _transactionImplementation.Rollback();
 
-                    if (_options.Transaction.SessionCleanupMode == SessionCleanupMode.Clear)
-                        Session.Clear();
+                        if (_options.Transaction.SessionCleanupMode == SessionCleanupMode.Clear)
+                            Session.Clear();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
                 }
 
                 _transactionImplementation.Dispose();
@@ -131,6 +140,9 @@ namespace GS.DecoupleIt.Contextual.UnitOfWork.NHibernate5
             GC.SuppressFinalize(this);
 
             Disposed?.Invoke(this);
+
+            if (exception is not null)
+                throw new Exception($"Transaction broken because of: {exception.Message}");
         }
 
 #if !NETSTANDARD2_0
